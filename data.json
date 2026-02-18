@@ -1,0 +1,11 @@
+{
+  "folderPath": "垃圾箱日记",
+  "defaultFolderPath": "垃圾箱日记",
+  "imageLimit": 3,
+  "folderJournalViews": {},
+  "enableAutoLayout": true,
+  "folderDateFields": {
+    "垃圾箱日记": "日期"
+  },
+  "defaultTemplate": ""
+}
