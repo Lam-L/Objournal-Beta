@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { JournalDataProvider } from '../context/JournalDataContext';
 import { useJournalEntries } from '../hooks/useJournalEntries';
 import { useFileSystemWatchers } from '../hooks/useFileSystemWatchers';
+import { useScrollbarWidth } from '../hooks/useScrollbarWidth';
 import { JournalHeader } from './JournalHeader';
 import { JournalStats } from './JournalStats';
 import { JournalList } from './JournalList';
@@ -67,8 +68,22 @@ const JournalViewContent: React.FC = () => {
 };
 
 export const JournalViewContainer: React.FC = () => {
+	const containerRef = useRef<HTMLDivElement>(null);
+	const scrollbarWidth = useScrollbarWidth();
+
+	useEffect(() => {
+		if (containerRef.current && scrollbarWidth > 0) {
+			// 动态设置右侧 padding，补偿滚动条宽度
+			// 这样左右 padding 在视觉上就完全一致了
+			containerRef.current.style.setProperty(
+				'--scrollbar-compensation',
+				`${scrollbarWidth}px`
+			);
+		}
+	}, [scrollbarWidth]);
+
 	return (
-		<div className="journal-view-container">
+		<div ref={containerRef} className="journal-view-container">
 			<JournalViewContent />
 		</div>
 	);

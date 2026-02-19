@@ -1093,7 +1093,7 @@ var require_react_development = __commonJS({
           }
           return dispatcher.useContext(Context);
         }
-        function useState6(initialState) {
+        function useState7(initialState) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useState(initialState);
         }
@@ -1101,11 +1101,11 @@ var require_react_development = __commonJS({
           var dispatcher = resolveDispatcher();
           return dispatcher.useReducer(reducer, initialArg, init);
         }
-        function useRef8(initialValue) {
+        function useRef9(initialValue) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useRef(initialValue);
         }
-        function useEffect7(create, deps) {
+        function useEffect9(create, deps) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useEffect(create, deps);
         }
@@ -1888,15 +1888,15 @@ var require_react_development = __commonJS({
         exports.useContext = useContext4;
         exports.useDebugValue = useDebugValue;
         exports.useDeferredValue = useDeferredValue;
-        exports.useEffect = useEffect7;
+        exports.useEffect = useEffect9;
         exports.useId = useId;
         exports.useImperativeHandle = useImperativeHandle;
         exports.useInsertionEffect = useInsertionEffect;
         exports.useLayoutEffect = useLayoutEffect2;
         exports.useMemo = useMemo2;
         exports.useReducer = useReducer2;
-        exports.useRef = useRef8;
-        exports.useState = useState6;
+        exports.useRef = useRef9;
+        exports.useState = useState7;
         exports.useSyncExternalStore = useSyncExternalStore;
         exports.useTransition = useTransition;
         exports.version = ReactVersion;
@@ -23573,7 +23573,7 @@ var import_obsidian8 = require("obsidian");
 // src/view/JournalView.tsx
 var import_obsidian5 = require("obsidian");
 var import_client = __toESM(require_client());
-var import_react14 = __toESM(require_react());
+var import_react15 = __toESM(require_react());
 
 // src/context/JournalViewContext.tsx
 var import_react = __toESM(require_react());
@@ -23607,7 +23607,7 @@ var JournalViewProvider = ({
 };
 
 // src/components/JournalViewContainer.tsx
-var import_react13 = __toESM(require_react());
+var import_react14 = __toESM(require_react());
 
 // src/context/JournalDataContext.tsx
 var import_react2 = __toESM(require_react());
@@ -24169,8 +24169,45 @@ var useFileSystemWatchers = () => {
   }, [app, targetFolderPath, shouldRefreshForFile, debouncedRefresh, updateSingleEntry, updateEntryAfterRename]);
 };
 
-// src/components/JournalHeader.tsx
+// src/hooks/useScrollbarWidth.ts
 var import_react5 = __toESM(require_react());
+var useScrollbarWidth = () => {
+  const [scrollbarWidth, setScrollbarWidth] = (0, import_react5.useState)(0);
+  (0, import_react5.useEffect)(() => {
+    const outer = document.createElement("div");
+    outer.style.visibility = "hidden";
+    outer.style.overflow = "scroll";
+    outer.style.msOverflowStyle = "scrollbar";
+    document.body.appendChild(outer);
+    const inner = document.createElement("div");
+    outer.appendChild(inner);
+    const width = outer.offsetWidth - inner.offsetWidth;
+    document.body.removeChild(outer);
+    setScrollbarWidth(width);
+    const handleResize = () => {
+      const outer2 = document.createElement("div");
+      outer2.style.visibility = "hidden";
+      outer2.style.overflow = "scroll";
+      outer2.style.msOverflowStyle = "scrollbar";
+      document.body.appendChild(outer2);
+      const inner2 = document.createElement("div");
+      outer2.appendChild(inner2);
+      const newWidth = outer2.offsetWidth - inner2.offsetWidth;
+      document.body.removeChild(outer2);
+      if (newWidth !== scrollbarWidth) {
+        setScrollbarWidth(newWidth);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [scrollbarWidth]);
+  return scrollbarWidth;
+};
+
+// src/components/JournalHeader.tsx
+var import_react6 = __toESM(require_react());
 var import_obsidian4 = require("obsidian");
 var JournalHeader = () => {
   const { app, plugin, targetFolderPath } = useJournalView();
@@ -24239,19 +24276,19 @@ date: ${year}-${month}-${day}
       console.error("\u521B\u5EFA\u7B14\u8BB0\u5931\u8D25:", error);
     }
   };
-  return /* @__PURE__ */ import_react5.default.createElement("div", { className: "journal-header" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "journal-title-container" }, /* @__PURE__ */ import_react5.default.createElement("h1", { className: "journal-title-header" }, "\u624B\u8BB0"), /* @__PURE__ */ import_react5.default.createElement("div", { className: "journal-header-buttons" }, /* @__PURE__ */ import_react5.default.createElement(
+  return /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-header" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-title-container" }, /* @__PURE__ */ import_react6.default.createElement("h1", { className: "journal-title-header" }, "\u624B\u8BB0"), /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-header-buttons" }, /* @__PURE__ */ import_react6.default.createElement(
     "button",
     {
       className: "journal-header-button",
       onClick: handleCreateNote,
       title: "\u65B0\u5EFA\u7B14\u8BB0"
     },
-    /* @__PURE__ */ import_react5.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, /* @__PURE__ */ import_react5.default.createElement("line", { x1: "12", y1: "5", x2: "12", y2: "19" }), /* @__PURE__ */ import_react5.default.createElement("line", { x1: "5", y1: "12", x2: "19", y2: "12" }))
+    /* @__PURE__ */ import_react6.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, /* @__PURE__ */ import_react6.default.createElement("line", { x1: "12", y1: "5", x2: "12", y2: "19" }), /* @__PURE__ */ import_react6.default.createElement("line", { x1: "5", y1: "12", x2: "19", y2: "12" }))
   ))));
 };
 
 // src/components/JournalStats.tsx
-var import_react6 = __toESM(require_react());
+var import_react7 = __toESM(require_react());
 
 // src/utils/StatisticsCalculator.ts
 var StatisticsCalculator = class {
@@ -24349,14 +24386,14 @@ var JournalStats = () => {
   const consecutiveDays = StatisticsCalculator.calculateConsecutiveDays(entries);
   const totalWords = StatisticsCalculator.calculateTotalWords(entries);
   const totalDays = StatisticsCalculator.calculateTotalDays(entries);
-  return /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stats" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-flame", dangerouslySetInnerHTML: { __html: createSVGIcon("flame", 20, "#ef4444") } }), /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-value" }, formatNumber(consecutiveDays))), /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-label" }, "\u8FDE\u7EED\u7EAA\u5F55\u5929\u6570")), /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-message", dangerouslySetInnerHTML: { __html: createSVGIcon("message", 20, "#ef4444") } }), /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-value" }, formatNumber(totalWords))), /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-label" }, "\u5B57\u6570")), /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-calendar", dangerouslySetInnerHTML: { __html: createSVGIcon("calendar", 20, "#3b82f6") } }), /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-value" }, formatNumber(totalDays))), /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-stat-label" }, "\u5199\u624B\u8BB0\u5929\u6570")));
+  return /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stats" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-flame", dangerouslySetInnerHTML: { __html: createSVGIcon("flame", 20, "#ef4444") } }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-value" }, formatNumber(consecutiveDays))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-label" }, "\u8FDE\u7EED\u7EAA\u5F55\u5929\u6570")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-message", dangerouslySetInnerHTML: { __html: createSVGIcon("message", 20, "#ef4444") } }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-value" }, formatNumber(totalWords))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-label" }, "\u5B57\u6570")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-calendar", dangerouslySetInnerHTML: { __html: createSVGIcon("calendar", 20, "#3b82f6") } }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-value" }, formatNumber(totalDays))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-label" }, "\u5199\u624B\u8BB0\u5929\u6570")));
 };
 
 // src/components/JournalList.tsx
-var import_react11 = __toESM(require_react());
+var import_react12 = __toESM(require_react());
 
 // src/hooks/useJournalScroll.ts
-var import_react7 = __toESM(require_react());
+var import_react8 = __toESM(require_react());
 
 // node_modules/@tanstack/react-virtual/dist/esm/index.js
 var React5 = __toESM(require_react(), 1);
@@ -25298,8 +25335,8 @@ function useVirtualizer(options) {
 // src/hooks/useJournalScroll.ts
 var sizeCache = /* @__PURE__ */ new Map();
 var useJournalScroll = (entries) => {
-  const parentRef = (0, import_react7.useRef)(null);
-  const listItems = (0, import_react7.useMemo)(() => {
+  const parentRef = (0, import_react8.useRef)(null);
+  const listItems = (0, import_react8.useMemo)(() => {
     const items = [];
     const grouped = groupByMonth(entries);
     const sortedGroups = Object.keys(grouped).sort((a, b) => {
@@ -25339,7 +25376,7 @@ var useJournalScroll = (entries) => {
     }
     return items;
   }, [entries]);
-  const estimateSize = (0, import_react7.useCallback)((index) => {
+  const estimateSize = (0, import_react8.useCallback)((index) => {
     if (sizeCache.has(index)) {
       return sizeCache.get(index);
     }
@@ -25389,15 +25426,15 @@ var useJournalScroll = (entries) => {
 };
 
 // src/components/JournalCard.tsx
-var import_react10 = __toESM(require_react());
+var import_react11 = __toESM(require_react());
 
 // src/components/JournalImageContainer.tsx
-var import_react8 = __toESM(require_react());
+var import_react9 = __toESM(require_react());
 var ImageItem = ({ image, index, className, showMoreCount }) => {
-  const [isLoaded, setIsLoaded] = (0, import_react8.useState)(false);
-  const containerRef = (0, import_react8.useRef)(null);
-  const imgRef = (0, import_react8.useRef)(null);
-  (0, import_react8.useEffect)(() => {
+  const [isLoaded, setIsLoaded] = (0, import_react9.useState)(false);
+  const containerRef = (0, import_react9.useRef)(null);
+  const imgRef = (0, import_react9.useRef)(null);
+  (0, import_react9.useEffect)(() => {
     if (!containerRef.current) {
       return;
     }
@@ -25438,14 +25475,14 @@ var ImageItem = ({ image, index, className, showMoreCount }) => {
     }
     setIsLoaded(true);
   };
-  return /* @__PURE__ */ import_react8.default.createElement(
+  return /* @__PURE__ */ import_react9.default.createElement(
     "div",
     {
       ref: containerRef,
       className: `journal-image-container ${className || ""}`,
       onClick: handleClick
     },
-    isLoaded ? /* @__PURE__ */ import_react8.default.createElement(
+    isLoaded ? /* @__PURE__ */ import_react9.default.createElement(
       "img",
       {
         ref: imgRef,
@@ -25457,11 +25494,11 @@ var ImageItem = ({ image, index, className, showMoreCount }) => {
         onLoad: handleImageLoad,
         onError: handleImageError
       }
-    ) : /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-image-placeholder" }),
-    showMoreCount !== void 0 && showMoreCount > 0 && /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-image-more" }, "+", showMoreCount)
+    ) : /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-image-placeholder" }),
+    showMoreCount !== void 0 && showMoreCount > 0 && /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-image-more" }, "+", showMoreCount)
   );
 };
-var JournalImageContainer = (0, import_react8.memo)(({
+var JournalImageContainer = (0, import_react9.memo)(({
   images,
   totalImages,
   allImages
@@ -25470,18 +25507,18 @@ var JournalImageContainer = (0, import_react8.memo)(({
   const containerClass = `journal-images journal-images-${imageCount === 1 ? "single" : imageCount === 2 ? "double" : imageCount === 3 ? "triple" : imageCount === 4 ? "quad" : "multiple"}`;
   const moreCount = totalImages > images.length ? totalImages - images.length : void 0;
   if (imageCount === 1) {
-    return /* @__PURE__ */ import_react8.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react8.default.createElement(ImageItem, { image: images[0], index: 0, showMoreCount: moreCount }));
+    return /* @__PURE__ */ import_react9.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react9.default.createElement(ImageItem, { image: images[0], index: 0, showMoreCount: moreCount }));
   }
   if (imageCount === 2) {
-    return /* @__PURE__ */ import_react8.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react8.default.createElement(ImageItem, { image: images[0], index: 0 }), /* @__PURE__ */ import_react8.default.createElement(ImageItem, { image: images[1], index: 1, showMoreCount: moreCount }));
+    return /* @__PURE__ */ import_react9.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react9.default.createElement(ImageItem, { image: images[0], index: 0 }), /* @__PURE__ */ import_react9.default.createElement(ImageItem, { image: images[1], index: 1, showMoreCount: moreCount }));
   }
   if (imageCount === 3) {
-    return /* @__PURE__ */ import_react8.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react8.default.createElement(ImageItem, { image: images[0], index: 0, className: "journal-image-container-large" }), /* @__PURE__ */ import_react8.default.createElement(ImageItem, { image: images[1], index: 1, className: "journal-image-container-small" }), /* @__PURE__ */ import_react8.default.createElement(ImageItem, { image: images[2], index: 2, className: "journal-image-container-small", showMoreCount: moreCount }));
+    return /* @__PURE__ */ import_react9.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react9.default.createElement(ImageItem, { image: images[0], index: 0, className: "journal-image-container-large" }), /* @__PURE__ */ import_react9.default.createElement(ImageItem, { image: images[1], index: 1, className: "journal-image-container-small" }), /* @__PURE__ */ import_react9.default.createElement(ImageItem, { image: images[2], index: 2, className: "journal-image-container-small", showMoreCount: moreCount }));
   }
   if (imageCount === 4) {
-    return /* @__PURE__ */ import_react8.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react8.default.createElement(ImageItem, { image: images[0], index: 0, className: "journal-image-container-quad-left" }), /* @__PURE__ */ import_react8.default.createElement(ImageItem, { image: images[1], index: 1, className: "journal-image-container-quad-right-top" }), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-images-quad-right-bottom" }, /* @__PURE__ */ import_react8.default.createElement(ImageItem, { image: images[2], index: 2, className: "journal-image-container-quad-right-bottom-left" }), /* @__PURE__ */ import_react8.default.createElement(ImageItem, { image: images[3], index: 3, className: "journal-image-container-quad-right-bottom-right", showMoreCount: moreCount })));
+    return /* @__PURE__ */ import_react9.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react9.default.createElement(ImageItem, { image: images[0], index: 0, className: "journal-image-container-quad-left" }), /* @__PURE__ */ import_react9.default.createElement(ImageItem, { image: images[1], index: 1, className: "journal-image-container-quad-right-top" }), /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-images-quad-right-bottom" }, /* @__PURE__ */ import_react9.default.createElement(ImageItem, { image: images[2], index: 2, className: "journal-image-container-quad-right-bottom-left" }), /* @__PURE__ */ import_react9.default.createElement(ImageItem, { image: images[3], index: 3, className: "journal-image-container-quad-right-bottom-right", showMoreCount: moreCount })));
   }
-  return /* @__PURE__ */ import_react8.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react8.default.createElement(ImageItem, { image: images[0], index: 0, className: "journal-image-container-large" }), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-images-multiple-right-grid" }, images.slice(1, 5).map((image, index) => /* @__PURE__ */ import_react8.default.createElement(
+  return /* @__PURE__ */ import_react9.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react9.default.createElement(ImageItem, { image: images[0], index: 0, className: "journal-image-container-large" }), /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-images-multiple-right-grid" }, images.slice(1, 5).map((image, index) => /* @__PURE__ */ import_react9.default.createElement(
     ImageItem,
     {
       key: index + 1,
@@ -25499,14 +25536,14 @@ var JournalImageContainer = (0, import_react8.memo)(({
 });
 
 // src/components/JournalCardMenu.tsx
-var import_react9 = __toESM(require_react());
-var MenuContext = (0, import_react9.createContext)(null);
+var import_react10 = __toESM(require_react());
+var MenuContext = (0, import_react10.createContext)(null);
 var MenuProvider = ({ children }) => {
-  const [openMenuId, setOpenMenuId] = (0, import_react9.useState)(null);
-  return /* @__PURE__ */ import_react9.default.createElement(MenuContext.Provider, { value: { openMenuId, setOpenMenuId } }, children);
+  const [openMenuId, setOpenMenuId] = (0, import_react10.useState)(null);
+  return /* @__PURE__ */ import_react10.default.createElement(MenuContext.Provider, { value: { openMenuId, setOpenMenuId } }, children);
 };
 var useMenuContext = () => {
-  const context = (0, import_react9.useContext)(MenuContext);
+  const context = (0, import_react10.useContext)(MenuContext);
   if (!context) {
     throw new Error("useMenuContext must be used within MenuProvider");
   }
@@ -25516,9 +25553,9 @@ var JournalCardMenu = ({ entry, onDelete }) => {
   const { openMenuId, setOpenMenuId } = useMenuContext();
   const menuId = entry.file.path;
   const isOpen = openMenuId === menuId;
-  const menuRef = (0, import_react9.useRef)(null);
-  const buttonRef = (0, import_react9.useRef)(null);
-  (0, import_react9.useEffect)(() => {
+  const menuRef = (0, import_react10.useRef)(null);
+  const buttonRef = (0, import_react10.useRef)(null);
+  (0, import_react10.useEffect)(() => {
     if (!isOpen)
       return;
     const handleClickOutside = (e) => {
@@ -25551,8 +25588,8 @@ var JournalCardMenu = ({ entry, onDelete }) => {
       setOpenMenuId(null);
     }
   };
-  const [menuStyle, setMenuStyle] = (0, import_react9.useState)({});
-  (0, import_react9.useEffect)(() => {
+  const [menuStyle, setMenuStyle] = (0, import_react10.useState)({});
+  (0, import_react10.useEffect)(() => {
     if (!isOpen || !buttonRef.current || !menuRef.current) {
       return;
     }
@@ -25575,7 +25612,7 @@ var JournalCardMenu = ({ entry, onDelete }) => {
     };
     setTimeout(updateMenuPosition, 0);
   }, [isOpen]);
-  return /* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement(
+  return /* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement(
     "div",
     {
       ref: buttonRef,
@@ -25583,8 +25620,8 @@ var JournalCardMenu = ({ entry, onDelete }) => {
       onClick: handleButtonClick,
       "aria-label": "\u66F4\u591A\u9009\u9879"
     },
-    /* @__PURE__ */ import_react9.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react9.default.createElement("circle", { cx: "12", cy: "12", r: "1" }), /* @__PURE__ */ import_react9.default.createElement("circle", { cx: "5", cy: "12", r: "1" }), /* @__PURE__ */ import_react9.default.createElement("circle", { cx: "19", cy: "12", r: "1" }))
-  ), isOpen && /* @__PURE__ */ import_react9.default.createElement(
+    /* @__PURE__ */ import_react10.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react10.default.createElement("circle", { cx: "12", cy: "12", r: "1" }), /* @__PURE__ */ import_react10.default.createElement("circle", { cx: "5", cy: "12", r: "1" }), /* @__PURE__ */ import_react10.default.createElement("circle", { cx: "19", cy: "12", r: "1" }))
+  ), isOpen && /* @__PURE__ */ import_react10.default.createElement(
     "div",
     {
       ref: menuRef,
@@ -25592,17 +25629,17 @@ var JournalCardMenu = ({ entry, onDelete }) => {
       style: menuStyle,
       onClick: (e) => e.stopPropagation()
     },
-    /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-card-menu-item", onClick: handleDeleteClick }, /* @__PURE__ */ import_react9.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react9.default.createElement("polyline", { points: "3 6 5 6 21 6" }), /* @__PURE__ */ import_react9.default.createElement("path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" })), /* @__PURE__ */ import_react9.default.createElement("span", null, "\u5220\u9664"))
+    /* @__PURE__ */ import_react10.default.createElement("div", { className: "journal-card-menu-item", onClick: handleDeleteClick }, /* @__PURE__ */ import_react10.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react10.default.createElement("polyline", { points: "3 6 5 6 21 6" }), /* @__PURE__ */ import_react10.default.createElement("path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" })), /* @__PURE__ */ import_react10.default.createElement("span", null, "\u5220\u9664"))
   ));
 };
 
 // src/components/JournalCard.tsx
-var JournalCard = (0, import_react10.memo)(({ entry }) => {
+var JournalCard = (0, import_react11.memo)(({ entry }) => {
   const { app, plugin } = useJournalView();
-  const cardRef = (0, import_react10.useRef)(null);
-  const scrollContainerRef = (0, import_react10.useRef)(null);
-  const lastScrollTopRef = (0, import_react10.useRef)(0);
-  import_react10.default.useEffect(() => {
+  const cardRef = (0, import_react11.useRef)(null);
+  const scrollContainerRef = (0, import_react11.useRef)(null);
+  const lastScrollTopRef = (0, import_react11.useRef)(0);
+  import_react11.default.useEffect(() => {
     const scrollContainer = document.querySelector(".journal-list-container");
     if (scrollContainer) {
       scrollContainerRef.current = scrollContainer;
@@ -25651,14 +25688,14 @@ var JournalCard = (0, import_react10.memo)(({ entry }) => {
       console.error("Failed to open file:", entry.file.path, error);
     }
   };
-  return /* @__PURE__ */ import_react10.default.createElement("div", { ref: cardRef, className: "journal-card", onClick: handleCardClick }, entry.images.length > 0 && /* @__PURE__ */ import_react10.default.createElement(
+  return /* @__PURE__ */ import_react11.default.createElement("div", { ref: cardRef, className: "journal-card", onClick: handleCardClick }, entry.images.length > 0 && /* @__PURE__ */ import_react11.default.createElement(
     JournalImageContainer,
     {
       images: entry.images.slice(0, CONTENT.MAX_IMAGES_PER_CARD),
       totalImages: entry.images.length,
       allImages: entry.images
     }
-  ), entry.title && /* @__PURE__ */ import_react10.default.createElement("h3", { className: "journal-title" }, entry.title), /* @__PURE__ */ import_react10.default.createElement("div", { className: "journal-content" }, /* @__PURE__ */ import_react10.default.createElement("div", { className: "journal-preview" }, entry.preview)), /* @__PURE__ */ import_react10.default.createElement("div", { className: "journal-date-container" }, /* @__PURE__ */ import_react10.default.createElement("div", { className: "journal-date" }, formatDate(entry.date)), /* @__PURE__ */ import_react10.default.createElement(
+  ), entry.title && /* @__PURE__ */ import_react11.default.createElement("h3", { className: "journal-title" }, entry.title), /* @__PURE__ */ import_react11.default.createElement("div", { className: "journal-content" }, /* @__PURE__ */ import_react11.default.createElement("div", { className: "journal-preview" }, entry.preview)), /* @__PURE__ */ import_react11.default.createElement("div", { className: "journal-date-container" }, /* @__PURE__ */ import_react11.default.createElement("div", { className: "journal-date" }, formatDate(entry.date)), /* @__PURE__ */ import_react11.default.createElement(
     JournalCardMenu,
     {
       entry,
@@ -25680,9 +25717,9 @@ var JournalCard = (0, import_react10.memo)(({ entry }) => {
 var JournalList = () => {
   const { entries } = useJournalData();
   const { parentRef, virtualizer, listItems } = useJournalScroll(entries);
-  const itemRefs = (0, import_react11.useRef)(/* @__PURE__ */ new Map());
-  const scrollPositionRef = (0, import_react11.useRef)(0);
-  (0, import_react11.useEffect)(() => {
+  const itemRefs = (0, import_react12.useRef)(/* @__PURE__ */ new Map());
+  const scrollPositionRef = (0, import_react12.useRef)(0);
+  (0, import_react12.useEffect)(() => {
     const scrollElement = parentRef.current;
     if (!scrollElement)
       return;
@@ -25694,7 +25731,7 @@ var JournalList = () => {
       scrollElement.removeEventListener("scroll", handleScroll);
     };
   }, [parentRef]);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react12.useEffect)(() => {
     const scrollElement = parentRef.current;
     if (!scrollElement || scrollPositionRef.current === 0)
       return;
@@ -25704,16 +25741,16 @@ var JournalList = () => {
       }
     });
   }, [entries.length, parentRef]);
-  (0, import_react11.useEffect)(() => {
+  (0, import_react12.useEffect)(() => {
     virtualizer.measure();
   }, [entries.length, virtualizer]);
-  return /* @__PURE__ */ import_react11.default.createElement(
+  return /* @__PURE__ */ import_react12.default.createElement(
     "div",
     {
       ref: parentRef,
       className: "journal-list-container"
     },
-    /* @__PURE__ */ import_react11.default.createElement(
+    /* @__PURE__ */ import_react12.default.createElement(
       "div",
       {
         style: {
@@ -25736,7 +25773,7 @@ var JournalList = () => {
           }
         };
         if (item.type === "month-header") {
-          return /* @__PURE__ */ import_react11.default.createElement(
+          return /* @__PURE__ */ import_react12.default.createElement(
             "div",
             {
               key: `month-${item.monthKey}`,
@@ -25750,11 +25787,11 @@ var JournalList = () => {
                 transform: `translateY(${virtualItem.start}px)`
               }
             },
-            /* @__PURE__ */ import_react11.default.createElement("h2", { className: "journal-month-title" }, item.monthKey)
+            /* @__PURE__ */ import_react12.default.createElement("h2", { className: "journal-month-title" }, item.monthKey)
           );
         }
         if (item.type === "card" && item.entry) {
-          return /* @__PURE__ */ import_react11.default.createElement(
+          return /* @__PURE__ */ import_react12.default.createElement(
             "div",
             {
               key: item.entry.file.path,
@@ -25768,7 +25805,7 @@ var JournalList = () => {
                 transform: `translateY(${virtualItem.start}px)`
               }
             },
-            /* @__PURE__ */ import_react11.default.createElement(JournalCard, { entry: item.entry })
+            /* @__PURE__ */ import_react12.default.createElement(JournalCard, { entry: item.entry })
           );
         }
         return null;
@@ -25778,33 +25815,33 @@ var JournalList = () => {
 };
 
 // src/components/JournalEmptyState.tsx
-var import_react12 = __toESM(require_react());
+var import_react13 = __toESM(require_react());
 var JournalEmptyState = () => {
   const { app } = useJournalView();
   const handleScan = async () => {
     console.log("Scan files");
   };
-  return /* @__PURE__ */ import_react12.default.createElement("div", { className: "journal-welcome" }, /* @__PURE__ */ import_react12.default.createElement("div", { className: "journal-welcome-card" }, /* @__PURE__ */ import_react12.default.createElement("h2", null, "\u6B22\u8FCE\u4F7F\u7528\u624B\u8BB0\u89C6\u56FE"), /* @__PURE__ */ import_react12.default.createElement("p", null, "\u8FD8\u6CA1\u6709\u627E\u5230\u4EFB\u4F55\u624B\u8BB0\u6587\u4EF6"), /* @__PURE__ */ import_react12.default.createElement("button", { className: "journal-welcome-button", onClick: handleScan }, "\u5F00\u59CB\u626B\u63CF")));
+  return /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-welcome" }, /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-welcome-card" }, /* @__PURE__ */ import_react13.default.createElement("h2", null, "\u6B22\u8FCE\u4F7F\u7528\u624B\u8BB0\u89C6\u56FE"), /* @__PURE__ */ import_react13.default.createElement("p", null, "\u8FD8\u6CA1\u6709\u627E\u5230\u4EFB\u4F55\u624B\u8BB0\u6587\u4EF6"), /* @__PURE__ */ import_react13.default.createElement("button", { className: "journal-welcome-button", onClick: handleScan }, "\u5F00\u59CB\u626B\u63CF")));
 };
 
 // src/components/JournalViewContainer.tsx
 var JournalViewWithWatchers = () => {
   useFileSystemWatchers();
-  return /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-content-wrapper" }, /* @__PURE__ */ import_react13.default.createElement(JournalHeader, null), /* @__PURE__ */ import_react13.default.createElement(JournalStats, null), /* @__PURE__ */ import_react13.default.createElement(JournalList, null));
+  return /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-content-wrapper" }, /* @__PURE__ */ import_react14.default.createElement(JournalHeader, null), /* @__PURE__ */ import_react14.default.createElement(JournalStats, null), /* @__PURE__ */ import_react14.default.createElement(JournalList, null));
 };
 var JournalViewContent = () => {
   const { entries, isLoading, error, refresh, updateSingleEntry, updateEntryAfterRename } = useJournalEntries();
   if (isLoading) {
-    return /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react13.default.createElement("div", null, "\u52A0\u8F7D\u4E2D..."));
+    return /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react14.default.createElement("div", null, "\u52A0\u8F7D\u4E2D..."));
   }
   if (error !== null && error !== void 0) {
     const errorMessage = error.message || String(error);
-    return /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react13.default.createElement("div", null, "\u9519\u8BEF: ", errorMessage));
+    return /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react14.default.createElement("div", null, "\u9519\u8BEF: ", errorMessage));
   }
   if (entries.length === 0) {
-    return /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react13.default.createElement(JournalEmptyState, null));
+    return /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react14.default.createElement(JournalEmptyState, null));
   }
-  return /* @__PURE__ */ import_react13.default.createElement(MenuProvider, null, /* @__PURE__ */ import_react13.default.createElement(
+  return /* @__PURE__ */ import_react14.default.createElement(MenuProvider, null, /* @__PURE__ */ import_react14.default.createElement(
     JournalDataProvider,
     {
       entries,
@@ -25814,11 +25851,21 @@ var JournalViewContent = () => {
       updateSingleEntry,
       updateEntryAfterRename
     },
-    /* @__PURE__ */ import_react13.default.createElement(JournalViewWithWatchers, null)
+    /* @__PURE__ */ import_react14.default.createElement(JournalViewWithWatchers, null)
   ));
 };
 var JournalViewContainer = () => {
-  return /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react13.default.createElement(JournalViewContent, null));
+  const containerRef = (0, import_react14.useRef)(null);
+  const scrollbarWidth = useScrollbarWidth();
+  (0, import_react14.useEffect)(() => {
+    if (containerRef.current && scrollbarWidth > 0) {
+      containerRef.current.style.setProperty(
+        "--scrollbar-compensation",
+        `${scrollbarWidth}px`
+      );
+    }
+  }, [scrollbarWidth]);
+  return /* @__PURE__ */ import_react14.default.createElement("div", { ref: containerRef, className: "journal-view-container" }, /* @__PURE__ */ import_react14.default.createElement(JournalViewContent, null));
 };
 
 // src/view/JournalView.tsx
@@ -25904,7 +25951,7 @@ var JournalView = class extends import_obsidian5.ItemView {
       }
     }
     this.root.render(
-      /* @__PURE__ */ import_react14.default.createElement(import_react14.default.StrictMode, null, /* @__PURE__ */ import_react14.default.createElement(
+      /* @__PURE__ */ import_react15.default.createElement(import_react15.default.StrictMode, null, /* @__PURE__ */ import_react15.default.createElement(
         JournalViewProvider,
         {
           app: this.app,
@@ -25915,7 +25962,7 @@ var JournalView = class extends import_obsidian5.ItemView {
             this.renderReact();
           }
         },
-        /* @__PURE__ */ import_react14.default.createElement(JournalViewContainer, null)
+        /* @__PURE__ */ import_react15.default.createElement(JournalViewContainer, null)
       ))
     );
   }
