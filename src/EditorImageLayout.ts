@@ -60,10 +60,13 @@ export class EditorImageLayout {
                 if (editorChangeTimeout) {
                     clearTimeout(editorChangeTimeout);
                 }
+                // 先立即更新现有的 gallery（处理删除的情况）
+                // 这样可以更快地响应删除操作
+                this.updateExistingGalleries();
                 // 延迟处理，等待实时预览渲染完成
                 editorChangeTimeout = window.setTimeout(() => {
                     this.processActiveEditor();
-                }, 500);
+                }, 300); // 减少延迟时间，提高响应速度
             })
         );
 
@@ -420,6 +423,21 @@ export class EditorImageLayout {
                 if (processTimeout) {
                     clearTimeout(processTimeout);
                 }
+                
+                // 如果检测到删除，立即更新（不延迟），提高响应速度
+                if (hasRemovedImages) {
+                    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+                    const filePath = view?.file?.path;
+                    if (this.shouldProcessFile(filePath)) {
+                        logger.log('[EditorImageLayout] [删除流程] MutationObserver 立即触发删除处理流程', {
+                            filePath: filePath,
+                            timestamp: new Date().toISOString()
+                        });
+                        // 立即更新，不等待
+                        this.updateExistingGalleries();
+                    }
+                }
+                
                 processTimeout = window.setTimeout(() => {
                     if (this.isProcessing) {
                         logger.debug('[EditorImageLayout] 正在处理中，跳过');
@@ -436,9 +454,9 @@ export class EditorImageLayout {
                         return;
                     }
 
-                    // 如果检测到图片删除，先更新现有的 gallery 容器
+                    // 如果检测到图片删除，再次更新现有的 gallery 容器（确保完全更新）
                     if (hasRemovedImages) {
-                        logger.log('[EditorImageLayout] [删除流程] MutationObserver 触发删除处理流程', {
+                        logger.log('[EditorImageLayout] [删除流程] MutationObserver 延迟触发删除处理流程', {
                             filePath: filePath,
                             timestamp: new Date().toISOString()
                         });
@@ -448,7 +466,7 @@ export class EditorImageLayout {
                     logger.debug('[EditorImageLayout] MutationObserver 触发图片处理');
                     // 优先处理活动编辑器
                     this.processActiveEditor();
-                }, 500);
+                }, 300); // 减少延迟时间，提高响应速度
             }
         });
 
@@ -493,7 +511,16 @@ export class EditorImageLayout {
         }
 
         // 获取所有仍然存在的 internal-embed
-        const existingEmbeds = Array.from(editorEl.querySelectorAll('.internal-embed.image-embed')) as HTMLElement[];
+        // 注意：在实时预览模式下，需要查找所有可能的预览区域
+        let existingEmbeds: HTMLElement[] = [];
+        if (view.getMode() === 'source') {
+            // 实时预览模式：查找所有预览区域中的 internal-embed
+            existingEmbeds = Array.from(editorEl.querySelectorAll('.markdown-source-view .internal-embed.image-embed, .markdown-preview-view .internal-embed.image-embed')) as HTMLElement[];
+        } else {
+            // 阅读模式：直接查找
+            existingEmbeds = Array.from(editorEl.querySelectorAll('.internal-embed.image-embed')) as HTMLElement[];
+        }
+        
         logger.log('[EditorImageLayout] [删除流程] 当前存在的 internal-embed 数量', {
             embedCount: existingEmbeds.length,
             embedSrcs: existingEmbeds.map(embed => embed.getAttribute('src'))

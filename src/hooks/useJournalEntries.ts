@@ -203,6 +203,35 @@ export const useJournalEntries = () => {
 		setEntries(results);
 	}, []);
 
+	// 处理文件重命名：删除旧路径，添加新路径
+	const updateEntryAfterRename = useCallback(async (file: TFile, oldPath: string) => {
+		// 从缓存中删除旧路径
+		entriesMapRef.current.delete(oldPath);
+
+		// 加载新路径的文件
+		const entry = await loadEntryMetadata(file);
+		if (entry) {
+			// 更新缓存
+			entriesMapRef.current.set(file.path, entry);
+		}
+
+		// 从缓存构建排序后的数组
+		const results = Array.from(entriesMapRef.current.values());
+		results.sort((a, b) => {
+			const dateDiff = b.date.getTime() - a.date.getTime();
+			if (dateDiff !== 0) {
+				return dateDiff;
+			}
+			const ctimeDiff = b.file.stat.ctime - a.file.stat.ctime;
+			if (ctimeDiff !== 0) {
+				return ctimeDiff;
+			}
+			return b.file.path.localeCompare(a.file.path);
+		});
+
+		setEntries(results);
+	}, [app, targetFolderPath, plugin]); // 依赖 loadEntryMetadata 使用的变量
+
 	useEffect(() => {
 		loadEntries();
 	}, [loadEntries]);
@@ -213,5 +242,6 @@ export const useJournalEntries = () => {
 		error,
 		refresh: loadEntries,
 		updateSingleEntry,
+		updateEntryAfterRename,
 	};
 };

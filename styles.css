@@ -41,6 +41,29 @@
 	font-size: 16px;
 }
 
+/* 内容包装器：所有内容（header、stats、list）都在同一个滚动容器中 */
+.journal-content-wrapper {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	position: relative !important;
+	/* 不固定定位，随内容滚动 */
+	top: auto !important;
+	left: auto !important;
+	right: auto !important;
+	bottom: auto !important;
+	z-index: auto !important;
+	min-height: 100%;
+}
+
+/* 列表容器：不再有固定高度和滚动 */
+.journal-list-container {
+	position: relative;
+	width: 100%;
+	min-height: 0;
+	flex: 1;
+}
+
 /* 头部容器（参考手记应用设计） */
 .journal-header {
 	margin-bottom: 5px;
@@ -1076,8 +1099,11 @@
 
 .journal-images-single .journal-image-container {
 	/* 一张图：h = Height, w = 2 * Height + Gap */
-	width: calc(2 * var(--journal-image-height) + var(--journal-image-gap));
-	height: var(--journal-image-height);
+	/* 容器宽度 = 2 * Height + Gap，高度 = Height */
+	/* 宽高比 = (2 * Height + Gap) / Height = 2 + Gap/Height */
+	/* 使用 100% 填充父容器（journal-images），父容器已经设置了正确的 aspect-ratio */
+	width: 100%;
+	height: 100%;
 }
 
 /* 两张图片：两个都是 h = Height, w = Height */

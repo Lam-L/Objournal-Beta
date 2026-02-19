@@ -42,7 +42,19 @@ export class JournalView extends ItemView {
 	}
 
 	async setState(state: any): Promise<void> {
-		this.targetFolderPath = state?.targetFolderPath || null;
+		// 如果状态中有 targetFolderPath，使用它
+		// 否则保持当前值（如果存在），避免被意外清空
+		if (state?.targetFolderPath !== undefined) {
+			this.targetFolderPath = state.targetFolderPath;
+		} else if (this.targetFolderPath === null && this.plugin) {
+			// 如果当前值为 null 且状态中没有，尝试从插件设置中恢复
+			const pluginSettings = (this.plugin as any).settings;
+			if (pluginSettings?.defaultFolderPath) {
+				this.targetFolderPath = pluginSettings.defaultFolderPath;
+			} else if (pluginSettings?.folderPath) {
+				this.targetFolderPath = pluginSettings.folderPath;
+			}
+		}
 		// 如果 React 组件已渲染，更新它
 		if (this.root) {
 			this.renderReact();
@@ -53,6 +65,25 @@ export class JournalView extends ItemView {
 		const container = this.containerEl.children[1] as HTMLElement;
 		if (!container) {
 			return;
+		}
+
+		// 确保 targetFolderPath 被正确设置
+		// 优先使用已保存的状态，如果没有则从插件设置中恢复
+		if (this.targetFolderPath === null && this.plugin) {
+			const pluginSettings = (this.plugin as any).settings;
+			if (pluginSettings?.defaultFolderPath) {
+				this.targetFolderPath = pluginSettings.defaultFolderPath;
+			} else if (pluginSettings?.folderPath) {
+				this.targetFolderPath = pluginSettings.folderPath;
+			}
+		}
+
+		// 应用图片间距设置
+		if (this.plugin) {
+			const pluginSettings = (this.plugin as any).settings;
+			if (pluginSettings?.imageGap !== undefined) {
+				document.documentElement.style.setProperty('--journal-image-gap', `${pluginSettings.imageGap}px`);
+			}
 		}
 
 		// 创建 React Root
@@ -70,6 +101,14 @@ export class JournalView extends ItemView {
 	private renderReact(): void {
 		if (!this.root) {
 			return;
+		}
+
+		// 应用图片间距设置（每次渲染时更新）
+		if (this.plugin) {
+			const pluginSettings = (this.plugin as any).settings;
+			if (pluginSettings?.imageGap !== undefined) {
+				document.documentElement.style.setProperty('--journal-image-gap', `${pluginSettings.imageGap}px`);
+			}
 		}
 
 		this.root.render(

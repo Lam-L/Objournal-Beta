@@ -108,10 +108,6 @@ date: ${year}-${month}-${day}
 		}
 	};
 
-	const handleRefresh = async () => {
-		await refresh();
-	};
-
 	return (
 		<div className="journal-header">
 			<div className="journal-title-container">
@@ -125,17 +121,6 @@ date: ${year}-${month}-${day}
 						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 							<line x1="12" y1="5" x2="12" y2="19"></line>
 							<line x1="5" y1="12" x2="19" y2="12"></line>
-						</svg>
-					</button>
-					<button
-						className="journal-header-button"
-						onClick={handleRefresh}
-						title="刷新"
-					>
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-							<polyline points="23 4 23 10 17 10"></polyline>
-							<polyline points="1 20 1 14 7 14"></polyline>
-							<path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
 						</svg>
 					</button>
 				</div>

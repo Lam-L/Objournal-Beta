@@ -14,18 +14,16 @@ const JournalViewWithWatchers: React.FC = () => {
 	useFileSystemWatchers();
 
 	return (
-		<div className="journal-content-wrapper" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+		<div className="journal-content-wrapper">
 			<JournalHeader />
 			<JournalStats />
-			<div style={{ flex: 1, overflow: 'hidden' }}>
-				<JournalList />
-			</div>
+			<JournalList />
 		</div>
 	);
 };
 
 const JournalViewContent: React.FC = () => {
-	const { entries, isLoading, error, refresh, updateSingleEntry } = useJournalEntries();
+	const { entries, isLoading, error, refresh, updateSingleEntry, updateEntryAfterRename } = useJournalEntries();
 
 	if (isLoading) {
 		return (
@@ -60,6 +58,7 @@ const JournalViewContent: React.FC = () => {
 				error={error} 
 				refresh={refresh} 
 				updateSingleEntry={updateSingleEntry}
+				updateEntryAfterRename={updateEntryAfterRename}
 			>
 				<JournalViewWithWatchers />
 			</JournalDataProvider>

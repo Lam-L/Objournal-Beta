@@ -23625,6 +23625,7 @@ var JournalDataProvider = ({
   error,
   refresh,
   updateSingleEntry,
+  updateEntryAfterRename,
   children
 }) => {
   return /* @__PURE__ */ import_react2.default.createElement(
@@ -23635,7 +23636,8 @@ var JournalDataProvider = ({
         isLoading,
         error,
         refresh,
-        updateSingleEntry
+        updateSingleEntry,
+        updateEntryAfterRename
       }
     },
     children
@@ -23845,14 +23847,30 @@ function formatDate(date) {
   ];
   return `${date.getFullYear()}\u5E74${date.getMonth() + 1}\u6708${date.getDate()}\u65E5 ${weekdays[date.getDay()]}`;
 }
+function isSameDay(date1, date2) {
+  return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
+}
 function groupByMonth(entries) {
   const grouped = {};
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
   for (const entry of entries) {
-    const monthKey = `${entry.date.getFullYear()}\u5E74${entry.date.getMonth() + 1}\u6708`;
-    if (!grouped[monthKey]) {
-      grouped[monthKey] = [];
+    const entryDate = new Date(entry.date);
+    entryDate.setHours(0, 0, 0, 0);
+    let groupKey;
+    if (isSameDay(entryDate, today)) {
+      groupKey = "\u4ECA\u5929";
+    } else if (isSameDay(entryDate, yesterday)) {
+      groupKey = "\u6628\u5929";
+    } else {
+      groupKey = `${entryDate.getFullYear()}\u5E74${entryDate.getMonth() + 1}\u6708`;
     }
-    grouped[monthKey].push(entry);
+    if (!grouped[groupKey]) {
+      grouped[groupKey] = [];
+    }
+    grouped[groupKey].push(entry);
   }
   return grouped;
 }
@@ -24032,6 +24050,26 @@ var useJournalEntries = () => {
     });
     setEntries(results);
   }, []);
+  const updateEntryAfterRename = (0, import_react3.useCallback)(async (file, oldPath) => {
+    entriesMapRef.current.delete(oldPath);
+    const entry = await loadEntryMetadata(file);
+    if (entry) {
+      entriesMapRef.current.set(file.path, entry);
+    }
+    const results = Array.from(entriesMapRef.current.values());
+    results.sort((a, b) => {
+      const dateDiff = b.date.getTime() - a.date.getTime();
+      if (dateDiff !== 0) {
+        return dateDiff;
+      }
+      const ctimeDiff = b.file.stat.ctime - a.file.stat.ctime;
+      if (ctimeDiff !== 0) {
+        return ctimeDiff;
+      }
+      return b.file.path.localeCompare(a.file.path);
+    });
+    setEntries(results);
+  }, [app, targetFolderPath, plugin]);
   (0, import_react3.useEffect)(() => {
     loadEntries();
   }, [loadEntries]);
@@ -24040,7 +24078,8 @@ var useJournalEntries = () => {
     isLoading,
     error,
     refresh: loadEntries,
-    updateSingleEntry
+    updateSingleEntry,
+    updateEntryAfterRename
   };
 };
 
@@ -24049,7 +24088,7 @@ var import_react4 = __toESM(require_react());
 var import_obsidian3 = require("obsidian");
 var useFileSystemWatchers = () => {
   const { app, targetFolderPath } = useJournalView();
-  const { refresh, updateSingleEntry } = useJournalData();
+  const { refresh, updateSingleEntry, updateEntryAfterRename } = useJournalData();
   const refreshTimerRef = (0, import_react4.useRef)(null);
   const eventRefsRef = (0, import_react4.useRef)([]);
   const shouldRefreshForFile = (0, import_react4.useCallback)((file) => {
@@ -24093,7 +24132,11 @@ var useFileSystemWatchers = () => {
       const oldPathInTarget = targetFolderPath ? oldPath.startsWith(targetFolderPath) : true;
       const newPathInTarget = shouldRefreshForFile(file);
       if (oldPathInTarget || newPathInTarget) {
-        debouncedRefresh();
+        if (newPathInTarget && file instanceof import_obsidian3.TFile) {
+          updateEntryAfterRename(file, oldPath);
+        } else {
+          debouncedRefresh();
+        }
       }
     };
     const handleMetadataChange = (file) => {
@@ -24123,7 +24166,7 @@ var useFileSystemWatchers = () => {
       app.metadataCache.offref(metadataEventRef);
       eventRefsRef.current = [];
     };
-  }, [app, targetFolderPath, shouldRefreshForFile, debouncedRefresh]);
+  }, [app, targetFolderPath, shouldRefreshForFile, debouncedRefresh, updateSingleEntry, updateEntryAfterRename]);
 };
 
 // src/components/JournalHeader.tsx
@@ -24196,9 +24239,6 @@ date: ${year}-${month}-${day}
       console.error("\u521B\u5EFA\u7B14\u8BB0\u5931\u8D25:", error);
     }
   };
-  const handleRefresh = async () => {
-    await refresh();
-  };
   return /* @__PURE__ */ import_react5.default.createElement("div", { className: "journal-header" }, /* @__PURE__ */ import_react5.default.createElement("div", { className: "journal-title-container" }, /* @__PURE__ */ import_react5.default.createElement("h1", { className: "journal-title-header" }, "\u624B\u8BB0"), /* @__PURE__ */ import_react5.default.createElement("div", { className: "journal-header-buttons" }, /* @__PURE__ */ import_react5.default.createElement(
     "button",
     {
@@ -24207,14 +24247,6 @@ date: ${year}-${month}-${day}
       title: "\u65B0\u5EFA\u7B14\u8BB0"
     },
     /* @__PURE__ */ import_react5.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, /* @__PURE__ */ import_react5.default.createElement("line", { x1: "12", y1: "5", x2: "12", y2: "19" }), /* @__PURE__ */ import_react5.default.createElement("line", { x1: "5", y1: "12", x2: "19", y2: "12" }))
-  ), /* @__PURE__ */ import_react5.default.createElement(
-    "button",
-    {
-      className: "journal-header-button",
-      onClick: handleRefresh,
-      title: "\u5237\u65B0"
-    },
-    /* @__PURE__ */ import_react5.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, /* @__PURE__ */ import_react5.default.createElement("polyline", { points: "23 4 23 10 17 10" }), /* @__PURE__ */ import_react5.default.createElement("polyline", { points: "1 20 1 14 7 14" }), /* @__PURE__ */ import_react5.default.createElement("path", { d: "M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" }))
   ))));
 };
 
@@ -25270,7 +25302,15 @@ var useJournalScroll = (entries) => {
   const listItems = (0, import_react7.useMemo)(() => {
     const items = [];
     const grouped = groupByMonth(entries);
-    const sortedMonths = Object.keys(grouped).sort((a, b) => {
+    const sortedGroups = Object.keys(grouped).sort((a, b) => {
+      if (a === "\u4ECA\u5929")
+        return -1;
+      if (b === "\u4ECA\u5929")
+        return 1;
+      if (a === "\u6628\u5929")
+        return -1;
+      if (b === "\u6628\u5929")
+        return 1;
       const parseMonthKey = (monthKey) => {
         const match = monthKey.match(/(\d{4})年(\d{1,2})月/);
         if (match) {
@@ -25283,13 +25323,13 @@ var useJournalScroll = (entries) => {
       return dateB.getTime() - dateA.getTime();
     });
     let index = 0;
-    for (const monthKey of sortedMonths) {
+    for (const groupKey of sortedGroups) {
       items.push({
         type: "month-header",
-        monthKey,
+        monthKey: groupKey,
         index: index++
       });
-      for (const entry of grouped[monthKey]) {
+      for (const entry of grouped[groupKey]) {
         items.push({
           type: "card",
           entry,
@@ -25324,7 +25364,13 @@ var useJournalScroll = (entries) => {
   }, [listItems]);
   const virtualizer = useVirtualizer({
     count: listItems.length,
-    getScrollElement: () => parentRef.current,
+    getScrollElement: () => {
+      if (parentRef.current) {
+        const scrollContainer = parentRef.current.closest(".journal-view-container");
+        return scrollContainer || parentRef.current;
+      }
+      return null;
+    },
     estimateSize,
     overscan: 5,
     // 启用动态高度测量
@@ -25552,7 +25598,7 @@ var JournalCardMenu = ({ entry, onDelete }) => {
 
 // src/components/JournalCard.tsx
 var JournalCard = (0, import_react10.memo)(({ entry }) => {
-  const { app } = useJournalView();
+  const { app, plugin } = useJournalView();
   const cardRef = (0, import_react10.useRef)(null);
   const scrollContainerRef = (0, import_react10.useRef)(null);
   const lastScrollTopRef = (0, import_react10.useRef)(0);
@@ -25563,7 +25609,7 @@ var JournalCard = (0, import_react10.memo)(({ entry }) => {
       lastScrollTopRef.current = scrollContainer.scrollTop;
     }
   }, []);
-  const handleCardClick = (e) => {
+  const handleCardClick = async (e) => {
     const target = e.target;
     if (target.closest(".journal-image-container")) {
       return;
@@ -25580,7 +25626,27 @@ var JournalCard = (0, import_react10.memo)(({ entry }) => {
       }
     }
     try {
-      app.workspace.openLinkText(entry.file.path, "", true);
+      let openInNewTab = true;
+      if (plugin) {
+        const pluginSettings = plugin.settings;
+        if ((pluginSettings == null ? void 0 : pluginSettings.openInNewTab) !== void 0) {
+          openInNewTab = pluginSettings.openInNewTab;
+        }
+      }
+      if (openInNewTab) {
+        app.workspace.openLinkText(entry.file.path, "", true);
+      } else {
+        const activeLeaf = app.workspace.activeLeaf;
+        let targetLeaf = activeLeaf;
+        if (activeLeaf && activeLeaf.getViewState().type === "journal-view-react") {
+          targetLeaf = activeLeaf;
+        } else {
+          targetLeaf = app.workspace.getLeaf(false);
+        }
+        if (targetLeaf) {
+          await targetLeaf.openFile(entry.file, { active: true });
+        }
+      }
     } catch (error) {
       console.error("Failed to open file:", entry.file.path, error);
     }
@@ -25645,11 +25711,7 @@ var JournalList = () => {
     "div",
     {
       ref: parentRef,
-      className: "journal-list-container",
-      style: {
-        height: "100%",
-        overflow: "auto"
-      }
+      className: "journal-list-container"
     },
     /* @__PURE__ */ import_react11.default.createElement(
       "div",
@@ -25728,10 +25790,10 @@ var JournalEmptyState = () => {
 // src/components/JournalViewContainer.tsx
 var JournalViewWithWatchers = () => {
   useFileSystemWatchers();
-  return /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-content-wrapper", style: { display: "flex", flexDirection: "column", height: "100%" } }, /* @__PURE__ */ import_react13.default.createElement(JournalHeader, null), /* @__PURE__ */ import_react13.default.createElement(JournalStats, null), /* @__PURE__ */ import_react13.default.createElement("div", { style: { flex: 1, overflow: "hidden" } }, /* @__PURE__ */ import_react13.default.createElement(JournalList, null)));
+  return /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-content-wrapper" }, /* @__PURE__ */ import_react13.default.createElement(JournalHeader, null), /* @__PURE__ */ import_react13.default.createElement(JournalStats, null), /* @__PURE__ */ import_react13.default.createElement(JournalList, null));
 };
 var JournalViewContent = () => {
-  const { entries, isLoading, error, refresh, updateSingleEntry } = useJournalEntries();
+  const { entries, isLoading, error, refresh, updateSingleEntry, updateEntryAfterRename } = useJournalEntries();
   if (isLoading) {
     return /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react13.default.createElement("div", null, "\u52A0\u8F7D\u4E2D..."));
   }
@@ -25749,7 +25811,8 @@ var JournalViewContent = () => {
       isLoading,
       error,
       refresh,
-      updateSingleEntry
+      updateSingleEntry,
+      updateEntryAfterRename
     },
     /* @__PURE__ */ import_react13.default.createElement(JournalViewWithWatchers, null)
   ));
@@ -25788,7 +25851,16 @@ var JournalView = class extends import_obsidian5.ItemView {
     };
   }
   async setState(state) {
-    this.targetFolderPath = (state == null ? void 0 : state.targetFolderPath) || null;
+    if ((state == null ? void 0 : state.targetFolderPath) !== void 0) {
+      this.targetFolderPath = state.targetFolderPath;
+    } else if (this.targetFolderPath === null && this.plugin) {
+      const pluginSettings = this.plugin.settings;
+      if (pluginSettings == null ? void 0 : pluginSettings.defaultFolderPath) {
+        this.targetFolderPath = pluginSettings.defaultFolderPath;
+      } else if (pluginSettings == null ? void 0 : pluginSettings.folderPath) {
+        this.targetFolderPath = pluginSettings.folderPath;
+      }
+    }
     if (this.root) {
       this.renderReact();
     }
@@ -25797,6 +25869,20 @@ var JournalView = class extends import_obsidian5.ItemView {
     const container = this.containerEl.children[1];
     if (!container) {
       return;
+    }
+    if (this.targetFolderPath === null && this.plugin) {
+      const pluginSettings = this.plugin.settings;
+      if (pluginSettings == null ? void 0 : pluginSettings.defaultFolderPath) {
+        this.targetFolderPath = pluginSettings.defaultFolderPath;
+      } else if (pluginSettings == null ? void 0 : pluginSettings.folderPath) {
+        this.targetFolderPath = pluginSettings.folderPath;
+      }
+    }
+    if (this.plugin) {
+      const pluginSettings = this.plugin.settings;
+      if ((pluginSettings == null ? void 0 : pluginSettings.imageGap) !== void 0) {
+        document.documentElement.style.setProperty("--journal-image-gap", `${pluginSettings.imageGap}px`);
+      }
     }
     this.root = (0, import_client.createRoot)(container);
     this.renderReact();
@@ -25810,6 +25896,12 @@ var JournalView = class extends import_obsidian5.ItemView {
   renderReact() {
     if (!this.root) {
       return;
+    }
+    if (this.plugin) {
+      const pluginSettings = this.plugin.settings;
+      if ((pluginSettings == null ? void 0 : pluginSettings.imageGap) !== void 0) {
+        document.documentElement.style.setProperty("--journal-image-gap", `${pluginSettings.imageGap}px`);
+      }
     }
     this.root.render(
       /* @__PURE__ */ import_react14.default.createElement(import_react14.default.StrictMode, null, /* @__PURE__ */ import_react14.default.createElement(
@@ -25839,8 +25931,12 @@ var DEFAULT_SETTINGS = {
   // 默认不启用
   folderDateFields: {},
   // 文件夹路径 -> 日期字段名
-  defaultTemplate: ""
+  defaultTemplate: "",
   // 默认模板（空字符串表示使用默认格式）
+  imageGap: 10,
+  // 默认图片间距 10px
+  openInNewTab: true
+  // 默认在新标签页打开
 };
 
 // src/settings/JournalSettingTab.ts
@@ -26155,6 +26251,26 @@ var JournalSettingTab = class extends import_obsidian6.PluginSettingTab {
         }
       })
     );
+    new import_obsidian6.Setting(containerEl).setName("\u56FE\u7247\u95F4\u8DDD").setDesc("\u56FE\u7247\u5BB9\u5668\u4E4B\u95F4\u7684\u95F4\u8DDD\uFF08\u50CF\u7D20\uFF09").addSlider(
+      (slider) => slider.setLimits(0, 30, 1).setValue(this.plugin.settings.imageGap).setDynamicTooltip().onChange(async (value) => {
+        this.plugin.settings.imageGap = value;
+        await this.plugin.saveSettings();
+        document.documentElement.style.setProperty("--journal-image-gap", `${value}px`);
+        if (this.plugin.view) {
+          this.plugin.view.refresh();
+        }
+      })
+    );
+    new import_obsidian6.Setting(containerEl).setName("\u6253\u5F00\u7B14\u8BB0\u65B9\u5F0F").setDesc("\u9009\u62E9\u5728\u624B\u8BB0\u89C6\u56FE\u4E2D\u70B9\u51FB\u7B14\u8BB0\u5361\u7247\u7684\u6253\u5F00\u65B9\u5F0F\u3002").addToggle((toggle) => {
+      toggle.setValue(this.plugin.settings.openInNewTab).setTooltip(this.plugin.settings.openInNewTab ? "\u5F53\u524D\uFF1A\u65B0\u6807\u7B7E\u9875\u6253\u5F00" : "\u5F53\u524D\uFF1A\u5F53\u524D\u6807\u7B7E\u9875\u6253\u5F00").onChange(async (value) => {
+        this.plugin.settings.openInNewTab = value;
+        await this.plugin.saveSettings();
+        toggle.setTooltip(value ? "\u5F53\u524D\uFF1A\u65B0\u6807\u7B7E\u9875\u6253\u5F00" : "\u5F53\u524D\uFF1A\u5F53\u524D\u6807\u7B7E\u9875\u6253\u5F00");
+      });
+    }).addExtraButton((button) => {
+      button.setIcon("info").setTooltip("\u65B0\u6807\u7B7E\u9875\uFF1A\u5728\u65B0\u6807\u7B7E\u9875\u6253\u5F00\u7B14\u8BB0\uFF08\u9ED8\u8BA4\uFF09\n\u5F53\u524D\u6807\u7B7E\u9875\uFF1A\u5728\u5F53\u524D\u6807\u7B7E\u9875\u6253\u5F00\u7B14\u8BB0\uFF0C\u53EF\u4EE5\u4F7F\u7528\u56DE\u9000\u952E\u8FD4\u56DE\u539F\u89C6\u56FE").onClick(() => {
+      });
+    });
   }
 };
 
@@ -26233,9 +26349,10 @@ var EditorImageLayout = class {
         if (editorChangeTimeout) {
           clearTimeout(editorChangeTimeout);
         }
+        this.updateExistingGalleries();
         editorChangeTimeout = window.setTimeout(() => {
           this.processActiveEditor();
-        }, 500);
+        }, 300);
       })
     );
     this.plugin.registerEvent(
@@ -26383,6 +26500,7 @@ var EditorImageLayout = class {
   setupMutationObserver() {
     let processTimeout = null;
     const observer = new MutationObserver((mutations) => {
+      var _a;
       if (this.isProcessing) {
         return;
       }
@@ -26403,7 +26521,7 @@ var EditorImageLayout = class {
         }
         if (mutation.type === "childList") {
           mutation.removedNodes.forEach((node) => {
-            var _a, _b, _c;
+            var _a2, _b, _c;
             if (node.nodeType === Node.ELEMENT_NODE) {
               const element = node;
               if (element.tagName === "IMG" && element.classList.contains("diary-processed")) {
@@ -26411,7 +26529,7 @@ var EditorImageLayout = class {
                 const img = element;
                 logger.log("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] MutationObserver \u68C0\u6D4B\u5230\u56FE\u7247\u76F4\u63A5\u5220\u9664", {
                   imgAlt: img.getAttribute("alt"),
-                  imgSrc: (_a = img.src) == null ? void 0 : _a.substring(0, 50),
+                  imgSrc: (_a2 = img.src) == null ? void 0 : _a2.substring(0, 50),
                   parentTag: (_b = img.parentElement) == null ? void 0 : _b.tagName,
                   parentClass: (_c = img.parentElement) == null ? void 0 : _c.className
                 });
@@ -26446,7 +26564,7 @@ var EditorImageLayout = class {
             }
           });
           mutation.addedNodes.forEach((node) => {
-            var _a, _b;
+            var _a2, _b;
             if (node instanceof HTMLElement) {
               if (node.classList.contains("diary-gallery") || node.classList.contains("diary-gallery-bottom") || node.classList.contains("diary-gallery-right-grid")) {
                 return;
@@ -26462,7 +26580,7 @@ var EditorImageLayout = class {
                 if (!img.classList.contains("diary-processed") && !img.closest(".diary-gallery") && this.isValidImage(img)) {
                   hasImages = true;
                   logger.debug("[EditorImageLayout] MutationObserver \u68C0\u6D4B\u5230\u56FE\u7247\u63D2\u5165", {
-                    imgSrc: (_a = img.src) == null ? void 0 : _a.substring(0, 50),
+                    imgSrc: (_a2 = img.src) == null ? void 0 : _a2.substring(0, 50),
                     parentTag: (_b = img.parentElement) == null ? void 0 : _b.tagName
                   });
                 }
@@ -26491,14 +26609,25 @@ var EditorImageLayout = class {
         if (processTimeout) {
           clearTimeout(processTimeout);
         }
+        if (hasRemovedImages) {
+          const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
+          const filePath = (_a = view == null ? void 0 : view.file) == null ? void 0 : _a.path;
+          if (this.shouldProcessFile(filePath)) {
+            logger.log("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] MutationObserver \u7ACB\u5373\u89E6\u53D1\u5220\u9664\u5904\u7406\u6D41\u7A0B", {
+              filePath,
+              timestamp: new Date().toISOString()
+            });
+            this.updateExistingGalleries();
+          }
+        }
         processTimeout = window.setTimeout(() => {
-          var _a;
+          var _a2;
           if (this.isProcessing) {
             logger.debug("[EditorImageLayout] \u6B63\u5728\u5904\u7406\u4E2D\uFF0C\u8DF3\u8FC7");
             return;
           }
           const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
-          const filePath = (_a = view == null ? void 0 : view.file) == null ? void 0 : _a.path;
+          const filePath = (_a2 = view == null ? void 0 : view.file) == null ? void 0 : _a2.path;
           if (!this.shouldProcessFile(filePath)) {
             logger.debug("[EditorImageLayout] MutationObserver: \u6587\u4EF6\u4E0D\u5728\u9ED8\u8BA4\u6587\u4EF6\u5939\u4E2D\u6216\u672A\u542F\u7528\u81EA\u52A8\u5E03\u5C40\uFF0C\u8DF3\u8FC7", {
               filePath
@@ -26506,7 +26635,7 @@ var EditorImageLayout = class {
             return;
           }
           if (hasRemovedImages) {
-            logger.log("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] MutationObserver \u89E6\u53D1\u5220\u9664\u5904\u7406\u6D41\u7A0B", {
+            logger.log("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] MutationObserver \u5EF6\u8FDF\u89E6\u53D1\u5220\u9664\u5904\u7406\u6D41\u7A0B", {
               filePath,
               timestamp: new Date().toISOString()
             });
@@ -26514,7 +26643,7 @@ var EditorImageLayout = class {
           }
           logger.debug("[EditorImageLayout] MutationObserver \u89E6\u53D1\u56FE\u7247\u5904\u7406");
           this.processActiveEditor();
-        }, 500);
+        }, 300);
       }
     });
     observer.observe(document.body, {
@@ -26548,7 +26677,12 @@ var EditorImageLayout = class {
       logger.debug("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] \u6CA1\u6709\u627E\u5230 gallery \u5BB9\u5668\uFF0C\u9000\u51FA");
       return;
     }
-    const existingEmbeds = Array.from(editorEl.querySelectorAll(".internal-embed.image-embed"));
+    let existingEmbeds = [];
+    if (view.getMode() === "source") {
+      existingEmbeds = Array.from(editorEl.querySelectorAll(".markdown-source-view .internal-embed.image-embed, .markdown-preview-view .internal-embed.image-embed"));
+    } else {
+      existingEmbeds = Array.from(editorEl.querySelectorAll(".internal-embed.image-embed"));
+    }
     logger.log("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] \u5F53\u524D\u5B58\u5728\u7684 internal-embed \u6570\u91CF", {
       embedCount: existingEmbeds.length,
       embedSrcs: existingEmbeds.map((embed) => embed.getAttribute("src"))
@@ -27132,36 +27266,31 @@ var JournalViewPlugin = class extends import_obsidian8.Plugin {
     const { workspace } = this.app;
     let leaf = workspace.getLeavesOfType(JOURNAL_VIEW_TYPE)[0];
     if (!leaf) {
-      const newLeaf = workspace.getRightLeaf(false);
+      const newLeaf = workspace.getLeaf(true);
       if (newLeaf) {
-        await newLeaf.setViewState({ type: JOURNAL_VIEW_TYPE });
+        await newLeaf.setViewState({ type: JOURNAL_VIEW_TYPE, active: true });
         leaf = newLeaf;
       }
     }
     if (leaf && leaf.view instanceof JournalView) {
+      let targetPath = null;
       if (this.settings.defaultFolderPath) {
         const defaultFolder = this.app.vault.getAbstractFileByPath(this.settings.defaultFolderPath);
         if (defaultFolder instanceof import_obsidian8.TFolder) {
-          if (leaf.view.targetFolderPath !== defaultFolder.path) {
-            leaf.view.targetFolderPath = defaultFolder.path;
-            await leaf.view.refresh();
-          }
-        } else {
-          if (leaf.view.targetFolderPath !== null) {
-            leaf.view.targetFolderPath = null;
-            await leaf.view.refresh();
-          }
+          targetPath = defaultFolder.path;
         }
-      } else {
-        if (this.settings.folderPath) {
-          const folder = this.app.vault.getAbstractFileByPath(this.settings.folderPath);
-          if (folder instanceof import_obsidian8.TFolder) {
-            if (leaf.view.targetFolderPath !== folder.path) {
-              leaf.view.targetFolderPath = folder.path;
-              await leaf.view.refresh();
-            }
-          }
+      } else if (this.settings.folderPath) {
+        const folder = this.app.vault.getAbstractFileByPath(this.settings.folderPath);
+        if (folder instanceof import_obsidian8.TFolder) {
+          targetPath = folder.path;
         }
+      }
+      const previousPath = leaf.view.targetFolderPath;
+      leaf.view.targetFolderPath = targetPath;
+      const viewState = leaf.getViewState();
+      const isNewView = !viewState.state || !viewState.state.targetFolderPath;
+      if (previousPath !== targetPath || isNewView) {
+        await leaf.view.refresh();
       }
       workspace.revealLeaf(leaf);
     }

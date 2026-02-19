@@ -8,6 +8,7 @@ interface JournalDataContextValue {
 	error: Error | null;
 	refresh: () => Promise<void>;
 	updateSingleEntry: (file: TFile) => Promise<void>;
+	updateEntryAfterRename: (file: TFile, oldPath: string) => Promise<void>;
 }
 
 const JournalDataContext = createContext<JournalDataContextValue | null>(null);
@@ -26,6 +27,7 @@ interface JournalDataProviderProps {
 	error: Error | null;
 	refresh: () => Promise<void>;
 	updateSingleEntry: (file: TFile) => Promise<void>;
+	updateEntryAfterRename: (file: TFile, oldPath: string) => Promise<void>;
 	children: ReactNode;
 }
 
@@ -35,6 +37,7 @@ export const JournalDataProvider: React.FC<JournalDataProviderProps> = ({
 	error,
 	refresh,
 	updateSingleEntry,
+	updateEntryAfterRename,
 	children,
 }) => {
 	return (
@@ -45,6 +48,7 @@ export const JournalDataProvider: React.FC<JournalDataProviderProps> = ({
 				error,
 				refresh,
 				updateSingleEntry,
+				updateEntryAfterRename,
 			}}
 		>
 			{children}

@@ -7,5 +7,7 @@
   "folderDateFields": {
     "垃圾箱日记": "日期"
   },
-  "defaultTemplate": ""
+  "defaultTemplate": "",
+  "imageGap": 4,
+  "openInNewTab": false
 }

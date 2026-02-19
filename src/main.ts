@@ -68,41 +68,44 @@ export class JournalViewPlugin extends Plugin {
 		let leaf = workspace.getLeavesOfType(JOURNAL_VIEW_TYPE)[0];
 
 		if (!leaf) {
-			const newLeaf = workspace.getRightLeaf(false);
+			// 在主内容区域打开（而不是侧边栏）
+			const newLeaf = workspace.getLeaf(true);
 			if (newLeaf) {
-				await newLeaf.setViewState({ type: JOURNAL_VIEW_TYPE });
+				await newLeaf.setViewState({ type: JOURNAL_VIEW_TYPE, active: true });
 				leaf = newLeaf;
 			}
 		}
 
 		if (leaf && leaf.view instanceof JournalView) {
+			// 确保 targetFolderPath 被正确设置
+			let targetPath: string | null = null;
+
 			// 如果设置了默认文件夹，使用默认文件夹
 			if (this.settings.defaultFolderPath) {
 				const defaultFolder = this.app.vault.getAbstractFileByPath(this.settings.defaultFolderPath);
 				if (defaultFolder instanceof TFolder) {
-					// 只有当目标文件夹改变时才刷新
-					if (leaf.view.targetFolderPath !== defaultFolder.path) {
-						leaf.view.targetFolderPath = defaultFolder.path;
-						await leaf.view.refresh();
-					}
-				} else {
-					// 如果默认文件夹不存在，清空路径（扫描整个vault）
-					if (leaf.view.targetFolderPath !== null) {
-						leaf.view.targetFolderPath = null;
-						await leaf.view.refresh();
-					}
+					targetPath = defaultFolder.path;
 				}
-			} else {
+			} else if (this.settings.folderPath) {
 				// 如果没有设置默认文件夹，使用旧的 folderPath 设置（向后兼容）
-				if (this.settings.folderPath) {
-					const folder = this.app.vault.getAbstractFileByPath(this.settings.folderPath);
-					if (folder instanceof TFolder) {
-						if (leaf.view.targetFolderPath !== folder.path) {
-							leaf.view.targetFolderPath = folder.path;
-							await leaf.view.refresh();
-						}
-					}
+				const folder = this.app.vault.getAbstractFileByPath(this.settings.folderPath);
+				if (folder instanceof TFolder) {
+					targetPath = folder.path;
 				}
+			}
+
+			// 强制设置 targetFolderPath（即使相同也要设置，确保状态正确）
+			// 这样可以确保即使视图被替换后重新打开，也能正确恢复
+			const previousPath = leaf.view.targetFolderPath;
+			leaf.view.targetFolderPath = targetPath;
+			
+			// 如果路径改变了，或者视图刚被打开（需要初始化），则刷新
+			// 通过检查 leaf 的 viewState 来判断视图是否刚被创建
+			const viewState = leaf.getViewState();
+			const isNewView = !viewState.state || !viewState.state.targetFolderPath;
+			
+			if (previousPath !== targetPath || isNewView) {
+				await leaf.view.refresh();
 			}
 
 			workspace.revealLeaf(leaf);

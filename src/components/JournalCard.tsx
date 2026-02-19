@@ -10,7 +10,7 @@ interface JournalCardProps {
 }
 
 export const JournalCard: React.FC<JournalCardProps> = memo(({ entry }) => {
-	const { app } = useJournalView();
+	const { app, plugin } = useJournalView();
 	const cardRef = useRef<HTMLDivElement>(null);
 	const scrollContainerRef = useRef<HTMLElement | null>(null);
 	const lastScrollTopRef = useRef<number>(0);
@@ -24,7 +24,7 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry }) => {
 		}
 	}, []);
 
-	const handleCardClick = (e: React.MouseEvent) => {
+	const handleCardClick = async (e: React.MouseEvent) => {
 		// 检查点击目标是否是卡片本身或其子元素（排除图片点击和菜单按钮）
 		const target = e.target as HTMLElement;
 		
@@ -52,7 +52,38 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry }) => {
 
 		// 打开文件
 		try {
-			app.workspace.openLinkText(entry.file.path, '', true);
+			// 获取打开方式设置
+			let openInNewTab = true; // 默认在新标签页打开
+			if (plugin) {
+				const pluginSettings = (plugin as any).settings;
+				if (pluginSettings?.openInNewTab !== undefined) {
+					openInNewTab = pluginSettings.openInNewTab;
+				}
+			}
+
+			if (openInNewTab) {
+				// 在新标签页打开
+				app.workspace.openLinkText(entry.file.path, '', true);
+			} else {
+				// 在当前标签页打开
+				// 获取当前活动的 leaf，如果它是手记视图，直接使用它；否则获取一个可用的 leaf
+				const activeLeaf = app.workspace.activeLeaf;
+				let targetLeaf = activeLeaf;
+				
+				// 如果当前活动的 leaf 是手记视图，直接使用它
+				// 否则获取一个可用的 leaf（getLeaf(false) 会返回可导航的 leaf 或创建新的）
+				if (activeLeaf && activeLeaf.getViewState().type === 'journal-view-react') {
+					// 当前是手记视图，直接使用它来打开文件（会替换视图）
+					targetLeaf = activeLeaf;
+				} else {
+					// 当前不是手记视图，获取一个可用的 leaf
+					targetLeaf = app.workspace.getLeaf(false);
+				}
+				
+				if (targetLeaf) {
+					await targetLeaf.openFile(entry.file, { active: true });
+				}
+			}
 		} catch (error) {
 			console.error('Failed to open file:', entry.file.path, error);
 		}

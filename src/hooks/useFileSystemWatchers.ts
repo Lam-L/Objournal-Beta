@@ -5,7 +5,7 @@ import { useJournalData } from '../context/JournalDataContext';
 
 export const useFileSystemWatchers = () => {
     const { app, targetFolderPath } = useJournalView();
-    const { refresh, updateSingleEntry } = useJournalData();
+    const { refresh, updateSingleEntry, updateEntryAfterRename } = useJournalData();
     const refreshTimerRef = useRef<number | null>(null);
     const eventRefsRef = useRef<EventRef[]>([]);
 
@@ -61,7 +61,13 @@ export const useFileSystemWatchers = () => {
             const newPathInTarget = shouldRefreshForFile(file);
 
             if (oldPathInTarget || newPathInTarget) {
-                debouncedRefresh();
+                // 如果新路径在目标文件夹中，使用增量更新
+                if (newPathInTarget && file instanceof TFile) {
+                    updateEntryAfterRename(file, oldPath);
+                } else {
+                    // 如果文件移出目标文件夹，使用全量刷新
+                    debouncedRefresh();
+                }
             }
         };
 
@@ -105,5 +111,5 @@ export const useFileSystemWatchers = () => {
             app.metadataCache.offref(metadataEventRef);
             eventRefsRef.current = [];
         };
-    }, [app, targetFolderPath, shouldRefreshForFile, debouncedRefresh]);
+    }, [app, targetFolderPath, shouldRefreshForFile, debouncedRefresh, updateSingleEntry, updateEntryAfterRename]);
 };

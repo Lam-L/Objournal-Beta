@@ -20,7 +20,16 @@ export const useJournalScroll = (entries: JournalEntry[]) => {
 	const listItems = useMemo<VirtualListItem[]>(() => {
 		const items: VirtualListItem[] = [];
 		const grouped = groupByMonth(entries);
-		const sortedMonths = Object.keys(grouped).sort((a, b) => {
+		
+		// 排序分组：今天 > 昨天 > 月份（按时间倒序）
+		const sortedGroups = Object.keys(grouped).sort((a, b) => {
+			// 特殊处理：今天和昨天始终在最前面
+			if (a === '今天') return -1;
+			if (b === '今天') return 1;
+			if (a === '昨天') return -1;
+			if (b === '昨天') return 1;
+			
+			// 如果都是月份，按时间倒序
 			const parseMonthKey = (monthKey: string): Date => {
 				const match = monthKey.match(/(\d{4})年(\d{1,2})月/);
 				if (match) {
@@ -35,14 +44,14 @@ export const useJournalScroll = (entries: JournalEntry[]) => {
 		});
 
 		let index = 0;
-		for (const monthKey of sortedMonths) {
+		for (const groupKey of sortedGroups) {
 			items.push({
 				type: 'month-header',
-				monthKey,
+				monthKey: groupKey,
 				index: index++,
 			});
 
-			for (const entry of grouped[monthKey]) {
+			for (const entry of grouped[groupKey]) {
 				items.push({
 					type: 'card',
 					entry,
@@ -92,7 +101,14 @@ export const useJournalScroll = (entries: JournalEntry[]) => {
 
 	const virtualizer = useVirtualizer({
 		count: listItems.length,
-		getScrollElement: () => parentRef.current,
+		getScrollElement: () => {
+			// 查找父滚动容器（journal-view-container）
+			if (parentRef.current) {
+				const scrollContainer = parentRef.current.closest('.journal-view-container') as HTMLElement;
+				return scrollContainer || parentRef.current;
+			}
+			return null;
+		},
 		estimateSize,
 		overscan: 5,
 		// 启用动态高度测量

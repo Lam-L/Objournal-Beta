@@ -313,20 +313,53 @@ export function formatDate(date: Date): string {
 }
 
 /**
- * 按月份分组条目
+ * 判断两个日期是否是同一天
+ */
+function isSameDay(date1: Date, date2: Date): boolean {
+	return (
+		date1.getFullYear() === date2.getFullYear() &&
+		date1.getMonth() === date2.getMonth() &&
+		date1.getDate() === date2.getDate()
+	);
+}
+
+/**
+ * 按月份分组条目，但将今天和昨天单独分组
  */
 export function groupByMonth(
 	entries: JournalEntry[]
 ): Record<string, JournalEntry[]> {
 	const grouped: Record<string, JournalEntry[]> = {};
+	
+	// 获取今天和昨天的日期（只比较年月日，忽略时分秒）
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+	
+	const yesterday = new Date(today);
+	yesterday.setDate(yesterday.getDate() - 1);
 
 	for (const entry of entries) {
-		const monthKey = `${entry.date.getFullYear()}年${entry.date.getMonth() + 1
-			}月`;
-		if (!grouped[monthKey]) {
-			grouped[monthKey] = [];
+		// 将条目的日期也设置为 0 时 0 分 0 秒，只比较年月日
+		const entryDate = new Date(entry.date);
+		entryDate.setHours(0, 0, 0, 0);
+		
+		let groupKey: string;
+		
+		// 判断是否是今天
+		if (isSameDay(entryDate, today)) {
+			groupKey = '今天';
+		} else if (isSameDay(entryDate, yesterday)) {
+			// 判断是否是昨天
+			groupKey = '昨天';
+		} else {
+			// 其他日期按月份分组
+			groupKey = `${entryDate.getFullYear()}年${entryDate.getMonth() + 1}月`;
 		}
-		grouped[monthKey].push(entry);
+		
+		if (!grouped[groupKey]) {
+			grouped[groupKey] = [];
+		}
+		grouped[groupKey].push(entry);
 	}
 
 	return grouped;

@@ -442,5 +442,46 @@ export class JournalSettingTab extends PluginSettingTab {
 						}
 					})
 			);
+
+		new Setting(containerEl)
+			.setName('图片间距')
+			.setDesc('图片容器之间的间距（像素）')
+			.addSlider((slider) =>
+				slider
+					.setLimits(0, 30, 1)
+					.setValue(this.plugin.settings.imageGap)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						this.plugin.settings.imageGap = value;
+						await this.plugin.saveSettings();
+						// 更新 CSS 变量
+						document.documentElement.style.setProperty('--journal-image-gap', `${value}px`);
+						// 刷新视图
+						if (this.plugin.view) {
+							this.plugin.view.refresh();
+						}
+					})
+			);
+
+		new Setting(containerEl)
+			.setName('打开笔记方式')
+			.setDesc('选择在手记视图中点击笔记卡片的打开方式。')
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.openInNewTab)
+					.setTooltip(this.plugin.settings.openInNewTab ? '当前：新标签页打开' : '当前：当前标签页打开')
+					.onChange(async (value) => {
+						this.plugin.settings.openInNewTab = value;
+						await this.plugin.saveSettings();
+						// 更新 tooltip
+						toggle.setTooltip(value ? '当前：新标签页打开' : '当前：当前标签页打开');
+					});
+			})
+			.addExtraButton((button) => {
+				button
+					.setIcon('info')
+					.setTooltip('新标签页：在新标签页打开笔记（默认）\n当前标签页：在当前标签页打开笔记，可以使用回退键返回原视图')
+					.onClick(() => {});
+			});
 	}
 }
