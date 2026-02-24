@@ -27,7 +27,7 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, index, className, showMore
 		// 检查元素是否已经在视口中
 		const rect = containerRef.current.getBoundingClientRect();
 		const isInViewport = rect.top < window.innerHeight + 100 && rect.bottom > -100;
-		
+
 		if (isInViewport) {
 			setIsLoaded(true);
 			return;
@@ -60,6 +60,7 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, index, className, showMore
 		console.log('Open image viewer', image);
 	};
 
+
 	const handleImageLoad = () => {
 		setIsLoaded(true);
 	};
@@ -67,7 +68,7 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, index, className, showMore
 	const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
 		const img = e.currentTarget;
 		console.error('Failed to load image:', image.url, 'Image element:', img);
-		
+
 		// 尝试使用备用方法加载图片
 		// 某些 Obsidian 资源路径可能需要特殊处理
 		if (image.url && !image.url.startsWith('http')) {
@@ -75,7 +76,7 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, index, className, showMore
 			// 但这里我们只能记录错误，因为 React 组件无法直接访问 app.vault
 			console.warn('Image load failed, this may be a non-standard image format or path issue');
 		}
-		
+
 		setIsLoaded(true); // 即使加载失败也设置为 true，避免一直显示占位符
 	};
 

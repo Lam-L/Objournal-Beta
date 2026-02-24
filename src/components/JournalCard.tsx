@@ -27,7 +27,7 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry }) => {
 	const handleCardClick = async (e: React.MouseEvent) => {
 		// 检查点击目标是否是卡片本身或其子元素（排除图片点击和菜单按钮）
 		const target = e.target as HTMLElement;
-		
+
 		// 如果点击的是图片容器，不处理（图片有自己的点击事件）
 		if (target.closest('.journal-image-container')) {
 			return;
@@ -69,7 +69,7 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry }) => {
 				// 获取当前活动的 leaf，如果它是手记视图，直接使用它；否则获取一个可用的 leaf
 				const activeLeaf = app.workspace.activeLeaf;
 				let targetLeaf = activeLeaf;
-				
+
 				// 如果当前活动的 leaf 是手记视图，直接使用它
 				// 否则获取一个可用的 leaf（getLeaf(false) 会返回可导航的 leaf 或创建新的）
 				if (activeLeaf && activeLeaf.getViewState().type === 'journal-view-react') {
@@ -79,7 +79,7 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry }) => {
 					// 当前不是手记视图，获取一个可用的 leaf
 					targetLeaf = app.workspace.getLeaf(false);
 				}
-				
+
 				if (targetLeaf) {
 					await targetLeaf.openFile(entry.file, { active: true });
 				}

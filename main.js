@@ -26356,7 +26356,7 @@ var logger = new Logger();
 
 // src/EditorImageLayout.ts
 var EditorImageLayout = class {
-  // 处理冷却时间（毫秒）- 小屏幕设备增加冷却时间以提高稳定性
+  // 当前监听的容器
   constructor(app, plugin) {
     this.isProcessing = false;
     // 防止重复处理
@@ -26365,6 +26365,18 @@ var EditorImageLayout = class {
     this.lastProcessedTime = 0;
     // 上次处理时间
     this.PROCESS_COOLDOWN = 1500;
+    // 处理冷却时间（毫秒）- 小屏幕设备增加冷却时间以提高稳定性
+    this.lastCheckedFilePath = null;
+    // 上次检查的文件路径
+    this.lastCheckResult = false;
+    // 上次检查的结果
+    this.lastCheckTime = 0;
+    // 上次检查的时间
+    this.CHECK_CACHE_DURATION = 100;
+    // 检查结果缓存时间（毫秒）
+    this.mutationObserver = null;
+    // MutationObserver 实例
+    this.observedContainer = null;
     this.app = app;
     this.plugin = plugin;
     logger.log("[EditorImageLayout] \u521D\u59CB\u5316");
@@ -26393,6 +26405,15 @@ var EditorImageLayout = class {
     let editorChangeTimeout = null;
     this.plugin.registerEvent(
       this.app.workspace.on("editor-change", () => {
+        var _a;
+        const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
+        const filePath = (_a = view == null ? void 0 : view.file) == null ? void 0 : _a.path;
+        if (!this.shouldProcessFile(filePath)) {
+          logger.debug("[EditorImageLayout] editor-change: \u6587\u4EF6\u4E0D\u5728\u9ED8\u8BA4\u6587\u4EF6\u5939\u4E2D\u6216\u672A\u542F\u7528\u81EA\u52A8\u5E03\u5C40\uFF0C\u8DF3\u8FC7", {
+            filePath
+          });
+          return;
+        }
         if (editorChangeTimeout) {
           clearTimeout(editorChangeTimeout);
         }
@@ -26405,6 +26426,15 @@ var EditorImageLayout = class {
     this.plugin.registerEvent(
       this.app.workspace.on("file-open", () => {
         setTimeout(() => {
+          var _a;
+          const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
+          const filePath = (_a = view == null ? void 0 : view.file) == null ? void 0 : _a.path;
+          if (!this.shouldProcessFile(filePath)) {
+            logger.debug("[EditorImageLayout] file-open: \u6587\u4EF6\u4E0D\u5728\u9ED8\u8BA4\u6587\u4EF6\u5939\u4E2D\u6216\u672A\u542F\u7528\u81EA\u52A8\u5E03\u5C40\uFF0C\u8DF3\u8FC7", {
+              filePath
+            });
+            return;
+          }
           this.processActiveEditor();
         }, 500);
       })
@@ -26412,6 +26442,15 @@ var EditorImageLayout = class {
     this.plugin.registerEvent(
       this.app.workspace.on("layout-change", () => {
         setTimeout(() => {
+          var _a;
+          const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
+          const filePath = (_a = view == null ? void 0 : view.file) == null ? void 0 : _a.path;
+          if (!this.shouldProcessFile(filePath)) {
+            logger.debug("[EditorImageLayout] layout-change: \u6587\u4EF6\u4E0D\u5728\u9ED8\u8BA4\u6587\u4EF6\u5939\u4E2D\u6216\u672A\u542F\u7528\u81EA\u52A8\u5E03\u5C40\uFF0C\u8DF3\u8FC7", {
+              filePath
+            });
+            return;
+          }
           this.processActiveEditor();
         }, 300);
       })
@@ -26468,32 +26507,62 @@ var EditorImageLayout = class {
   /**
    * 检查是否应该处理该文件
    * 新增功能：只在手记视图文件夹中启用自动布局
+   * 优化：添加缓存机制，减少重复检查和日志输出
    */
   shouldProcessFile(filePath) {
+    const now = Date.now();
+    if (filePath === this.lastCheckedFilePath && now - this.lastCheckTime < this.CHECK_CACHE_DURATION) {
+      return this.lastCheckResult;
+    }
     const settings = this.plugin.settings;
     if (!settings || !settings.enableAutoLayout) {
+      this.updateCache(filePath, false, now);
       return false;
     }
     if (!filePath) {
+      this.updateCache(filePath, false, now);
       return false;
     }
     const defaultFolderPath = settings.defaultFolderPath;
     if (!defaultFolderPath) {
+      this.updateCache(filePath, false, now);
       return false;
     }
     const isInFolder = filePath === defaultFolderPath || filePath.startsWith(defaultFolderPath + "/");
-    logger.debug("[EditorImageLayout] \u68C0\u67E5\u6587\u4EF6\u8DEF\u5F84", {
-      filePath,
-      defaultFolderPath,
-      isInFolder
-    });
+    if (filePath !== this.lastCheckedFilePath) {
+      logger.debug("[EditorImageLayout] \u68C0\u67E5\u6587\u4EF6\u8DEF\u5F84", {
+        filePath,
+        defaultFolderPath,
+        isInFolder
+      });
+    }
+    this.updateCache(filePath, isInFolder, now);
     return isInFolder;
+  }
+  /**
+   * 更新检查缓存
+   */
+  updateCache(filePath, result, time) {
+    this.lastCheckedFilePath = filePath || null;
+    this.lastCheckResult = result;
+    this.lastCheckTime = time;
   }
   /**
    * 处理活动编辑器中的图片
    */
   processActiveEditor() {
     var _a;
+    const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
+    if (!view) {
+      return;
+    }
+    const filePath = (_a = view.file) == null ? void 0 : _a.path;
+    if (!this.shouldProcessFile(filePath)) {
+      logger.debug("[EditorImageLayout] \u6587\u4EF6\u4E0D\u5728\u9ED8\u8BA4\u6587\u4EF6\u5939\u4E2D\u6216\u672A\u542F\u7528\u81EA\u52A8\u5E03\u5C40\uFF0C\u8DF3\u8FC7", {
+        filePath
+      });
+      return;
+    }
     const now = Date.now();
     if (now - this.lastProcessedTime < this.PROCESS_COOLDOWN) {
       logger.debug("[EditorImageLayout] \u5728\u51B7\u5374\u65F6\u95F4\u5185\uFF0C\u8DF3\u8FC7");
@@ -26501,16 +26570,6 @@ var EditorImageLayout = class {
     }
     if (this.isProcessing) {
       logger.debug("[EditorImageLayout] \u6B63\u5728\u5904\u7406\u4E2D\uFF0C\u8DF3\u8FC7 processActiveEditor");
-      return;
-    }
-    const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
-    if (!view)
-      return;
-    const filePath = (_a = view.file) == null ? void 0 : _a.path;
-    if (!this.shouldProcessFile(filePath)) {
-      logger.debug("[EditorImageLayout] \u6587\u4EF6\u4E0D\u5728\u9ED8\u8BA4\u6587\u4EF6\u5939\u4E2D\u6216\u672A\u542F\u7528\u81EA\u52A8\u5E03\u5C40\uFF0C\u8DF3\u8FC7", {
-        filePath
-      });
       return;
     }
     const editorEl = view.contentEl;
@@ -26540,14 +26599,25 @@ var EditorImageLayout = class {
     } else {
       this.processImagesInElement(editorEl);
     }
+    this.ensureAllImagesHaveDeleteButton(editorEl);
   }
   /**
    * 设置 MutationObserver 监听 DOM 变化
+   * 优化：只监听编辑器容器，而不是整个 document.body
    */
   setupMutationObserver() {
+    if (this.mutationObserver) {
+      this.mutationObserver.disconnect();
+      this.mutationObserver = null;
+    }
     let processTimeout = null;
     const observer = new MutationObserver((mutations) => {
       var _a;
+      const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
+      const filePath = (_a = view == null ? void 0 : view.file) == null ? void 0 : _a.path;
+      if (!this.shouldProcessFile(filePath)) {
+        return;
+      }
       if (this.isProcessing) {
         return;
       }
@@ -26657,28 +26727,15 @@ var EditorImageLayout = class {
           clearTimeout(processTimeout);
         }
         if (hasRemovedImages) {
-          const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
-          const filePath = (_a = view == null ? void 0 : view.file) == null ? void 0 : _a.path;
-          if (this.shouldProcessFile(filePath)) {
-            logger.log("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] MutationObserver \u7ACB\u5373\u89E6\u53D1\u5220\u9664\u5904\u7406\u6D41\u7A0B", {
-              filePath,
-              timestamp: new Date().toISOString()
-            });
-            this.updateExistingGalleries();
-          }
+          logger.log("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] MutationObserver \u7ACB\u5373\u89E6\u53D1\u5220\u9664\u5904\u7406\u6D41\u7A0B", {
+            filePath,
+            timestamp: new Date().toISOString()
+          });
+          this.updateExistingGalleries();
         }
         processTimeout = window.setTimeout(() => {
-          var _a2;
           if (this.isProcessing) {
             logger.debug("[EditorImageLayout] \u6B63\u5728\u5904\u7406\u4E2D\uFF0C\u8DF3\u8FC7");
-            return;
-          }
-          const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
-          const filePath = (_a2 = view == null ? void 0 : view.file) == null ? void 0 : _a2.path;
-          if (!this.shouldProcessFile(filePath)) {
-            logger.debug("[EditorImageLayout] MutationObserver: \u6587\u4EF6\u4E0D\u5728\u9ED8\u8BA4\u6587\u4EF6\u5939\u4E2D\u6216\u672A\u542F\u7528\u81EA\u52A8\u5E03\u5C40\uFF0C\u8DF3\u8FC7", {
-              filePath
-            });
             return;
           }
           if (hasRemovedImages) {
@@ -26693,11 +26750,73 @@ var EditorImageLayout = class {
         }, 300);
       }
     });
-    observer.observe(document.body, {
+    this.mutationObserver = observer;
+    this.updateObserverTarget();
+    this.plugin.registerEvent(
+      this.app.workspace.on("file-open", () => {
+        setTimeout(() => {
+          this.updateObserverTarget();
+        }, 100);
+      })
+    );
+    this.plugin.registerEvent(
+      this.app.workspace.on("layout-change", () => {
+        setTimeout(() => {
+          this.updateObserverTarget();
+        }, 100);
+      })
+    );
+    logger.log("[EditorImageLayout] MutationObserver \u5DF2\u8BBE\u7F6E\uFF0C\u5C06\u52A8\u6001\u76D1\u542C\u7F16\u8F91\u5668\u5BB9\u5668");
+  }
+  /**
+   * 更新 MutationObserver 的监听目标
+   * 只监听当前活动的编辑器容器，而不是整个文档
+   */
+  updateObserverTarget() {
+    var _a;
+    if (!this.mutationObserver) {
+      return;
+    }
+    const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
+    if (!view) {
+      if (this.observedContainer) {
+        this.mutationObserver.disconnect();
+        this.observedContainer = null;
+        logger.debug("[EditorImageLayout] \u6CA1\u6709\u6D3B\u52A8\u7684\u7F16\u8F91\u5668\uFF0C\u65AD\u5F00 MutationObserver");
+      }
+      return;
+    }
+    const editorEl = view.contentEl;
+    if (!editorEl) {
+      if (this.observedContainer) {
+        this.mutationObserver.disconnect();
+        this.observedContainer = null;
+      }
+      return;
+    }
+    if (this.observedContainer === editorEl) {
+      return;
+    }
+    if (this.observedContainer) {
+      this.mutationObserver.disconnect();
+    }
+    this.mutationObserver.observe(editorEl, {
       childList: true,
       subtree: true
     });
-    logger.log("[EditorImageLayout] MutationObserver \u5DF2\u8BBE\u7F6E\uFF0C\u76D1\u542C\u6574\u4E2A\u6587\u6863");
+    this.observedContainer = editorEl;
+    const filePath = (_a = view.file) == null ? void 0 : _a.path;
+    if (this.shouldProcessFile(filePath)) {
+      logger.debug("[EditorImageLayout] MutationObserver \u5F00\u59CB\u76D1\u542C\u7F16\u8F91\u5668\u5BB9\u5668", {
+        filePath,
+        containerTag: editorEl.tagName,
+        containerClass: editorEl.className
+      });
+    } else {
+      logger.debug("[EditorImageLayout] MutationObserver \u76D1\u542C\u7F16\u8F91\u5668\u5BB9\u5668\uFF08\u6587\u4EF6\u4E0D\u5728\u76EE\u6807\u6587\u4EF6\u5939\uFF09", {
+        filePath
+      });
+    }
   }
   /**
    * 更新现有的 gallery 容器
@@ -26705,12 +26824,20 @@ var EditorImageLayout = class {
    * 关键修复：通过匹配 internal-embed 的 src 属性来找到对应的图片
    */
   updateExistingGalleries() {
-    logger.log("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] ========== \u5F00\u59CB\u66F4\u65B0\u73B0\u6709 Gallery ==========");
+    var _a;
     const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
     if (!view) {
       logger.debug("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] \u65E0\u6CD5\u83B7\u53D6\u6D3B\u52A8\u89C6\u56FE\uFF0C\u9000\u51FA");
       return;
     }
+    const filePath = (_a = view.file) == null ? void 0 : _a.path;
+    if (!this.shouldProcessFile(filePath)) {
+      logger.debug("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] \u6587\u4EF6\u4E0D\u5728\u9ED8\u8BA4\u6587\u4EF6\u5939\u4E2D\u6216\u672A\u542F\u7528\u81EA\u52A8\u5E03\u5C40\uFF0C\u8DF3\u8FC7", {
+        filePath
+      });
+      return;
+    }
+    logger.log("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] ========== \u5F00\u59CB\u66F4\u65B0\u73B0\u6709 Gallery ==========");
     const editorEl = view.contentEl;
     if (!editorEl) {
       logger.debug("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] \u65E0\u6CD5\u83B7\u53D6\u7F16\u8F91\u5668\u5BB9\u5668\uFF0C\u9000\u51FA");
@@ -26747,11 +26874,11 @@ var EditorImageLayout = class {
       const validImages = [];
       const removedImages = [];
       allImages.forEach((img, imgIndex) => {
-        var _a;
+        var _a2;
         const imgAlt = img.getAttribute("alt") || "";
         logger.debug("[EditorImageLayout] [\u5220\u9664\u6D41\u7A0B] \u68C0\u67E5\u56FE\u7247 #" + (imgIndex + 1), {
           imgAlt,
-          imgSrc: (_a = img.src) == null ? void 0 : _a.substring(0, 50)
+          imgSrc: (_a2 = img.src) == null ? void 0 : _a2.substring(0, 50)
         });
         const matchingEmbed = existingEmbeds.find((embed) => {
           const embedSrc = embed.getAttribute("src") || "";
@@ -27011,6 +27138,10 @@ var EditorImageLayout = class {
         this.wrapImageGroup(group);
       }
     });
+    const allProcessedImages = Array.from(element.querySelectorAll("img.diary-processed"));
+    allProcessedImages.forEach((img) => {
+      this.addDeleteButtonToImage(img);
+    });
     this.lastProcessedTime = Date.now();
     logger.debug("[EditorImageLayout] \u56FE\u7247\u5904\u7406\u5B8C\u6210");
   }
@@ -27243,6 +27374,9 @@ var EditorImageLayout = class {
         this.moveImageToContainer(img, container);
       });
     }
+    images.forEach((img) => {
+      this.addDeleteButtonToImage(img);
+    });
   }
   /**
    * 移动图片到容器，保留所有原始属性
@@ -27258,6 +27392,247 @@ var EditorImageLayout = class {
     Object.keys(originalAttributes).forEach((key) => {
       if (originalAttributes[key] !== null) {
         img.setAttribute(key, originalAttributes[key]);
+      }
+    });
+  }
+  /**
+   * 为图片添加删除按钮
+   */
+  addDeleteButtonToImage(img) {
+    const existingWrapper = img.parentElement;
+    if (existingWrapper && existingWrapper.classList.contains("diary-image-wrapper")) {
+      const existingButton = existingWrapper.querySelector(".diary-image-delete-button");
+      if (existingButton) {
+        logger.debug("[EditorImageLayout] \u56FE\u7247\u5DF2\u6709\u5220\u9664\u6309\u94AE\uFF0C\u8DF3\u8FC7", {
+          imgAlt: img.getAttribute("alt")
+        });
+        return;
+      }
+    }
+    let parentContainer = img.parentElement;
+    if (!parentContainer) {
+      logger.warn("[EditorImageLayout] \u65E0\u6CD5\u83B7\u53D6\u56FE\u7247\u7236\u5BB9\u5668");
+      return;
+    }
+    const isInGallery = parentContainer.classList.contains("diary-gallery") || parentContainer.closest(".diary-gallery");
+    let targetContainer;
+    if (isInGallery) {
+      let imgWrapper = img.parentElement;
+      if (!imgWrapper || !imgWrapper.classList.contains("diary-image-wrapper")) {
+        logger.debug("[EditorImageLayout] \u4E3A\u56FE\u7247\u521B\u5EFA\u5305\u88C5\u5668", {
+          imgAlt: img.getAttribute("alt"),
+          parentTag: parentContainer.tagName,
+          parentClass: parentContainer.className,
+          imgIndex: Array.from(parentContainer.children).indexOf(img)
+        });
+        imgWrapper = document.createElement("div");
+        imgWrapper.addClass("diary-image-wrapper");
+        imgWrapper.style.position = "relative";
+        imgWrapper.style.width = "100%";
+        imgWrapper.style.height = "100%";
+        imgWrapper.style.display = "block";
+        parentContainer.insertBefore(imgWrapper, img);
+        imgWrapper.appendChild(img);
+        logger.debug("[EditorImageLayout] \u5305\u88C5\u5668\u521B\u5EFA\u5B8C\u6210", {
+          imgAlt: img.getAttribute("alt"),
+          wrapperCreated: !!imgWrapper.parentElement,
+          imgInWrapper: img.parentElement === imgWrapper
+        });
+      } else {
+        logger.debug("[EditorImageLayout] \u56FE\u7247\u5DF2\u6709\u5305\u88C5\u5668", {
+          imgAlt: img.getAttribute("alt"),
+          wrapperClass: imgWrapper.className
+        });
+      }
+      targetContainer = imgWrapper;
+    } else {
+      targetContainer = parentContainer;
+      if (!targetContainer.classList.contains("diary-image-wrapper")) {
+        targetContainer.addClass("diary-image-wrapper");
+        if (!targetContainer.style.position) {
+          targetContainer.style.position = "relative";
+        }
+      }
+    }
+    if (targetContainer.querySelector(".diary-image-delete-button")) {
+      logger.debug("[EditorImageLayout] \u5BB9\u5668\u5DF2\u6709\u5220\u9664\u6309\u94AE\uFF0C\u8DF3\u8FC7");
+      return;
+    }
+    logger.debug("[EditorImageLayout] \u4E3A\u56FE\u7247\u6DFB\u52A0\u5220\u9664\u6309\u94AE", {
+      imgAlt: img.getAttribute("alt"),
+      parentTag: targetContainer.tagName,
+      parentClass: targetContainer.className
+    });
+    const deleteButton = document.createElement("button");
+    deleteButton.addClass("diary-image-delete-button");
+    deleteButton.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        `;
+    deleteButton.title = "\u5220\u9664\u56FE\u7247";
+    deleteButton.addEventListener("click", async (e) => {
+      var _a;
+      e.stopPropagation();
+      e.preventDefault();
+      const confirmed = confirm("\u786E\u5B9A\u8981\u5220\u9664\u8FD9\u5F20\u56FE\u7247\u5417\uFF1F");
+      if (!confirmed) {
+        return;
+      }
+      try {
+        const view = this.app.workspace.getActiveViewOfType(import_obsidian7.MarkdownView);
+        if (!view) {
+          alert("\u65E0\u6CD5\u83B7\u53D6\u7F16\u8F91\u5668\u89C6\u56FE");
+          return;
+        }
+        const imgSrc = img.getAttribute("src") || "";
+        const imgAlt = img.getAttribute("alt") || "";
+        const editor = view.editor;
+        if (!editor) {
+          alert("\u65E0\u6CD5\u83B7\u53D6\u7F16\u8F91\u5668\u5B9E\u4F8B");
+          return;
+        }
+        const content = editor.getValue();
+        let newContent = content;
+        let foundMatch = false;
+        const wikiLinkPattern = /!\[\[([^\]]+)\]\]/g;
+        let match;
+        while ((match = wikiLinkPattern.exec(content)) !== null) {
+          const imageRef = match[1];
+          const [imageName] = imageRef.split("|");
+          if (imgAlt && (imageName.trim() === imgAlt || imageName.trim() === ((_a = imgAlt.split("/").pop()) == null ? void 0 : _a.replace(/\.[^.]+$/, "")))) {
+            const fullMatch = match[0];
+            const matchIndex = match.index;
+            let startIndex = matchIndex;
+            let endIndex = matchIndex + fullMatch.length;
+            while (startIndex > 0 && /[\s\n]/.test(content[startIndex - 1])) {
+              startIndex--;
+            }
+            while (endIndex < content.length && /[\s\n]/.test(content[endIndex])) {
+              endIndex++;
+            }
+            newContent = content.slice(0, startIndex) + content.slice(endIndex);
+            foundMatch = true;
+            break;
+          }
+        }
+        if (!foundMatch) {
+          const markdownImagePattern = /!\[([^\]]*)\]\(([^)]+)\)/g;
+          while ((match = markdownImagePattern.exec(content)) !== null) {
+            const imagePath = match[2];
+            const altText = match[1];
+            if (imgAlt && (altText === imgAlt || imagePath.includes(imgAlt)) || imgSrc && imagePath.includes(imgSrc.split("/").pop() || "")) {
+              const fullMatch = match[0];
+              const matchIndex = match.index;
+              let startIndex = matchIndex;
+              let endIndex = matchIndex + fullMatch.length;
+              while (startIndex > 0 && /[\s\n]/.test(content[startIndex - 1])) {
+                startIndex--;
+              }
+              while (endIndex < content.length && /[\s\n]/.test(content[endIndex])) {
+                endIndex++;
+              }
+              newContent = content.slice(0, startIndex) + content.slice(endIndex);
+              foundMatch = true;
+              break;
+            }
+          }
+        }
+        if (foundMatch) {
+          editor.setValue(newContent);
+          logger.log("[EditorImageLayout] \u56FE\u7247\u5DF2\u4ECE\u7F16\u8F91\u5668\u4E2D\u5220\u9664");
+        } else {
+          logger.warn("[EditorImageLayout] \u672A\u627E\u5230\u5339\u914D\u7684\u56FE\u7247\u5F15\u7528");
+          alert("\u672A\u627E\u5230\u5339\u914D\u7684\u56FE\u7247\u5F15\u7528\uFF0C\u53EF\u80FD\u5DF2\u7ECF\u88AB\u5220\u9664\u3002");
+        }
+      } catch (error) {
+        logger.error("[EditorImageLayout] \u5220\u9664\u56FE\u7247\u5931\u8D25:", error);
+        alert("\u5220\u9664\u56FE\u7247\u5931\u8D25\uFF0C\u8BF7\u91CD\u8BD5\u3002");
+      }
+    });
+    targetContainer.appendChild(deleteButton);
+    this.setupMobileTouchSupport(targetContainer, deleteButton);
+    logger.log("[EditorImageLayout] \u2705 \u5220\u9664\u6309\u94AE\u5DF2\u6DFB\u52A0\u5230\u56FE\u7247", {
+      imgAlt: img.getAttribute("alt"),
+      containerTag: targetContainer.tagName,
+      containerClass: targetContainer.className,
+      buttonExists: !!targetContainer.querySelector(".diary-image-delete-button"),
+      buttonCount: targetContainer.querySelectorAll(".diary-image-delete-button").length
+    });
+  }
+  /**
+   * 设置移动端触摸支持
+   * 在移动设备上，通过触摸图片来显示/隐藏删除按钮
+   */
+  setupMobileTouchSupport(wrapper, deleteButton) {
+    const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (!isTouchDevice) {
+      return;
+    }
+    let touchTimeout = null;
+    let isButtonVisible = false;
+    wrapper.addEventListener("touchstart", (e) => {
+      if (e.target.closest(".diary-image-delete-button")) {
+        return;
+      }
+      if (touchTimeout) {
+        clearTimeout(touchTimeout);
+      }
+      if (!isButtonVisible) {
+        wrapper.classList.add("diary-image-wrapper-touched");
+        deleteButton.style.opacity = "1";
+        deleteButton.style.pointerEvents = "auto";
+        isButtonVisible = true;
+      }
+    }, { passive: true });
+    wrapper.addEventListener("touchend", (e) => {
+      if (e.target.closest(".diary-image-delete-button")) {
+        return;
+      }
+      touchTimeout = window.setTimeout(() => {
+        wrapper.classList.remove("diary-image-wrapper-touched");
+        deleteButton.style.opacity = "0";
+        deleteButton.style.pointerEvents = "none";
+        isButtonVisible = false;
+      }, 2e3);
+    }, { passive: true });
+    deleteButton.addEventListener("touchstart", (e) => {
+      e.stopPropagation();
+      if (touchTimeout) {
+        clearTimeout(touchTimeout);
+      }
+    }, { passive: true });
+    const hideOnOutsideTouch = (e) => {
+      if (!wrapper.contains(e.target) && isButtonVisible) {
+        wrapper.classList.remove("diary-image-wrapper-touched");
+        deleteButton.style.opacity = "0";
+        deleteButton.style.pointerEvents = "none";
+        isButtonVisible = false;
+        if (touchTimeout) {
+          clearTimeout(touchTimeout);
+        }
+      }
+    };
+    document.addEventListener("touchstart", hideOnOutsideTouch, { passive: true });
+  }
+  /**
+   * 确保所有已处理的图片都有删除按钮
+   */
+  ensureAllImagesHaveDeleteButton(container) {
+    const processedImages = Array.from(container.querySelectorAll("img.diary-processed"));
+    logger.debug("[EditorImageLayout] \u68C0\u67E5\u5DF2\u5904\u7406\u56FE\u7247\u7684\u5220\u9664\u6309\u94AE", {
+      imageCount: processedImages.length
+    });
+    processedImages.forEach((img) => {
+      var _a, _b;
+      const hasDeleteButton = (_a = img.closest(".diary-image-wrapper")) == null ? void 0 : _a.querySelector(".diary-image-delete-button");
+      if (!hasDeleteButton) {
+        logger.debug("[EditorImageLayout] \u4E3A\u56FE\u7247\u6DFB\u52A0\u7F3A\u5931\u7684\u5220\u9664\u6309\u94AE", {
+          imgAlt: img.getAttribute("alt"),
+          imgSrc: (_b = img.src) == null ? void 0 : _b.substring(0, 50)
+        });
+        this.addDeleteButtonToImage(img);
       }
     });
   }

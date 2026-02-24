@@ -14,6 +14,12 @@ export class EditorImageLayout {
     private processingSet: WeakSet<HTMLElement> = new WeakSet(); // 记录正在处理的元素
     private lastProcessedTime: number = 0; // 上次处理时间
     private readonly PROCESS_COOLDOWN = 1500; // 处理冷却时间（毫秒）- 小屏幕设备增加冷却时间以提高稳定性
+    private lastCheckedFilePath: string | null = null; // 上次检查的文件路径
+    private lastCheckResult: boolean = false; // 上次检查的结果
+    private lastCheckTime: number = 0; // 上次检查的时间
+    private readonly CHECK_CACHE_DURATION = 100; // 检查结果缓存时间（毫秒）
+    private mutationObserver: MutationObserver | null = null; // MutationObserver 实例
+    private observedContainer: HTMLElement | null = null; // 当前监听的容器
 
     constructor(app: App, plugin: Plugin) {
         this.app = app;
@@ -56,6 +62,17 @@ export class EditorImageLayout {
         // 监听编辑器内容变化
         this.plugin.registerEvent(
             this.app.workspace.on('editor-change', () => {
+                // ✅ 早期检查：先检查文件路径
+                const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+                const filePath = view?.file?.path;
+
+                if (!this.shouldProcessFile(filePath)) {
+                    logger.debug('[EditorImageLayout] editor-change: 文件不在默认文件夹中或未启用自动布局，跳过', {
+                        filePath: filePath
+                    });
+                    return; // 立即返回，不执行任何处理
+                }
+
                 // 清除之前的定时器
                 if (editorChangeTimeout) {
                     clearTimeout(editorChangeTimeout);
@@ -73,7 +90,18 @@ export class EditorImageLayout {
         // 监听文件打开
         this.plugin.registerEvent(
             this.app.workspace.on('file-open', () => {
+                // ✅ 早期检查：先检查文件路径
                 setTimeout(() => {
+                    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+                    const filePath = view?.file?.path;
+
+                    if (!this.shouldProcessFile(filePath)) {
+                        logger.debug('[EditorImageLayout] file-open: 文件不在默认文件夹中或未启用自动布局，跳过', {
+                            filePath: filePath
+                        });
+                        return; // 立即返回，不执行任何处理
+                    }
+
                     this.processActiveEditor();
                 }, 500);
             })
@@ -82,7 +110,18 @@ export class EditorImageLayout {
         // 监听布局变化（切换视图时）
         this.plugin.registerEvent(
             this.app.workspace.on('layout-change', () => {
+                // ✅ 早期检查：先检查文件路径
                 setTimeout(() => {
+                    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+                    const filePath = view?.file?.path;
+
+                    if (!this.shouldProcessFile(filePath)) {
+                        logger.debug('[EditorImageLayout] layout-change: 文件不在默认文件夹中或未启用自动布局，跳过', {
+                            filePath: filePath
+                        });
+                        return; // 立即返回，不执行任何处理
+                    }
+
                     this.processActiveEditor();
                 }, 300);
             })
@@ -171,23 +210,35 @@ export class EditorImageLayout {
     /**
      * 检查是否应该处理该文件
      * 新增功能：只在手记视图文件夹中启用自动布局
+     * 优化：添加缓存机制，减少重复检查和日志输出
      */
     private shouldProcessFile(filePath: string | null | undefined): boolean {
+        const now = Date.now();
+
+        // 使用缓存：如果文件路径相同且在缓存时间内，直接返回缓存结果
+        if (filePath === this.lastCheckedFilePath &&
+            (now - this.lastCheckTime) < this.CHECK_CACHE_DURATION) {
+            return this.lastCheckResult;
+        }
+
         // 1. 检查是否启用自动布局功能
         // 使用类型断言访问 settings，因为 Plugin 基类没有定义 settings 属性
         const settings = (this.plugin as { settings?: { enableAutoLayout?: boolean; defaultFolderPath?: string | null } }).settings;
         if (!settings || !settings.enableAutoLayout) {
+            this.updateCache(filePath, false, now);
             return false;
         }
 
         // 2. 检查文件路径是否有效
         if (!filePath) {
+            this.updateCache(filePath, false, now);
             return false;
         }
 
         // 3. 检查是否在默认文件夹中
         const defaultFolderPath = settings.defaultFolderPath;
         if (!defaultFolderPath) {
+            this.updateCache(filePath, false, now);
             return false; // 如果没有设置默认文件夹，不启用
         }
 
@@ -195,19 +246,46 @@ export class EditorImageLayout {
         const isInFolder = filePath === defaultFolderPath ||
             filePath.startsWith(defaultFolderPath + '/');
 
-        logger.debug('[EditorImageLayout] 检查文件路径', {
-            filePath: filePath,
-            defaultFolderPath: defaultFolderPath,
-            isInFolder: isInFolder
-        });
+        // 只在文件路径变化或首次检查时输出日志
+        if (filePath !== this.lastCheckedFilePath) {
+            logger.debug('[EditorImageLayout] 检查文件路径', {
+                filePath: filePath,
+                defaultFolderPath: defaultFolderPath,
+                isInFolder: isInFolder
+            });
+        }
 
+        this.updateCache(filePath, isInFolder, now);
         return isInFolder;
+    }
+
+    /**
+     * 更新检查缓存
+     */
+    private updateCache(filePath: string | null | undefined, result: boolean, time: number): void {
+        this.lastCheckedFilePath = filePath || null;
+        this.lastCheckResult = result;
+        this.lastCheckTime = time;
     }
 
     /**
      * 处理活动编辑器中的图片
      */
     private processActiveEditor(): void {
+        // ✅ 早期检查：先检查文件路径（在冷却时间检查之前）
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!view) {
+            return;
+        }
+
+        const filePath = view.file?.path;
+        if (!this.shouldProcessFile(filePath)) {
+            logger.debug('[EditorImageLayout] 文件不在默认文件夹中或未启用自动布局，跳过', {
+                filePath: filePath
+            });
+            return; // 立即返回，不执行任何处理
+        }
+
         // 冷却时间检查
         const now = Date.now();
         if (now - this.lastProcessedTime < this.PROCESS_COOLDOWN) {
@@ -217,18 +295,6 @@ export class EditorImageLayout {
 
         if (this.isProcessing) {
             logger.debug('[EditorImageLayout] 正在处理中，跳过 processActiveEditor');
-            return;
-        }
-
-        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-        if (!view) return;
-
-        // 新增：检查文件路径是否应该处理
-        const filePath = view.file?.path;
-        if (!this.shouldProcessFile(filePath)) {
-            logger.debug('[EditorImageLayout] 文件不在默认文件夹中或未启用自动布局，跳过', {
-                filePath: filePath
-            });
             return;
         }
 
@@ -272,15 +338,34 @@ export class EditorImageLayout {
             // 阅读模式：处理整个容器
             this.processImagesInElement(editorEl);
         }
+
+        // 确保所有已处理的图片都有删除按钮
+        this.ensureAllImagesHaveDeleteButton(editorEl);
     }
 
     /**
      * 设置 MutationObserver 监听 DOM 变化
+     * 优化：只监听编辑器容器，而不是整个 document.body
      */
     private setupMutationObserver(): void {
+        // 如果已经存在观察者，先断开
+        if (this.mutationObserver) {
+            this.mutationObserver.disconnect();
+            this.mutationObserver = null;
+        }
+
         let processTimeout: number | null = null;
 
         const observer = new MutationObserver((mutations) => {
+            // ✅ 早期检查：先检查文件路径（在最开始）
+            const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+            const filePath = view?.file?.path;
+
+            if (!this.shouldProcessFile(filePath)) {
+                // 文件不在目标文件夹，直接返回，不执行任何处理
+                return;
+            }
+
             // 如果正在处理，跳过（防止无限循环）
             if (this.isProcessing) {
                 return;
@@ -423,34 +508,22 @@ export class EditorImageLayout {
                 if (processTimeout) {
                     clearTimeout(processTimeout);
                 }
-                
+
                 // 如果检测到删除，立即更新（不延迟），提高响应速度
+                // 注意：这里不需要再次检查文件路径，因为已经在回调开始处检查过了
                 if (hasRemovedImages) {
-                    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-                    const filePath = view?.file?.path;
-                    if (this.shouldProcessFile(filePath)) {
-                        logger.log('[EditorImageLayout] [删除流程] MutationObserver 立即触发删除处理流程', {
-                            filePath: filePath,
-                            timestamp: new Date().toISOString()
-                        });
-                        // 立即更新，不等待
-                        this.updateExistingGalleries();
-                    }
+                    logger.log('[EditorImageLayout] [删除流程] MutationObserver 立即触发删除处理流程', {
+                        filePath: filePath,
+                        timestamp: new Date().toISOString()
+                    });
+                    // 立即更新，不等待
+                    this.updateExistingGalleries();
                 }
-                
+
                 processTimeout = window.setTimeout(() => {
+                    // 注意：这里不需要再次检查文件路径，因为已经在回调开始处检查过了
                     if (this.isProcessing) {
                         logger.debug('[EditorImageLayout] 正在处理中，跳过');
-                        return;
-                    }
-
-                    // 新增：检查当前活动文件是否应该处理
-                    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-                    const filePath = view?.file?.path;
-                    if (!this.shouldProcessFile(filePath)) {
-                        logger.debug('[EditorImageLayout] MutationObserver: 文件不在默认文件夹中或未启用自动布局，跳过', {
-                            filePath: filePath
-                        });
                         return;
                     }
 
@@ -470,13 +543,97 @@ export class EditorImageLayout {
             }
         });
 
-        // 监听整个文档的变化（但只处理编辑器区域）
-        observer.observe(document.body, {
+        // 保存观察者实例
+        this.mutationObserver = observer;
+
+        // 初始监听：尝试监听当前活动的编辑器
+        this.updateObserverTarget();
+
+        // 监听文件打开事件，动态更新监听目标
+        this.plugin.registerEvent(
+            this.app.workspace.on('file-open', () => {
+                // 延迟更新，确保编辑器 DOM 已加载
+                setTimeout(() => {
+                    this.updateObserverTarget();
+                }, 100);
+            })
+        );
+
+        // 监听布局变化事件，动态更新监听目标
+        this.plugin.registerEvent(
+            this.app.workspace.on('layout-change', () => {
+                // 延迟更新，确保编辑器 DOM 已加载
+                setTimeout(() => {
+                    this.updateObserverTarget();
+                }, 100);
+            })
+        );
+
+        logger.log('[EditorImageLayout] MutationObserver 已设置，将动态监听编辑器容器');
+    }
+
+    /**
+     * 更新 MutationObserver 的监听目标
+     * 只监听当前活动的编辑器容器，而不是整个文档
+     */
+    private updateObserverTarget(): void {
+        if (!this.mutationObserver) {
+            return;
+        }
+
+        // 获取当前活动的编辑器视图
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!view) {
+            // 如果没有活动的编辑器，断开监听
+            if (this.observedContainer) {
+                this.mutationObserver.disconnect();
+                this.observedContainer = null;
+                logger.debug('[EditorImageLayout] 没有活动的编辑器，断开 MutationObserver');
+            }
+            return;
+        }
+
+        // 获取编辑器容器
+        const editorEl = view.contentEl;
+        if (!editorEl) {
+            if (this.observedContainer) {
+                this.mutationObserver.disconnect();
+                this.observedContainer = null;
+            }
+            return;
+        }
+
+        // 如果已经在监听这个容器，不需要重新设置
+        if (this.observedContainer === editorEl) {
+            return;
+        }
+
+        // 断开之前的监听
+        if (this.observedContainer) {
+            this.mutationObserver.disconnect();
+        }
+
+        // 开始监听新的编辑器容器
+        this.mutationObserver.observe(editorEl, {
             childList: true,
             subtree: true
         });
 
-        logger.log('[EditorImageLayout] MutationObserver 已设置，监听整个文档');
+        this.observedContainer = editorEl;
+
+        // 检查文件路径，只在目标文件夹中启用
+        const filePath = view.file?.path;
+        if (this.shouldProcessFile(filePath)) {
+            logger.debug('[EditorImageLayout] MutationObserver 开始监听编辑器容器', {
+                filePath: filePath,
+                containerTag: editorEl.tagName,
+                containerClass: editorEl.className
+            });
+        } else {
+            logger.debug('[EditorImageLayout] MutationObserver 监听编辑器容器（文件不在目标文件夹）', {
+                filePath: filePath
+            });
+        }
     }
 
     /**
@@ -485,13 +642,22 @@ export class EditorImageLayout {
      * 关键修复：通过匹配 internal-embed 的 src 属性来找到对应的图片
      */
     private updateExistingGalleries(): void {
-        logger.log('[EditorImageLayout] [删除流程] ========== 开始更新现有 Gallery ==========');
-
+        // ✅ 早期检查：先检查文件路径
         const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         if (!view) {
             logger.debug('[EditorImageLayout] [删除流程] 无法获取活动视图，退出');
             return;
         }
+
+        const filePath = view.file?.path;
+        if (!this.shouldProcessFile(filePath)) {
+            logger.debug('[EditorImageLayout] [删除流程] 文件不在默认文件夹中或未启用自动布局，跳过', {
+                filePath: filePath
+            });
+            return; // 立即返回，不执行任何处理
+        }
+
+        logger.log('[EditorImageLayout] [删除流程] ========== 开始更新现有 Gallery ==========');
 
         const editorEl = view.contentEl;
         if (!editorEl) {
@@ -520,7 +686,7 @@ export class EditorImageLayout {
             // 阅读模式：直接查找
             existingEmbeds = Array.from(editorEl.querySelectorAll('.internal-embed.image-embed')) as HTMLElement[];
         }
-        
+
         logger.log('[EditorImageLayout] [删除流程] 当前存在的 internal-embed 数量', {
             embedCount: existingEmbeds.length,
             embedSrcs: existingEmbeds.map(embed => embed.getAttribute('src'))
@@ -912,6 +1078,12 @@ export class EditorImageLayout {
             }
         });
 
+        // 确保所有已处理的图片都有删除按钮
+        const allProcessedImages = Array.from(element.querySelectorAll('img.diary-processed')) as HTMLImageElement[];
+        allProcessedImages.forEach((img) => {
+            this.addDeleteButtonToImage(img);
+        });
+
         this.lastProcessedTime = Date.now();
         logger.debug('[EditorImageLayout] 图片处理完成');
     }
@@ -1229,6 +1401,11 @@ export class EditorImageLayout {
                 this.moveImageToContainer(img, container);
             });
         }
+
+        // 为所有图片添加删除按钮（在图片被移动到容器后）
+        images.forEach((img) => {
+            this.addDeleteButtonToImage(img);
+        });
     }
 
     /**
@@ -1252,6 +1429,342 @@ export class EditorImageLayout {
         Object.keys(originalAttributes).forEach(key => {
             if (originalAttributes[key] !== null) {
                 img.setAttribute(key, originalAttributes[key]!);
+            }
+        });
+    }
+
+    /**
+     * 为图片添加删除按钮
+     */
+    private addDeleteButtonToImage(img: HTMLImageElement): void {
+        // 检查是否已经添加过删除按钮（通过检查图片的直接父容器）
+        const existingWrapper = img.parentElement;
+        if (existingWrapper && existingWrapper.classList.contains('diary-image-wrapper')) {
+            const existingButton = existingWrapper.querySelector('.diary-image-delete-button');
+            if (existingButton) {
+                logger.debug('[EditorImageLayout] 图片已有删除按钮，跳过', {
+                    imgAlt: img.getAttribute('alt')
+                });
+                return;
+            }
+        }
+
+        // 获取图片的父容器（可能是 internal-embed 或 gallery 中的容器）
+        let parentContainer = img.parentElement;
+        if (!parentContainer) {
+            logger.warn('[EditorImageLayout] 无法获取图片父容器');
+            return;
+        }
+
+        // 如果图片在 gallery 中，需要创建包装器
+        const isInGallery = parentContainer.classList.contains('diary-gallery') ||
+            parentContainer.closest('.diary-gallery');
+
+        let targetContainer: HTMLElement;
+
+        if (isInGallery) {
+            // 检查是否已经有包装器
+            let imgWrapper = img.parentElement;
+            if (!imgWrapper || !imgWrapper.classList.contains('diary-image-wrapper')) {
+                logger.debug('[EditorImageLayout] 为图片创建包装器', {
+                    imgAlt: img.getAttribute('alt'),
+                    parentTag: parentContainer.tagName,
+                    parentClass: parentContainer.className,
+                    imgIndex: Array.from(parentContainer.children).indexOf(img)
+                });
+
+                // 创建图片包装器（用于定位删除按钮）
+                imgWrapper = document.createElement('div');
+                imgWrapper.addClass('diary-image-wrapper');
+                imgWrapper.style.position = 'relative';
+                imgWrapper.style.width = '100%';
+                imgWrapper.style.height = '100%';
+                imgWrapper.style.display = 'block'; // 确保包装器是块级元素
+
+                // 将图片移动到包装器
+                parentContainer.insertBefore(imgWrapper, img);
+                imgWrapper.appendChild(img);
+
+                logger.debug('[EditorImageLayout] 包装器创建完成', {
+                    imgAlt: img.getAttribute('alt'),
+                    wrapperCreated: !!imgWrapper.parentElement,
+                    imgInWrapper: img.parentElement === imgWrapper
+                });
+            } else {
+                logger.debug('[EditorImageLayout] 图片已有包装器', {
+                    imgAlt: img.getAttribute('alt'),
+                    wrapperClass: imgWrapper.className
+                });
+            }
+            targetContainer = imgWrapper;
+        } else {
+            // 如果不在 gallery 中，直接在父容器上添加样式
+            targetContainer = parentContainer;
+            if (!targetContainer.classList.contains('diary-image-wrapper')) {
+                targetContainer.addClass('diary-image-wrapper');
+                if (!targetContainer.style.position) {
+                    targetContainer.style.position = 'relative';
+                }
+            }
+        }
+
+        // 检查是否已经存在删除按钮（检查这个图片的包装器）
+        if (targetContainer.querySelector('.diary-image-delete-button')) {
+            logger.debug('[EditorImageLayout] 容器已有删除按钮，跳过');
+            return;
+        }
+
+        logger.debug('[EditorImageLayout] 为图片添加删除按钮', {
+            imgAlt: img.getAttribute('alt'),
+            parentTag: targetContainer.tagName,
+            parentClass: targetContainer.className
+        });
+
+        // 添加删除按钮
+        const deleteButton = document.createElement('button');
+        deleteButton.addClass('diary-image-delete-button');
+        deleteButton.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        `;
+        deleteButton.title = '删除图片';
+
+        // 删除按钮点击事件
+        deleteButton.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            // 确认删除
+            const confirmed = confirm('确定要删除这张图片吗？');
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+                const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+                if (!view) {
+                    alert('无法获取编辑器视图');
+                    return;
+                }
+
+                // 获取图片的 src 或 alt 属性来定位图片引用
+                const imgSrc = img.getAttribute('src') || '';
+                const imgAlt = img.getAttribute('alt') || '';
+
+                // 获取编辑器实例
+                const editor = (view as any).editor;
+                if (!editor) {
+                    alert('无法获取编辑器实例');
+                    return;
+                }
+
+                // 获取当前文档内容
+                const content = editor.getValue();
+
+                // 查找图片引用并删除
+                let newContent = content;
+                let foundMatch = false;
+
+                // 尝试匹配 Wikilink 格式: ![[image.png]]
+                const wikiLinkPattern = /!\[\[([^\]]+)\]\]/g;
+                let match;
+
+                while ((match = wikiLinkPattern.exec(content)) !== null) {
+                    const imageRef = match[1];
+                    const [imageName] = imageRef.split('|');
+
+                    // 检查是否匹配当前图片（通过 alt 或 src）
+                    if (imgAlt && (imageName.trim() === imgAlt || imageName.trim() === imgAlt.split('/').pop()?.replace(/\.[^.]+$/, ''))) {
+                        const fullMatch = match[0];
+                        const matchIndex = match.index;
+
+                        // 查找前后的空白字符
+                        let startIndex = matchIndex;
+                        let endIndex = matchIndex + fullMatch.length;
+
+                        // 向前查找空白字符（包括换行）
+                        while (startIndex > 0 && /[\s\n]/.test(content[startIndex - 1])) {
+                            startIndex--;
+                        }
+
+                        // 向后查找空白字符（包括换行）
+                        while (endIndex < content.length && /[\s\n]/.test(content[endIndex])) {
+                            endIndex++;
+                        }
+
+                        // 删除匹配的部分
+                        newContent = content.slice(0, startIndex) + content.slice(endIndex);
+                        foundMatch = true;
+                        break;
+                    }
+                }
+
+                // 如果没有找到 Wikilink 格式，尝试 Markdown 格式: ![alt](path)
+                if (!foundMatch) {
+                    const markdownImagePattern = /!\[([^\]]*)\]\(([^)]+)\)/g;
+                    while ((match = markdownImagePattern.exec(content)) !== null) {
+                        const imagePath = match[2];
+                        const altText = match[1];
+
+                        // 检查是否匹配当前图片（通过 alt 或 path）
+                        if ((imgAlt && (altText === imgAlt || imagePath.includes(imgAlt))) ||
+                            (imgSrc && imagePath.includes(imgSrc.split('/').pop() || ''))) {
+                            const fullMatch = match[0];
+                            const matchIndex = match.index;
+
+                            // 查找前后的空白字符
+                            let startIndex = matchIndex;
+                            let endIndex = matchIndex + fullMatch.length;
+
+                            // 向前查找空白字符（包括换行）
+                            while (startIndex > 0 && /[\s\n]/.test(content[startIndex - 1])) {
+                                startIndex--;
+                            }
+
+                            // 向后查找空白字符（包括换行）
+                            while (endIndex < content.length && /[\s\n]/.test(content[endIndex])) {
+                                endIndex++;
+                            }
+
+                            // 删除匹配的部分
+                            newContent = content.slice(0, startIndex) + content.slice(endIndex);
+                            foundMatch = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (foundMatch) {
+                    // 更新编辑器内容
+                    editor.setValue(newContent);
+                    logger.log('[EditorImageLayout] 图片已从编辑器中删除');
+                } else {
+                    logger.warn('[EditorImageLayout] 未找到匹配的图片引用');
+                    alert('未找到匹配的图片引用，可能已经被删除。');
+                }
+            } catch (error) {
+                logger.error('[EditorImageLayout] 删除图片失败:', error);
+                alert('删除图片失败，请重试。');
+            }
+        });
+
+        // 将删除按钮添加到目标容器（每张图片的包装器）
+        targetContainer.appendChild(deleteButton);
+
+        // 移动端触摸支持：添加触摸事件监听器
+        this.setupMobileTouchSupport(targetContainer, deleteButton);
+
+        logger.log('[EditorImageLayout] ✅ 删除按钮已添加到图片', {
+            imgAlt: img.getAttribute('alt'),
+            containerTag: targetContainer.tagName,
+            containerClass: targetContainer.className,
+            buttonExists: !!targetContainer.querySelector('.diary-image-delete-button'),
+            buttonCount: targetContainer.querySelectorAll('.diary-image-delete-button').length
+        });
+    }
+
+    /**
+     * 设置移动端触摸支持
+     * 在移动设备上，通过触摸图片来显示/隐藏删除按钮
+     */
+    private setupMobileTouchSupport(wrapper: HTMLElement, deleteButton: HTMLElement): void {
+        // 检测是否为触摸设备
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        if (!isTouchDevice) {
+            return; // 非触摸设备，使用 hover 即可
+        }
+
+        let touchTimeout: number | null = null;
+        let isButtonVisible = false;
+
+        // 触摸开始：显示删除按钮
+        wrapper.addEventListener('touchstart', (e) => {
+            // 如果触摸的是删除按钮本身，不处理
+            if ((e.target as HTMLElement).closest('.diary-image-delete-button')) {
+                return;
+            }
+
+            // 清除之前的定时器
+            if (touchTimeout) {
+                clearTimeout(touchTimeout);
+            }
+
+            // 显示删除按钮
+            if (!isButtonVisible) {
+                wrapper.classList.add('diary-image-wrapper-touched');
+                deleteButton.style.opacity = '1';
+                deleteButton.style.pointerEvents = 'auto';
+                isButtonVisible = true;
+            }
+        }, { passive: true });
+
+        // 触摸结束：延迟隐藏删除按钮（给用户时间点击删除按钮）
+        wrapper.addEventListener('touchend', (e) => {
+            // 如果触摸的是删除按钮本身，不隐藏
+            if ((e.target as HTMLElement).closest('.diary-image-delete-button')) {
+                return;
+            }
+
+            // 延迟隐藏，给用户时间点击删除按钮
+            touchTimeout = window.setTimeout(() => {
+                wrapper.classList.remove('diary-image-wrapper-touched');
+                deleteButton.style.opacity = '0';
+                deleteButton.style.pointerEvents = 'none';
+                isButtonVisible = false;
+            }, 2000); // 2秒后隐藏
+        }, { passive: true });
+
+        // 点击删除按钮时，保持显示状态
+        deleteButton.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            // 清除隐藏定时器
+            if (touchTimeout) {
+                clearTimeout(touchTimeout);
+            }
+        }, { passive: true });
+
+        // 点击图片外部区域时隐藏（可选）
+        const hideOnOutsideTouch = (e: TouchEvent) => {
+            if (!wrapper.contains(e.target as Node) && isButtonVisible) {
+                wrapper.classList.remove('diary-image-wrapper-touched');
+                deleteButton.style.opacity = '0';
+                deleteButton.style.pointerEvents = 'none';
+                isButtonVisible = false;
+                if (touchTimeout) {
+                    clearTimeout(touchTimeout);
+                }
+            }
+        };
+
+        document.addEventListener('touchstart', hideOnOutsideTouch, { passive: true });
+
+        // 清理函数（如果需要的话，可以在图片被删除时调用）
+        // 这里我们使用 WeakMap 来存储清理函数，但为了简化，暂时不实现
+    }
+
+    /**
+     * 确保所有已处理的图片都有删除按钮
+     */
+    private ensureAllImagesHaveDeleteButton(container: HTMLElement): void {
+        // 查找所有已处理的图片
+        const processedImages = Array.from(container.querySelectorAll('img.diary-processed')) as HTMLImageElement[];
+
+        logger.debug('[EditorImageLayout] 检查已处理图片的删除按钮', {
+            imageCount: processedImages.length
+        });
+
+        processedImages.forEach((img) => {
+            // 检查是否已经有删除按钮
+            const hasDeleteButton = img.closest('.diary-image-wrapper')?.querySelector('.diary-image-delete-button');
+            if (!hasDeleteButton) {
+                logger.debug('[EditorImageLayout] 为图片添加缺失的删除按钮', {
+                    imgAlt: img.getAttribute('alt'),
+                    imgSrc: img.src?.substring(0, 50)
+                });
+                this.addDeleteButtonToImage(img);
             }
         });
     }

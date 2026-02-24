@@ -49,7 +49,7 @@ export function extractImagesFromContent(
 			// 检查是否是图片文件
 			const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico'];
 			const isImage = imageExtensions.includes(imageFile.extension.toLowerCase());
-			
+
 			if (isImage) {
 				try {
 					const resourcePath = app.vault.getResourcePath(imageFile);
@@ -99,7 +99,7 @@ export function extractImagesFromContent(
 			// 检查是否是图片文件
 			const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico'];
 			const isImage = imageExtensions.includes(imageFile.extension.toLowerCase());
-			
+
 			if (isImage) {
 				try {
 					const resourcePath = app.vault.getResourcePath(imageFile);
@@ -330,11 +330,11 @@ export function groupByMonth(
 	entries: JournalEntry[]
 ): Record<string, JournalEntry[]> {
 	const grouped: Record<string, JournalEntry[]> = {};
-	
+
 	// 获取今天和昨天的日期（只比较年月日，忽略时分秒）
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
-	
+
 	const yesterday = new Date(today);
 	yesterday.setDate(yesterday.getDate() - 1);
 
@@ -342,9 +342,9 @@ export function groupByMonth(
 		// 将条目的日期也设置为 0 时 0 分 0 秒，只比较年月日
 		const entryDate = new Date(entry.date);
 		entryDate.setHours(0, 0, 0, 0);
-		
+
 		let groupKey: string;
-		
+
 		// 判断是否是今天
 		if (isSameDay(entryDate, today)) {
 			groupKey = '今天';
@@ -355,7 +355,7 @@ export function groupByMonth(
 			// 其他日期按月份分组
 			groupKey = `${entryDate.getFullYear()}年${entryDate.getMonth() + 1}月`;
 		}
-		
+
 		if (!grouped[groupKey]) {
 			grouped[groupKey] = [];
 		}
