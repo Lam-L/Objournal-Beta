@@ -667,461 +667,6 @@
 	line-height: 1;
 }
 
-/* 图片容器 - 基础样式 */
-/* 编辑器预览模式下的图片布局 - 使用声明式 CSS Grid */
-/* 关键修复：使用父元素作为 Grid 容器，图片不移动 */
-.markdown-preview-view .diary-gallery-parent,
-.markdown-source-view .diary-gallery-parent {
-	display: grid !important;
-	gap: 10px !important;
-	margin: 0 !important;
-	width: 100% !important;
-	box-sizing: border-box !important;
-}
-
-/* 原有的 .diary-gallery 样式保留用于兼容 */
-/* 全局基础样式 - 确保在任何上下文中都能工作 */
-.diary-gallery {
-	display: grid;
-	gap: 10px;
-	margin: 0;
-	width: 100%;
-	box-sizing: border-box;
-}
-
-.markdown-preview-view .diary-gallery,
-.markdown-source-view .diary-gallery {
-	display: grid;
-	gap: 10px;
-	margin: 0;
-	width: 100%;
-	box-sizing: border-box;
-}
-
-.diary-gallery img {
-	width: 100%;
-	height: 100%;
-	/* 恢复为 100%，在 Grid 中填满 grid area */
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-	background: #e8e8e8;
-}
-
-.markdown-preview-view .diary-gallery img,
-.markdown-source-view .diary-gallery img {
-	width: 100%;
-	height: 100%;
-	/* 恢复为 100%，在 Grid 中填满 grid area */
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-	background: #e8e8e8;
-}
-
-/* 1 张图片：16:9 宽屏 */
-.diary-gallery[data-count="1"] {
-	grid-template-columns: 1fr;
-	aspect-ratio: 16/9;
-}
-
-.diary-gallery[data-count="1"] img {
-	aspect-ratio: 16/9;
-}
-
-/* 2 张图片：左右并排，每张正方形 */
-.diary-gallery[data-count="2"],
-.diary-gallery-parent[data-gallery-count="2"] {
-	grid-template-columns: 1fr 1fr;
-	aspect-ratio: 2/1;
-}
-
-.diary-gallery[data-count="2"] img,
-.diary-gallery-parent[data-gallery-count="2"] .diary-gallery-item {
-	aspect-ratio: 1;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-}
-
-/* 3 张图片：左边一张大正方形，右边2张上下排列（长方形 2:1） */
-.diary-gallery[data-count="3"],
-.diary-gallery-parent[data-gallery-count="3"] {
-	grid-template-areas:
-		"A B"
-		"A C";
-	grid-template-columns: 1fr 1fr;
-	grid-template-rows: 1fr 1fr;
-	aspect-ratio: 2/1 !important;
-	/* 整体容器是长方形（宽:高 = 2:1） */
-}
-
-.diary-gallery[data-count="3"]>.diary-image-wrapper:nth-child(1),
-.diary-gallery[data-count="3"] img:nth-child(1),
-.diary-gallery-parent[data-gallery-count="3"] .diary-gallery-item[data-gallery-index="0"] {
-	grid-area: A;
-	grid-row: 1 / 3;
-	/* 占据左侧整列，高度100% */
-	width: 100% !important;
-	height: 100% !important;
-	/* 填满 grid area（grid area 本身就是正方形） */
-	aspect-ratio: 1 !important;
-	/* 确保图片本身是正方形 */
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-}
-
-.diary-gallery[data-count="3"]>.diary-image-wrapper:nth-child(1) img {
-	width: 100% !important;
-	height: 100% !important;
-	aspect-ratio: 1 !important;
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-}
-
-.diary-gallery[data-count="3"]>.diary-image-wrapper:nth-child(2),
-.diary-gallery[data-count="3"] img:nth-child(2),
-.diary-gallery-parent[data-gallery-count="3"] .diary-gallery-item[data-gallery-index="1"] {
-	grid-area: B;
-	aspect-ratio: 2/1 !important;
-	/* 右边第一张是长方形（长:高 = 2:1） */
-	width: 100% !important;
-	height: 100% !important;
-	/* 填满 grid area */
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-}
-
-.diary-gallery[data-count="3"]>.diary-image-wrapper:nth-child(2) img {
-	width: 100% !important;
-	height: 100% !important;
-	aspect-ratio: 2/1 !important;
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-}
-
-.diary-gallery[data-count="3"]>.diary-image-wrapper:nth-child(3),
-.diary-gallery[data-count="3"] img:nth-child(3),
-.diary-gallery-parent[data-gallery-count="3"] .diary-gallery-item[data-gallery-index="2"] {
-	grid-area: C;
-	aspect-ratio: 2/1 !important;
-	/* 右边第二张是长方形（长:高 = 2:1） */
-	width: 100% !important;
-	height: 100% !important;
-	/* 填满 grid area */
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-}
-
-.diary-gallery[data-count="3"]>.diary-image-wrapper:nth-child(3) img {
-	width: 100% !important;
-	height: 100% !important;
-	aspect-ratio: 2/1 !important;
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-}
-
-/* 4 张图片：左半边一张大图，右半边三张（上1下2左右） */
-/* 4 张图片：左边一张大正方形，右边上半一张水平矩形，右下两张正方形并排 */
-.diary-gallery[data-count="4"] {
-	grid-template-areas:
-		"A B"
-		"A CD";
-	grid-template-columns: 1fr 1fr;
-	grid-template-rows: 1fr 1fr;
-	aspect-ratio: 2/1 !important;
-	/* 整体容器是长方形 (宽:高 = 2:1) */
-	display: grid !important;
-	gap: 10px !important;
-	margin: 0 !important;
-	width: 100% !important;
-	box-sizing: border-box !important;
-}
-
-.diary-gallery[data-count="4"]>.diary-image-wrapper:nth-child(1),
-.diary-gallery[data-count="4"] img:nth-child(1) {
-	grid-area: A;
-	grid-row: 1 / 3;
-	/* 占据左侧整列，高度100% */
-	aspect-ratio: 1 !important;
-	/* 左边是大正方形 */
-	width: 100% !important;
-	height: 100% !important;
-	/* 填满 grid area */
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-}
-
-.diary-gallery[data-count="4"]>.diary-image-wrapper:nth-child(1) img {
-	width: 100% !important;
-	height: 100% !important;
-	aspect-ratio: 1 !important;
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-}
-
-.diary-gallery[data-count="4"]>.diary-image-wrapper:nth-child(2),
-.diary-gallery[data-count="4"] img:nth-child(2) {
-	grid-area: B;
-	aspect-ratio: 2/1 !important;
-	/* 右边第一张是水平矩形（长:高 = 2:1） */
-	width: 100% !important;
-	height: 100% !important;
-	/* 填满 grid area */
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-}
-
-.diary-gallery[data-count="4"]>.diary-image-wrapper:nth-child(2) img {
-	width: 100% !important;
-	height: 100% !important;
-	aspect-ratio: 2/1 !important;
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-}
-
-/* 右半边下半部分的嵌套容器（包含第3、4张图片） */
-.diary-gallery[data-count="4"] .diary-gallery-bottom {
-	grid-area: CD;
-	display: grid !important;
-	grid-template-columns: 1fr 1fr !important;
-	gap: 10px !important;
-	width: 100% !important;
-	height: 100% !important;
-	position: relative !important;
-	box-sizing: border-box !important;
-	align-items: stretch !important;
-}
-
-/* 使用更具体的选择器覆盖通用样式，确保图片正确并排显示 */
-.markdown-preview-view .diary-gallery[data-count="4"] .diary-gallery-bottom img,
-.markdown-source-view .diary-gallery[data-count="4"] .diary-gallery-bottom img,
-.diary-gallery[data-count="4"] .diary-gallery-bottom img {
-	aspect-ratio: 1 !important;
-	/* 第3、4张是正方形 */
-	width: 100% !important;
-	height: auto !important;
-	/* 改为 auto，让 aspect-ratio 控制高度 */
-	max-width: 100% !important;
-	object-fit: cover !important;
-	object-position: center !important;
-	display: block !important;
-	border-radius: 8px !important;
-	position: relative !important;
-	/* 确保不是 absolute */
-	z-index: auto !important;
-	/* 确保没有 z-index 导致重叠 */
-	margin: 0 !important;
-	padding: 0 !important;
-	grid-column: auto !important;
-	/* 确保 grid 布局生效 */
-	grid-row: auto !important;
-}
-
-/* 5 张图片：左边一张大正方形，右边 2x2 网格（四个正方形） */
-.diary-gallery[data-count="5"] {
-	grid-template-areas:
-		"A B";
-	grid-template-columns: 1fr 1fr;
-	grid-template-rows: 1fr;
-	aspect-ratio: 2/1 !important;
-	/* 整体容器是长方形 (宽:高 = 2:1) */
-	display: grid !important;
-	gap: 10px !important;
-	margin: 0 !important;
-	width: 100% !important;
-	box-sizing: border-box !important;
-}
-
-.diary-gallery[data-count="5"] img:nth-child(1) {
-	grid-area: A;
-	aspect-ratio: 1 !important;
-	/* 左边是大正方形 */
-	width: 100% !important;
-	height: 100% !important;
-	/* 填满 grid area */
-	object-fit: cover;
-	object-position: center;
-	display: block;
-	border-radius: 8px;
-}
-
-/* 为右边创建 2x2 网格包装器 */
-.diary-gallery[data-count="5"] .diary-gallery-right-grid {
-	grid-area: B;
-	display: grid !important;
-	grid-template-columns: 1fr 1fr !important;
-	grid-template-rows: 1fr 1fr !important;
-	gap: 10px !important;
-	width: 100% !important;
-	height: 100% !important;
-	position: relative !important;
-	box-sizing: border-box !important;
-	align-items: stretch !important;
-}
-
-/* 使用更具体的选择器覆盖通用样式，确保图片正确显示不重叠 */
-.markdown-preview-view .diary-gallery[data-count="5"] .diary-gallery-right-grid img,
-.markdown-source-view .diary-gallery[data-count="5"] .diary-gallery-right-grid img,
-.diary-gallery[data-count="5"] .diary-gallery-right-grid img {
-	aspect-ratio: 1 !important;
-	/* 右边四张都是正方形 */
-	width: 100% !important;
-	height: auto !important;
-	/* 让 aspect-ratio 控制高度 */
-	max-width: 100% !important;
-	object-fit: cover !important;
-	object-position: center !important;
-	display: block !important;
-	border-radius: 8px !important;
-	position: relative !important;
-	z-index: auto !important;
-	margin: 0 !important;
-	padding: 0 !important;
-	grid-column: auto !important;
-	grid-row: auto !important;
-}
-
-/* 6+ 张图片：左边一张大正方形，右边 2x2 网格 */
-.diary-gallery[data-count="6"],
-.diary-gallery[data-count="7"],
-.diary-gallery[data-count="8"],
-.diary-gallery[data-count="9"],
-.diary-gallery[data-count="10"] {
-	grid-template-areas:
-		"A B";
-	grid-template-columns: 1fr 1fr;
-	grid-template-rows: 1fr;
-	aspect-ratio: 16/9;
-}
-
-.diary-gallery[data-count="6"] img:nth-child(1),
-.diary-gallery[data-count="7"] img:nth-child(1),
-.diary-gallery[data-count="8"] img:nth-child(1),
-.diary-gallery[data-count="9"] img:nth-child(1),
-.diary-gallery[data-count="10"] img:nth-child(1) {
-	grid-area: A;
-	aspect-ratio: 1;
-}
-
-/* 为右边创建 2x2 网格包装器（6+张） */
-.diary-gallery[data-count="6"] .diary-gallery-right-grid,
-.diary-gallery[data-count="7"] .diary-gallery-right-grid,
-.diary-gallery[data-count="8"] .diary-gallery-right-grid,
-.diary-gallery[data-count="9"] .diary-gallery-right-grid,
-.diary-gallery[data-count="10"] .diary-gallery-right-grid {
-	grid-area: B;
-	display: grid !important;
-	grid-template-columns: 1fr 1fr !important;
-	grid-template-rows: 1fr 1fr !important;
-	gap: 10px !important;
-	width: 100% !important;
-	height: 100% !important;
-	position: relative !important;
-	box-sizing: border-box !important;
-	align-items: stretch !important;
-}
-
-.markdown-preview-view .diary-gallery[data-count="6"] .diary-gallery-right-grid img,
-.markdown-source-view .diary-gallery[data-count="6"] .diary-gallery-right-grid img,
-.diary-gallery[data-count="6"] .diary-gallery-right-grid img,
-.markdown-preview-view .diary-gallery[data-count="7"] .diary-gallery-right-grid img,
-.markdown-source-view .diary-gallery[data-count="7"] .diary-gallery-right-grid img,
-.diary-gallery[data-count="7"] .diary-gallery-right-grid img,
-.markdown-preview-view .diary-gallery[data-count="8"] .diary-gallery-right-grid img,
-.markdown-source-view .diary-gallery[data-count="8"] .diary-gallery-right-grid img,
-.diary-gallery[data-count="8"] .diary-gallery-right-grid img,
-.markdown-preview-view .diary-gallery[data-count="9"] .diary-gallery-right-grid img,
-.markdown-source-view .diary-gallery[data-count="9"] .diary-gallery-right-grid img,
-.diary-gallery[data-count="9"] .diary-gallery-right-grid img,
-.markdown-preview-view .diary-gallery[data-count="10"] .diary-gallery-right-grid img,
-.markdown-source-view .diary-gallery[data-count="10"] .diary-gallery-right-grid img,
-.diary-gallery[data-count="10"] .diary-gallery-right-grid img {
-	aspect-ratio: 1 !important;
-	width: 100% !important;
-	height: auto !important;
-	max-width: 100% !important;
-	object-fit: cover !important;
-	object-position: center !important;
-	display: block !important;
-	border-radius: 8px !important;
-	position: relative !important;
-	z-index: auto !important;
-	margin: 0 !important;
-	padding: 0 !important;
-	grid-column: auto !important;
-	grid-row: auto !important;
-}
-
-/* 6+ 张图片的第一张（左侧大图） */
-.diary-gallery[data-count="6"] img:nth-child(1),
-.diary-gallery[data-count="7"] img:nth-child(1),
-.diary-gallery[data-count="8"] img:nth-child(1),
-.diary-gallery[data-count="9"] img:nth-child(1),
-.diary-gallery[data-count="10"] img:nth-child(1) {
-	grid-area: A;
-	aspect-ratio: 1;
-}
-
-/* 6+ 张图片的样式（这些图片在 right-grid 中，不需要单独定义） */
-
-/* 超过 5 张的图片隐藏，显示 "+N" 提示 */
-.diary-gallery[data-count="6"] img:nth-child(6),
-.diary-gallery[data-count="7"] img:nth-child(6),
-.diary-gallery[data-count="8"] img:nth-child(6),
-.diary-gallery[data-count="9"] img:nth-child(6),
-.diary-gallery[data-count="10"] img:nth-child(6) {
-	display: none;
-}
-
-/* 在最后一张显示的图片上显示 "+N" 遮罩 */
-.diary-gallery[data-count="6"] img:nth-child(5)::after,
-.diary-gallery[data-count="7"] img:nth-child(5)::after,
-.diary-gallery[data-count="8"] img:nth-child(5)::after,
-.diary-gallery[data-count="9"] img:nth-child(5)::after,
-.diary-gallery[data-count="10"] img:nth-child(5)::after {
-	content: "+" attr(data-remaining);
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: rgba(0, 0, 0, 0.6);
-	color: white;
-	font-size: 24px;
-	font-weight: 600;
-	pointer-events: none;
-	border-radius: 8px;
-}
-
 /* 图片容器变量定义 - 响应式高度 */
 :root {
 	--journal-image-height: 200px;
@@ -1333,72 +878,6 @@
 	cursor: pointer;
 }
 
-/* 编辑器中的图片包装器和删除按钮 */
-.diary-image-wrapper {
-	position: relative !important;
-	width: 100% !important;
-	height: 100% !important;
-	display: block !important;
-}
-
-.diary-image-delete-button {
-	position: absolute !important;
-	top: 8px !important;
-	right: 8px !important;
-	width: 28px !important;
-	height: 28px !important;
-	border: none !important;
-	border-radius: 50% !important;
-	background: rgba(0, 0, 0, 0.6) !important;
-	backdrop-filter: blur(4px) !important;
-	color: white !important;
-	cursor: pointer !important;
-	display: flex !important;
-	align-items: center !important;
-	justify-content: center !important;
-	z-index: 1000 !important;
-	transition: all 0.2s ease !important;
-	padding: 0 !important;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-	opacity: 0 !important;
-	pointer-events: none !important;
-}
-
-.diary-image-wrapper:hover .diary-image-delete-button,
-.diary-image-wrapper-touched .diary-image-delete-button {
-	opacity: 1 !important;
-	pointer-events: auto !important;
-}
-
-/* 移动端：触摸设备上始终显示删除按钮（可选方案） */
-@media (hover: none) and (pointer: coarse) {
-	.diary-image-wrapper .diary-image-delete-button {
-		opacity: 0.7 !important;
-		pointer-events: auto !important;
-	}
-
-	.diary-image-wrapper-touched .diary-image-delete-button,
-	.diary-image-wrapper:active .diary-image-delete-button {
-		opacity: 1 !important;
-	}
-}
-
-.diary-image-delete-button:hover {
-	background: rgba(220, 38, 38, 0.9);
-	transform: scale(1.1);
-	box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
-}
-
-.diary-image-delete-button:active {
-	transform: scale(0.95);
-}
-
-.diary-image-delete-button svg {
-	width: 14px;
-	height: 14px;
-	stroke-width: 2.5;
-}
-
 .journal-image {
 	width: 100%;
 	height: 100%;
@@ -1586,164 +1065,6 @@
 	.journal-stat-icon svg {
 		width: 16px;
 		height: 16px;
-	}
-
-	/* Editor 图片布局优化 - 保持原有布局但优化体验 */
-	/* 确保 Grid 布局在小屏幕上也能正常工作 */
-	.markdown-preview-view .diary-gallery,
-	.markdown-source-view .diary-gallery {
-		min-width: 0 !important;
-		/* 允许缩小，但保持 Grid 布局 */
-		width: 100% !important;
-		max-width: 100% !important;
-		box-sizing: border-box !important;
-		/* 减小间距以适应小屏幕 */
-		gap: 6px !important;
-	}
-
-	/* 确保容器不会因为内容溢出而破坏布局 */
-	.diary-gallery[data-count="1"],
-	.diary-gallery[data-count="2"],
-	.diary-gallery[data-count="3"],
-	.diary-gallery[data-count="4"],
-	.diary-gallery[data-count="5"] {
-		min-width: 0 !important;
-		width: 100% !important;
-		max-width: 100% !important;
-		overflow: hidden !important;
-		/* 确保 Grid 布局强制生效 */
-		display: grid !important;
-	}
-
-	/* 三张图片布局优化 */
-	.diary-gallery[data-count="3"] {
-		/* 保持原有布局结构 */
-		grid-template-areas:
-			"A B"
-			"A C" !important;
-		grid-template-columns: 1fr 1fr !important;
-		grid-template-rows: 1fr 1fr !important;
-		/* 确保 aspect-ratio 在小屏幕上也能正确计算 */
-		aspect-ratio: 2/1 !important;
-		min-height: 150px !important;
-		/* 防止布局垮掉 */
-		position: relative !important;
-	}
-
-	/* 图片尺寸优化 - 确保在小屏幕上也能正确显示 */
-	.diary-gallery[data-count="3"] img {
-		min-width: 0 !important;
-		min-height: 0 !important;
-		/* 确保图片不会溢出容器 */
-		max-width: 100% !important;
-		max-height: 100% !important;
-		/* 保持 object-fit 确保图片正确裁剪 */
-		object-fit: cover !important;
-		object-position: center !important;
-	}
-
-	/* 左侧大图优化 */
-	.diary-gallery[data-count="3"]>.diary-image-wrapper:nth-child(1),
-	.diary-gallery[data-count="3"] img:nth-child(1) {
-		grid-area: A !important;
-		grid-row: 1 / 3 !important;
-		width: 100% !important;
-		/* 使用 auto 让 aspect-ratio 控制高度 */
-		height: auto !important;
-		aspect-ratio: 1 !important;
-		align-self: stretch !important;
-	}
-
-	.diary-gallery[data-count="3"]>.diary-image-wrapper:nth-child(1) img {
-		width: 100% !important;
-		height: 100% !important;
-		aspect-ratio: 1 !important;
-		object-fit: cover !important;
-	}
-
-	/* 右侧两张图优化 */
-	.diary-gallery[data-count="3"]>.diary-image-wrapper:nth-child(2),
-	.diary-gallery[data-count="3"]>.diary-image-wrapper:nth-child(3),
-	.diary-gallery[data-count="3"] img:nth-child(2),
-	.diary-gallery[data-count="3"] img:nth-child(3) {
-		width: 100% !important;
-		/* 使用 auto 让 aspect-ratio 控制高度 */
-		height: auto !important;
-		aspect-ratio: 2/1 !important;
-		align-self: stretch !important;
-	}
-
-	.diary-gallery[data-count="3"]>.diary-image-wrapper:nth-child(2) img,
-	.diary-gallery[data-count="3"]>.diary-image-wrapper:nth-child(3) img {
-		width: 100% !important;
-		height: 100% !important;
-		aspect-ratio: 2/1 !important;
-		object-fit: cover !important;
-	}
-
-	/* 四张图片布局优化 */
-	.diary-gallery[data-count="4"] {
-		grid-template-areas:
-			"A B"
-			"A CD" !important;
-		grid-template-columns: 1fr 1fr !important;
-		grid-template-rows: 1fr 1fr !important;
-		aspect-ratio: 2/1 !important;
-		min-height: 150px !important;
-		position: relative !important;
-	}
-
-	.diary-gallery[data-count="4"] img {
-		min-width: 0 !important;
-		min-height: 0 !important;
-		max-width: 100% !important;
-		max-height: 100% !important;
-		object-fit: cover !important;
-		object-position: center !important;
-	}
-
-	.diary-gallery[data-count="4"] .diary-gallery-bottom {
-		min-width: 0 !important;
-		gap: 6px !important;
-	}
-
-	/* 五张图片布局优化 */
-	.diary-gallery[data-count="5"] {
-		grid-template-areas: "A B" !important;
-		grid-template-columns: 1fr 1fr !important;
-		grid-template-rows: 1fr !important;
-		aspect-ratio: 2/1 !important;
-		min-height: 150px !important;
-		position: relative !important;
-	}
-
-	.diary-gallery[data-count="5"] img {
-		min-width: 0 !important;
-		min-height: 0 !important;
-		max-width: 100% !important;
-		max-height: 100% !important;
-		object-fit: cover !important;
-		object-position: center !important;
-	}
-
-	.diary-gallery[data-count="5"] .diary-gallery-right-grid {
-		min-width: 0 !important;
-		gap: 6px !important;
-	}
-
-	/* 两张图片布局优化 */
-	.diary-gallery[data-count="2"] {
-		grid-template-columns: 1fr 1fr !important;
-		aspect-ratio: 2/1 !important;
-		min-height: 120px !important;
-		gap: 6px !important;
-	}
-
-	.diary-gallery[data-count="2"] img {
-		width: 100% !important;
-		height: auto !important;
-		aspect-ratio: 1 !important;
-		align-self: stretch !important;
 	}
 }
 
@@ -1960,4 +1281,55 @@
 		font-size: 12px;
 		padding: 4px 10px;
 	}
+}
+
+/* Live Preview 编辑器中手记式图片布局 */
+.markdown-source-view .journal-images,
+.markdown-preview-view .journal-images {
+	margin: 12px 0;
+	max-width: 100%;
+}
+
+.markdown-source-view .journal-images .journal-image-container,
+.markdown-preview-view .journal-images .journal-image-container {
+	cursor: default;
+}
+
+/* 编辑页图片右上角删除按钮 */
+.journal-image-container {
+	position: relative;
+}
+
+.journal-editor-image-delete {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.5);
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	opacity: 0.7;
+	transition: opacity 0.2s, background 0.2s;
+	z-index: 2;
+}
+
+.journal-editor-image-delete:hover {
+	opacity: 1;
+	background: rgba(180, 50, 50, 0.9);
+}
+
+.journal-editor-image-delete svg {
+	color: #fff;
+}
+
+.markdown-source-view .journal-image-container:hover .journal-editor-image-delete,
+.markdown-preview-view .journal-image-container:hover .journal-editor-image-delete,
+.journal-editor-image-delete:hover {
+	opacity: 1;
 }

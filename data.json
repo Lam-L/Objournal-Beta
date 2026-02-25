@@ -3,11 +3,12 @@
   "defaultFolderPath": "垃圾箱日记",
   "imageLimit": 3,
   "folderJournalViews": {},
-  "enableAutoLayout": true,
   "folderDateFields": {
     "垃圾箱日记": "日期"
   },
   "defaultTemplate": "",
   "imageGap": 4,
-  "openInNewTab": false
+  "openInNewTab": false,
+  "enableEditorImageLayout": true,
+  "enableAutoLayout": true
 }

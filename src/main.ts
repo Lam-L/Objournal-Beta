@@ -2,7 +2,7 @@ import { Plugin, TFolder } from 'obsidian';
 import { JournalView, JOURNAL_VIEW_TYPE } from './view/JournalView';
 import { JournalPluginSettings, DEFAULT_SETTINGS } from './settings';
 import { JournalSettingTab } from './settings/JournalSettingTab';
-import { EditorImageLayout } from './EditorImageLayout';
+import { EditorImageLayout } from './editor/EditorImageLayout';
 
 export class JournalViewPlugin extends Plugin {
 	settings: JournalPluginSettings;
@@ -12,7 +12,10 @@ export class JournalViewPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		// 初始化编辑器图片布局增强
+		// 应用图片间距到全局（编辑页图片布局需要）
+		document.documentElement.style.setProperty('--journal-image-gap', `${this.settings.imageGap}px`);
+
+		// Live Preview 下的手记式图片布局（默认文件夹内的笔记）
 		this.editorImageLayout = new EditorImageLayout(this.app, this);
 		this.editorImageLayout.initialize();
 
@@ -27,8 +30,12 @@ export class JournalViewPlugin extends Plugin {
 		this.addCommand({
 			id: 'open-journal-view',
 			name: '打开手记视图',
-			callback: () => {
-				this.activateView();
+			callback: async () => {
+				try {
+					await this.activateView();
+				} catch (e) {
+					console.error('手记视图: 打开失败', e);
+				}
 			},
 		});
 
@@ -60,6 +67,7 @@ export class JournalViewPlugin extends Plugin {
 	}
 
 	async onunload() {
+		this.editorImageLayout?.destroy();
 		console.log('Journal View Plugin (React) unloaded');
 	}
 
@@ -108,6 +116,8 @@ export class JournalViewPlugin extends Plugin {
 				await leaf.view.refresh();
 			}
 
+			// 关键：使用 setActiveLeaf 确保 tab 被激活、视图可见（revealLeaf 可能不够）
+			workspace.setActiveLeaf(leaf, { focus: true });
 			workspace.revealLeaf(leaf);
 		}
 	}

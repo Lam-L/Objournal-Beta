@@ -359,10 +359,23 @@ export class JournalSettingTab extends PluginSettingTab {
 				});
 			});
 
+		// Live Preview 中的图片布局
+		new Setting(containerEl)
+			.setName('编辑页手记式图片布局')
+			.setDesc('在 Live Preview 模式下，默认文件夹内的笔记中的图片将按首页手记卡片的布局展示（添加/删除图片实时更新）')
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.enableEditorImageLayout !== false)
+					.onChange(async (value) => {
+						this.plugin.settings.enableEditorImageLayout = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
 		// 默认文件夹选择（下拉）
 		new Setting(containerEl)
 			.setName('默认文件夹')
-			.setDesc('选择默认的日记文件夹。使用 Ctrl+P 打开手记视图时将自动打开此文件夹的视图。')
+			.setDesc('选择默认的日记文件夹。使用 Ctrl+P 打开手记视图时将自动打开此文件夹的视图。编辑页图片布局也仅在此文件夹内的笔记中生效。')
 			.addDropdown((dropdown) => {
 				// 添加"扫描整个 Vault"选项
 				dropdown.addOption('', '扫描整个 Vault');
@@ -411,19 +424,6 @@ export class JournalSettingTab extends PluginSettingTab {
 
 		// 初始显示状态
 		updateDateFieldVisibility();
-
-		// 是否在手记视图文件夹中启用自动布局
-		new Setting(containerEl)
-			.setName('是否在手记视图文件夹中启用自动布局')
-			.setDesc('启用后，仅在默认文件夹中的文件会应用自动图片布局。默认为否。')
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.enableAutoLayout)
-					.onChange(async (value) => {
-						this.plugin.settings.enableAutoLayout = value;
-						await this.plugin.saveSettings();
-					})
-			);
 
 		new Setting(containerEl)
 			.setName('图片显示限制')

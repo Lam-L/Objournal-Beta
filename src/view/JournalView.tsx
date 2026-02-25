@@ -62,7 +62,8 @@ export class JournalView extends ItemView {
 	}
 
 	async onOpen(): Promise<void> {
-		const container = this.containerEl.children[1] as HTMLElement;
+		// 使用 ItemView 的 contentEl（Obsidian 官方 API），避免依赖 DOM 结构
+		const container = this.contentEl;
 		if (!container) {
 			return;
 		}
