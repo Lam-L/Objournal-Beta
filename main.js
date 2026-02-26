@@ -793,7 +793,7 @@ var require_react_development = __commonJS({
           }
           return children;
         }
-        function createContext4(defaultValue) {
+        function createContext5(defaultValue) {
           var context = {
             $$typeof: REACT_CONTEXT_TYPE,
             // As a workaround to support multiple concurrent renderers, we categorize
@@ -1079,7 +1079,7 @@ var require_react_development = __commonJS({
           }
           return dispatcher;
         }
-        function useContext4(Context) {
+        function useContext5(Context) {
           var dispatcher = resolveDispatcher();
           {
             if (Context._context !== void 0) {
@@ -1093,7 +1093,7 @@ var require_react_development = __commonJS({
           }
           return dispatcher.useContext(Context);
         }
-        function useState7(initialState) {
+        function useState8(initialState) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useState(initialState);
         }
@@ -1105,7 +1105,7 @@ var require_react_development = __commonJS({
           var dispatcher = resolveDispatcher();
           return dispatcher.useRef(initialValue);
         }
-        function useEffect9(create, deps) {
+        function useEffect10(create, deps) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useEffect(create, deps);
         }
@@ -1117,7 +1117,7 @@ var require_react_development = __commonJS({
           var dispatcher = resolveDispatcher();
           return dispatcher.useLayoutEffect(create, deps);
         }
-        function useCallback4(callback, deps) {
+        function useCallback5(callback, deps) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useCallback(callback, deps);
         }
@@ -1874,7 +1874,7 @@ var require_react_development = __commonJS({
         exports.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = ReactSharedInternals;
         exports.act = act;
         exports.cloneElement = cloneElement$1;
-        exports.createContext = createContext4;
+        exports.createContext = createContext5;
         exports.createElement = createElement$1;
         exports.createFactory = createFactory;
         exports.createRef = createRef;
@@ -1884,11 +1884,11 @@ var require_react_development = __commonJS({
         exports.memo = memo4;
         exports.startTransition = startTransition;
         exports.unstable_act = act;
-        exports.useCallback = useCallback4;
-        exports.useContext = useContext4;
+        exports.useCallback = useCallback5;
+        exports.useContext = useContext5;
         exports.useDebugValue = useDebugValue;
         exports.useDeferredValue = useDeferredValue;
-        exports.useEffect = useEffect9;
+        exports.useEffect = useEffect10;
         exports.useId = useId;
         exports.useImperativeHandle = useImperativeHandle;
         exports.useInsertionEffect = useInsertionEffect;
@@ -1896,7 +1896,7 @@ var require_react_development = __commonJS({
         exports.useMemo = useMemo2;
         exports.useReducer = useReducer2;
         exports.useRef = useRef9;
-        exports.useState = useState7;
+        exports.useState = useState8;
         exports.useSyncExternalStore = useSyncExternalStore;
         exports.useTransition = useTransition;
         exports.version = ReactVersion;
@@ -2392,9 +2392,9 @@ var require_react_dom_development = __commonJS({
         if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function") {
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
         }
-        var React13 = require_react();
+        var React16 = require_react();
         var Scheduler = require_scheduler();
-        var ReactSharedInternals = React13.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+        var ReactSharedInternals = React16.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
         var suppressWarning = false;
         function setSuppressWarning(newSuppressWarning) {
           {
@@ -3999,7 +3999,7 @@ var require_react_dom_development = __commonJS({
           {
             if (props.value == null) {
               if (typeof props.children === "object" && props.children !== null) {
-                React13.Children.forEach(props.children, function(child) {
+                React16.Children.forEach(props.children, function(child) {
                   if (child == null) {
                     return;
                   }
@@ -23573,7 +23573,7 @@ var import_obsidian8 = require("obsidian");
 // src/view/JournalView.tsx
 var import_obsidian5 = require("obsidian");
 var import_client = __toESM(require_client());
-var import_react15 = __toESM(require_react());
+var import_react18 = __toESM(require_react());
 
 // src/context/JournalViewContext.tsx
 var import_react = __toESM(require_react());
@@ -23607,7 +23607,7 @@ var JournalViewProvider = ({
 };
 
 // src/components/JournalViewContainer.tsx
-var import_react14 = __toESM(require_react());
+var import_react17 = __toESM(require_react());
 
 // src/context/JournalDataContext.tsx
 var import_react2 = __toESM(require_react());
@@ -24201,12 +24201,59 @@ var useScrollbarWidth = () => {
   return scrollbarWidth;
 };
 
-// src/components/JournalHeader.tsx
+// src/context/OnThisDayContext.tsx
 var import_react6 = __toESM(require_react());
+var OnThisDayContext = (0, import_react6.createContext)(null);
+var useOnThisDay = () => {
+  const ctx = (0, import_react6.useContext)(OnThisDayContext);
+  if (!ctx)
+    throw new Error("useOnThisDay must be used within OnThisDayProvider");
+  return ctx;
+};
+var OnThisDayProvider = ({ children }) => {
+  var _a;
+  const { plugin } = useJournalView();
+  const [isModalOpen, setIsModalOpen] = (0, import_react6.useState)(false);
+  const displayMode = plugin && ((_a = plugin.settings) == null ? void 0 : _a.onThisDayDisplayMode) || "single";
+  const setDisplayMode = (0, import_react6.useCallback)(
+    (mode) => {
+      var _a2, _b, _c;
+      if (!plugin || !plugin.settings)
+        return;
+      plugin.settings.onThisDayDisplayMode = mode;
+      (_a2 = plugin.saveSettings) == null ? void 0 : _a2.call(plugin);
+      (_c = (_b = plugin.view) == null ? void 0 : _b.refresh) == null ? void 0 : _c.call(_b);
+    },
+    [plugin]
+  );
+  const cycleDisplayMode = (0, import_react6.useCallback)(() => {
+    const next = {
+      single: "all",
+      all: "hidden",
+      hidden: "single"
+    };
+    setDisplayMode(next[displayMode]);
+  }, [displayMode, setDisplayMode]);
+  const openModal = (0, import_react6.useCallback)(() => setIsModalOpen(true), []);
+  const closeModal = (0, import_react6.useCallback)(() => setIsModalOpen(false), []);
+  const value = {
+    displayMode,
+    setDisplayMode,
+    cycleDisplayMode,
+    isModalOpen,
+    openModal,
+    closeModal
+  };
+  return /* @__PURE__ */ import_react6.default.createElement(OnThisDayContext.Provider, { value }, children);
+};
+
+// src/components/JournalHeader.tsx
+var import_react7 = __toESM(require_react());
 var import_obsidian4 = require("obsidian");
 var JournalHeader = () => {
   const { app, plugin, targetFolderPath } = useJournalView();
   const { refresh } = useJournalData();
+  const { cycleDisplayMode, displayMode } = useOnThisDay();
   const handleCreateNote = async () => {
     try {
       let targetFolder = null;
@@ -24271,19 +24318,28 @@ date: ${year}-${month}-${day}
       console.error("\u521B\u5EFA\u7B14\u8BB0\u5931\u8D25:", error);
     }
   };
-  return /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-header" }, /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-title-container" }, /* @__PURE__ */ import_react6.default.createElement("h1", { className: "journal-title-header" }, "\u624B\u8BB0"), /* @__PURE__ */ import_react6.default.createElement("div", { className: "journal-header-buttons" }, /* @__PURE__ */ import_react6.default.createElement(
+  return /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-header" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-title-container" }, /* @__PURE__ */ import_react7.default.createElement("h1", { className: "journal-title-header" }, "\u624B\u8BB0"), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-header-buttons" }, /* @__PURE__ */ import_react7.default.createElement(
     "button",
     {
-      className: "journal-header-button",
+      className: `journal-header-button journal-header-button-on-this-day ${displayMode === "hidden" ? "journal-header-button-on-this-day-inactive" : ""}`,
+      onClick: cycleDisplayMode,
+      title: displayMode === "single" ? "\u90A3\u5E74\u4ECA\u65E5\uFF1A\u6700\u8FD1\u4E00\u6761\uFF08\u70B9\u51FB\u5207\u6362\u4E3A\u5C55\u793A\u5168\u90E8\uFF09" : displayMode === "all" ? "\u90A3\u5E74\u4ECA\u65E5\uFF1A\u5C55\u793A\u5168\u90E8\uFF08\u70B9\u51FB\u5207\u6362\u4E3A\u9690\u85CF\uFF09" : "\u90A3\u5E74\u4ECA\u65E5\uFF1A\u5DF2\u9690\u85CF\uFF08\u70B9\u51FB\u5207\u6362\u4E3A\u5C55\u793A\uFF09"
+    },
+    /* @__PURE__ */ import_react7.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, /* @__PURE__ */ import_react7.default.createElement("rect", { x: "3", y: "4", width: "18", height: "18", rx: "2", ry: "2" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "16", y1: "2", x2: "16", y2: "6" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "8", y1: "2", x2: "8", y2: "6" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "3", y1: "10", x2: "21", y2: "10" })),
+    /* @__PURE__ */ import_react7.default.createElement("span", { className: "journal-header-button-label" }, "\u90A3\u5E74\u4ECA\u65E5")
+  ), /* @__PURE__ */ import_react7.default.createElement(
+    "button",
+    {
+      className: "journal-header-button journal-header-button-primary",
       onClick: handleCreateNote,
       title: "\u65B0\u5EFA\u7B14\u8BB0"
     },
-    /* @__PURE__ */ import_react6.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, /* @__PURE__ */ import_react6.default.createElement("line", { x1: "12", y1: "5", x2: "12", y2: "19" }), /* @__PURE__ */ import_react6.default.createElement("line", { x1: "5", y1: "12", x2: "19", y2: "12" }))
+    /* @__PURE__ */ import_react7.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, /* @__PURE__ */ import_react7.default.createElement("line", { x1: "12", y1: "5", x2: "12", y2: "19" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "5", y1: "12", x2: "19", y2: "12" }))
   ))));
 };
 
 // src/components/JournalStats.tsx
-var import_react7 = __toESM(require_react());
+var import_react8 = __toESM(require_react());
 
 // src/utils/StatisticsCalculator.ts
 var StatisticsCalculator = class {
@@ -24381,1044 +24437,11 @@ var JournalStats = () => {
   const consecutiveDays = StatisticsCalculator.calculateConsecutiveDays(entries);
   const totalWords = StatisticsCalculator.calculateTotalWords(entries);
   const totalDays = StatisticsCalculator.calculateTotalDays(entries);
-  return /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stats" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-flame", dangerouslySetInnerHTML: { __html: createSVGIcon("flame", 20, "#ef4444") } }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-value" }, formatNumber(consecutiveDays))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-label" }, "\u8FDE\u7EED\u7EAA\u5F55\u5929\u6570")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-message", dangerouslySetInnerHTML: { __html: createSVGIcon("message", 20, "#ef4444") } }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-value" }, formatNumber(totalWords))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-label" }, "\u5B57\u6570")), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-calendar", dangerouslySetInnerHTML: { __html: createSVGIcon("calendar", 20, "#3b82f6") } }), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-value" }, formatNumber(totalDays))), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-stat-label" }, "\u5199\u624B\u8BB0\u5929\u6570")));
+  return /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stats" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-flame", dangerouslySetInnerHTML: { __html: createSVGIcon("flame", 20, "#ef4444") } }), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-value" }, formatNumber(consecutiveDays))), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-label" }, "\u8FDE\u7EED\u7EAA\u5F55\u5929\u6570")), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-message", dangerouslySetInnerHTML: { __html: createSVGIcon("message", 20, "#ef4444") } }), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-value" }, formatNumber(totalWords))), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-label" }, "\u5B57\u6570")), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-calendar", dangerouslySetInnerHTML: { __html: createSVGIcon("calendar", 20, "#3b82f6") } }), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-value" }, formatNumber(totalDays))), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-label" }, "\u5199\u624B\u8BB0\u5929\u6570")));
 };
 
-// src/components/JournalList.tsx
+// src/components/OnThisDaySection.tsx
 var import_react12 = __toESM(require_react());
-
-// src/hooks/useJournalScroll.ts
-var import_react8 = __toESM(require_react());
-
-// node_modules/@tanstack/react-virtual/dist/esm/index.js
-var React5 = __toESM(require_react(), 1);
-var import_react_dom = __toESM(require_react_dom(), 1);
-
-// node_modules/@tanstack/virtual-core/dist/esm/utils.js
-function memo(getDeps, fn, opts) {
-  var _a;
-  let deps = (_a = opts.initialDeps) != null ? _a : [];
-  let result;
-  let isInitial = true;
-  function memoizedFunction() {
-    var _a2, _b, _c;
-    let depTime;
-    if (opts.key && ((_a2 = opts.debug) == null ? void 0 : _a2.call(opts)))
-      depTime = Date.now();
-    const newDeps = getDeps();
-    const depsChanged = newDeps.length !== deps.length || newDeps.some((dep, index) => deps[index] !== dep);
-    if (!depsChanged) {
-      return result;
-    }
-    deps = newDeps;
-    let resultTime;
-    if (opts.key && ((_b = opts.debug) == null ? void 0 : _b.call(opts)))
-      resultTime = Date.now();
-    result = fn(...newDeps);
-    if (opts.key && ((_c = opts.debug) == null ? void 0 : _c.call(opts))) {
-      const depEndTime = Math.round((Date.now() - depTime) * 100) / 100;
-      const resultEndTime = Math.round((Date.now() - resultTime) * 100) / 100;
-      const resultFpsPercentage = resultEndTime / 16;
-      const pad = (str, num) => {
-        str = String(str);
-        while (str.length < num) {
-          str = " " + str;
-        }
-        return str;
-      };
-      console.info(
-        `%c\u23F1 ${pad(resultEndTime, 5)} /${pad(depEndTime, 5)} ms`,
-        `
-            font-size: .6rem;
-            font-weight: bold;
-            color: hsl(${Math.max(
-          0,
-          Math.min(120 - 120 * resultFpsPercentage, 120)
-        )}deg 100% 31%);`,
-        opts == null ? void 0 : opts.key
-      );
-    }
-    if ((opts == null ? void 0 : opts.onChange) && !(isInitial && opts.skipInitialOnChange)) {
-      opts.onChange(result);
-    }
-    isInitial = false;
-    return result;
-  }
-  memoizedFunction.updateDeps = (newDeps) => {
-    deps = newDeps;
-  };
-  return memoizedFunction;
-}
-function notUndefined(value, msg) {
-  if (value === void 0) {
-    throw new Error(`Unexpected undefined${msg ? `: ${msg}` : ""}`);
-  } else {
-    return value;
-  }
-}
-var approxEqual = (a, b) => Math.abs(a - b) < 1.01;
-var debounce = (targetWindow, fn, ms) => {
-  let timeoutId;
-  return function(...args) {
-    targetWindow.clearTimeout(timeoutId);
-    timeoutId = targetWindow.setTimeout(() => fn.apply(this, args), ms);
-  };
-};
-
-// node_modules/@tanstack/virtual-core/dist/esm/index.js
-var getRect = (element) => {
-  const { offsetWidth, offsetHeight } = element;
-  return { width: offsetWidth, height: offsetHeight };
-};
-var defaultKeyExtractor = (index) => index;
-var defaultRangeExtractor = (range) => {
-  const start = Math.max(range.startIndex - range.overscan, 0);
-  const end = Math.min(range.endIndex + range.overscan, range.count - 1);
-  const arr = [];
-  for (let i = start; i <= end; i++) {
-    arr.push(i);
-  }
-  return arr;
-};
-var observeElementRect = (instance, cb) => {
-  const element = instance.scrollElement;
-  if (!element) {
-    return;
-  }
-  const targetWindow = instance.targetWindow;
-  if (!targetWindow) {
-    return;
-  }
-  const handler = (rect) => {
-    const { width, height } = rect;
-    cb({ width: Math.round(width), height: Math.round(height) });
-  };
-  handler(getRect(element));
-  if (!targetWindow.ResizeObserver) {
-    return () => {
-    };
-  }
-  const observer = new targetWindow.ResizeObserver((entries) => {
-    const run = () => {
-      const entry = entries[0];
-      if (entry == null ? void 0 : entry.borderBoxSize) {
-        const box = entry.borderBoxSize[0];
-        if (box) {
-          handler({ width: box.inlineSize, height: box.blockSize });
-          return;
-        }
-      }
-      handler(getRect(element));
-    };
-    instance.options.useAnimationFrameWithResizeObserver ? requestAnimationFrame(run) : run();
-  });
-  observer.observe(element, { box: "border-box" });
-  return () => {
-    observer.unobserve(element);
-  };
-};
-var addEventListenerOptions = {
-  passive: true
-};
-var supportsScrollend = typeof window == "undefined" ? true : "onscrollend" in window;
-var observeElementOffset = (instance, cb) => {
-  const element = instance.scrollElement;
-  if (!element) {
-    return;
-  }
-  const targetWindow = instance.targetWindow;
-  if (!targetWindow) {
-    return;
-  }
-  let offset = 0;
-  const fallback = instance.options.useScrollendEvent && supportsScrollend ? () => void 0 : debounce(
-    targetWindow,
-    () => {
-      cb(offset, false);
-    },
-    instance.options.isScrollingResetDelay
-  );
-  const createHandler = (isScrolling) => () => {
-    const { horizontal, isRtl } = instance.options;
-    offset = horizontal ? element["scrollLeft"] * (isRtl && -1 || 1) : element["scrollTop"];
-    fallback();
-    cb(offset, isScrolling);
-  };
-  const handler = createHandler(true);
-  const endHandler = createHandler(false);
-  element.addEventListener("scroll", handler, addEventListenerOptions);
-  const registerScrollendEvent = instance.options.useScrollendEvent && supportsScrollend;
-  if (registerScrollendEvent) {
-    element.addEventListener("scrollend", endHandler, addEventListenerOptions);
-  }
-  return () => {
-    element.removeEventListener("scroll", handler);
-    if (registerScrollendEvent) {
-      element.removeEventListener("scrollend", endHandler);
-    }
-  };
-};
-var measureElement = (element, entry, instance) => {
-  if (entry == null ? void 0 : entry.borderBoxSize) {
-    const box = entry.borderBoxSize[0];
-    if (box) {
-      const size = Math.round(
-        box[instance.options.horizontal ? "inlineSize" : "blockSize"]
-      );
-      return size;
-    }
-  }
-  return element[instance.options.horizontal ? "offsetWidth" : "offsetHeight"];
-};
-var elementScroll = (offset, {
-  adjustments = 0,
-  behavior
-}, instance) => {
-  var _a, _b;
-  const toOffset = offset + adjustments;
-  (_b = (_a = instance.scrollElement) == null ? void 0 : _a.scrollTo) == null ? void 0 : _b.call(_a, {
-    [instance.options.horizontal ? "left" : "top"]: toOffset,
-    behavior
-  });
-};
-var Virtualizer = class {
-  constructor(opts) {
-    this.unsubs = [];
-    this.scrollElement = null;
-    this.targetWindow = null;
-    this.isScrolling = false;
-    this.currentScrollToIndex = null;
-    this.measurementsCache = [];
-    this.itemSizeCache = /* @__PURE__ */ new Map();
-    this.laneAssignments = /* @__PURE__ */ new Map();
-    this.pendingMeasuredCacheIndexes = [];
-    this.prevLanes = void 0;
-    this.lanesChangedFlag = false;
-    this.lanesSettling = false;
-    this.scrollRect = null;
-    this.scrollOffset = null;
-    this.scrollDirection = null;
-    this.scrollAdjustments = 0;
-    this.elementsCache = /* @__PURE__ */ new Map();
-    this.observer = /* @__PURE__ */ (() => {
-      let _ro = null;
-      const get = () => {
-        if (_ro) {
-          return _ro;
-        }
-        if (!this.targetWindow || !this.targetWindow.ResizeObserver) {
-          return null;
-        }
-        return _ro = new this.targetWindow.ResizeObserver((entries) => {
-          entries.forEach((entry) => {
-            const run = () => {
-              this._measureElement(entry.target, entry);
-            };
-            this.options.useAnimationFrameWithResizeObserver ? requestAnimationFrame(run) : run();
-          });
-        });
-      };
-      return {
-        disconnect: () => {
-          var _a;
-          (_a = get()) == null ? void 0 : _a.disconnect();
-          _ro = null;
-        },
-        observe: (target) => {
-          var _a;
-          return (_a = get()) == null ? void 0 : _a.observe(target, { box: "border-box" });
-        },
-        unobserve: (target) => {
-          var _a;
-          return (_a = get()) == null ? void 0 : _a.unobserve(target);
-        }
-      };
-    })();
-    this.range = null;
-    this.setOptions = (opts2) => {
-      Object.entries(opts2).forEach(([key, value]) => {
-        if (typeof value === "undefined")
-          delete opts2[key];
-      });
-      this.options = {
-        debug: false,
-        initialOffset: 0,
-        overscan: 1,
-        paddingStart: 0,
-        paddingEnd: 0,
-        scrollPaddingStart: 0,
-        scrollPaddingEnd: 0,
-        horizontal: false,
-        getItemKey: defaultKeyExtractor,
-        rangeExtractor: defaultRangeExtractor,
-        onChange: () => {
-        },
-        measureElement,
-        initialRect: { width: 0, height: 0 },
-        scrollMargin: 0,
-        gap: 0,
-        indexAttribute: "data-index",
-        initialMeasurementsCache: [],
-        lanes: 1,
-        isScrollingResetDelay: 150,
-        enabled: true,
-        isRtl: false,
-        useScrollendEvent: false,
-        useAnimationFrameWithResizeObserver: false,
-        ...opts2
-      };
-    };
-    this.notify = (sync) => {
-      var _a, _b;
-      (_b = (_a = this.options).onChange) == null ? void 0 : _b.call(_a, this, sync);
-    };
-    this.maybeNotify = memo(
-      () => {
-        this.calculateRange();
-        return [
-          this.isScrolling,
-          this.range ? this.range.startIndex : null,
-          this.range ? this.range.endIndex : null
-        ];
-      },
-      (isScrolling) => {
-        this.notify(isScrolling);
-      },
-      {
-        key: "maybeNotify",
-        debug: () => this.options.debug,
-        initialDeps: [
-          this.isScrolling,
-          this.range ? this.range.startIndex : null,
-          this.range ? this.range.endIndex : null
-        ]
-      }
-    );
-    this.cleanup = () => {
-      this.unsubs.filter(Boolean).forEach((d) => d());
-      this.unsubs = [];
-      this.observer.disconnect();
-      this.scrollElement = null;
-      this.targetWindow = null;
-    };
-    this._didMount = () => {
-      return () => {
-        this.cleanup();
-      };
-    };
-    this._willUpdate = () => {
-      var _a2;
-      var _a;
-      const scrollElement = this.options.enabled ? this.options.getScrollElement() : null;
-      if (this.scrollElement !== scrollElement) {
-        this.cleanup();
-        if (!scrollElement) {
-          this.maybeNotify();
-          return;
-        }
-        this.scrollElement = scrollElement;
-        if (this.scrollElement && "ownerDocument" in this.scrollElement) {
-          this.targetWindow = this.scrollElement.ownerDocument.defaultView;
-        } else {
-          this.targetWindow = (_a2 = (_a = this.scrollElement) == null ? void 0 : _a.window) != null ? _a2 : null;
-        }
-        this.elementsCache.forEach((cached) => {
-          this.observer.observe(cached);
-        });
-        this.unsubs.push(
-          this.options.observeElementRect(this, (rect) => {
-            this.scrollRect = rect;
-            this.maybeNotify();
-          })
-        );
-        this.unsubs.push(
-          this.options.observeElementOffset(this, (offset, isScrolling) => {
-            this.scrollAdjustments = 0;
-            this.scrollDirection = isScrolling ? this.getScrollOffset() < offset ? "forward" : "backward" : null;
-            this.scrollOffset = offset;
-            this.isScrolling = isScrolling;
-            this.maybeNotify();
-          })
-        );
-        this._scrollToOffset(this.getScrollOffset(), {
-          adjustments: void 0,
-          behavior: void 0
-        });
-      }
-    };
-    this.getSize = () => {
-      var _a;
-      if (!this.options.enabled) {
-        this.scrollRect = null;
-        return 0;
-      }
-      this.scrollRect = (_a = this.scrollRect) != null ? _a : this.options.initialRect;
-      return this.scrollRect[this.options.horizontal ? "width" : "height"];
-    };
-    this.getScrollOffset = () => {
-      var _a;
-      if (!this.options.enabled) {
-        this.scrollOffset = null;
-        return 0;
-      }
-      this.scrollOffset = (_a = this.scrollOffset) != null ? _a : typeof this.options.initialOffset === "function" ? this.options.initialOffset() : this.options.initialOffset;
-      return this.scrollOffset;
-    };
-    this.getFurthestMeasurement = (measurements, index) => {
-      const furthestMeasurementsFound = /* @__PURE__ */ new Map();
-      const furthestMeasurements = /* @__PURE__ */ new Map();
-      for (let m = index - 1; m >= 0; m--) {
-        const measurement = measurements[m];
-        if (furthestMeasurementsFound.has(measurement.lane)) {
-          continue;
-        }
-        const previousFurthestMeasurement = furthestMeasurements.get(
-          measurement.lane
-        );
-        if (previousFurthestMeasurement == null || measurement.end > previousFurthestMeasurement.end) {
-          furthestMeasurements.set(measurement.lane, measurement);
-        } else if (measurement.end < previousFurthestMeasurement.end) {
-          furthestMeasurementsFound.set(measurement.lane, true);
-        }
-        if (furthestMeasurementsFound.size === this.options.lanes) {
-          break;
-        }
-      }
-      return furthestMeasurements.size === this.options.lanes ? Array.from(furthestMeasurements.values()).sort((a, b) => {
-        if (a.end === b.end) {
-          return a.index - b.index;
-        }
-        return a.end - b.end;
-      })[0] : void 0;
-    };
-    this.getMeasurementOptions = memo(
-      () => [
-        this.options.count,
-        this.options.paddingStart,
-        this.options.scrollMargin,
-        this.options.getItemKey,
-        this.options.enabled,
-        this.options.lanes
-      ],
-      (count, paddingStart, scrollMargin, getItemKey, enabled, lanes) => {
-        const lanesChanged = this.prevLanes !== void 0 && this.prevLanes !== lanes;
-        if (lanesChanged) {
-          this.lanesChangedFlag = true;
-        }
-        this.prevLanes = lanes;
-        this.pendingMeasuredCacheIndexes = [];
-        return {
-          count,
-          paddingStart,
-          scrollMargin,
-          getItemKey,
-          enabled,
-          lanes
-        };
-      },
-      {
-        key: false
-      }
-    );
-    this.getMeasurements = memo(
-      () => [this.getMeasurementOptions(), this.itemSizeCache],
-      ({ count, paddingStart, scrollMargin, getItemKey, enabled, lanes }, itemSizeCache) => {
-        if (!enabled) {
-          this.measurementsCache = [];
-          this.itemSizeCache.clear();
-          this.laneAssignments.clear();
-          return [];
-        }
-        if (this.laneAssignments.size > count) {
-          for (const index of this.laneAssignments.keys()) {
-            if (index >= count) {
-              this.laneAssignments.delete(index);
-            }
-          }
-        }
-        if (this.lanesChangedFlag) {
-          this.lanesChangedFlag = false;
-          this.lanesSettling = true;
-          this.measurementsCache = [];
-          this.itemSizeCache.clear();
-          this.laneAssignments.clear();
-          this.pendingMeasuredCacheIndexes = [];
-        }
-        if (this.measurementsCache.length === 0 && !this.lanesSettling) {
-          this.measurementsCache = this.options.initialMeasurementsCache;
-          this.measurementsCache.forEach((item) => {
-            this.itemSizeCache.set(item.key, item.size);
-          });
-        }
-        const min = this.lanesSettling ? 0 : this.pendingMeasuredCacheIndexes.length > 0 ? Math.min(...this.pendingMeasuredCacheIndexes) : 0;
-        this.pendingMeasuredCacheIndexes = [];
-        if (this.lanesSettling && this.measurementsCache.length === count) {
-          this.lanesSettling = false;
-        }
-        const measurements = this.measurementsCache.slice(0, min);
-        const laneLastIndex = new Array(lanes).fill(
-          void 0
-        );
-        for (let m = 0; m < min; m++) {
-          const item = measurements[m];
-          if (item) {
-            laneLastIndex[item.lane] = m;
-          }
-        }
-        for (let i = min; i < count; i++) {
-          const key = getItemKey(i);
-          const cachedLane = this.laneAssignments.get(i);
-          let lane;
-          let start;
-          if (cachedLane !== void 0 && this.options.lanes > 1) {
-            lane = cachedLane;
-            const prevIndex = laneLastIndex[lane];
-            const prevInLane = prevIndex !== void 0 ? measurements[prevIndex] : void 0;
-            start = prevInLane ? prevInLane.end + this.options.gap : paddingStart + scrollMargin;
-          } else {
-            const furthestMeasurement = this.options.lanes === 1 ? measurements[i - 1] : this.getFurthestMeasurement(measurements, i);
-            start = furthestMeasurement ? furthestMeasurement.end + this.options.gap : paddingStart + scrollMargin;
-            lane = furthestMeasurement ? furthestMeasurement.lane : i % this.options.lanes;
-            if (this.options.lanes > 1) {
-              this.laneAssignments.set(i, lane);
-            }
-          }
-          const measuredSize = itemSizeCache.get(key);
-          const size = typeof measuredSize === "number" ? measuredSize : this.options.estimateSize(i);
-          const end = start + size;
-          measurements[i] = {
-            index: i,
-            start,
-            size,
-            end,
-            key,
-            lane
-          };
-          laneLastIndex[lane] = i;
-        }
-        this.measurementsCache = measurements;
-        return measurements;
-      },
-      {
-        key: "getMeasurements",
-        debug: () => this.options.debug
-      }
-    );
-    this.calculateRange = memo(
-      () => [
-        this.getMeasurements(),
-        this.getSize(),
-        this.getScrollOffset(),
-        this.options.lanes
-      ],
-      (measurements, outerSize, scrollOffset, lanes) => {
-        return this.range = measurements.length > 0 && outerSize > 0 ? calculateRange({
-          measurements,
-          outerSize,
-          scrollOffset,
-          lanes
-        }) : null;
-      },
-      {
-        key: "calculateRange",
-        debug: () => this.options.debug
-      }
-    );
-    this.getVirtualIndexes = memo(
-      () => {
-        let startIndex = null;
-        let endIndex = null;
-        const range = this.calculateRange();
-        if (range) {
-          startIndex = range.startIndex;
-          endIndex = range.endIndex;
-        }
-        this.maybeNotify.updateDeps([this.isScrolling, startIndex, endIndex]);
-        return [
-          this.options.rangeExtractor,
-          this.options.overscan,
-          this.options.count,
-          startIndex,
-          endIndex
-        ];
-      },
-      (rangeExtractor, overscan, count, startIndex, endIndex) => {
-        return startIndex === null || endIndex === null ? [] : rangeExtractor({
-          startIndex,
-          endIndex,
-          overscan,
-          count
-        });
-      },
-      {
-        key: "getVirtualIndexes",
-        debug: () => this.options.debug
-      }
-    );
-    this.indexFromElement = (node) => {
-      const attributeName = this.options.indexAttribute;
-      const indexStr = node.getAttribute(attributeName);
-      if (!indexStr) {
-        console.warn(
-          `Missing attribute name '${attributeName}={index}' on measured element.`
-        );
-        return -1;
-      }
-      return parseInt(indexStr, 10);
-    };
-    this._measureElement = (node, entry) => {
-      const index = this.indexFromElement(node);
-      const item = this.measurementsCache[index];
-      if (!item) {
-        return;
-      }
-      const key = item.key;
-      const prevNode = this.elementsCache.get(key);
-      if (prevNode !== node) {
-        if (prevNode) {
-          this.observer.unobserve(prevNode);
-        }
-        this.observer.observe(node);
-        this.elementsCache.set(key, node);
-      }
-      if (node.isConnected) {
-        this.resizeItem(index, this.options.measureElement(node, entry, this));
-      }
-    };
-    this.resizeItem = (index, size) => {
-      var _a;
-      const item = this.measurementsCache[index];
-      if (!item) {
-        return;
-      }
-      const itemSize = (_a = this.itemSizeCache.get(item.key)) != null ? _a : item.size;
-      const delta = size - itemSize;
-      if (delta !== 0) {
-        if (this.shouldAdjustScrollPositionOnItemSizeChange !== void 0 ? this.shouldAdjustScrollPositionOnItemSizeChange(item, delta, this) : item.start < this.getScrollOffset() + this.scrollAdjustments) {
-          if (this.options.debug) {
-            console.info("correction", delta);
-          }
-          this._scrollToOffset(this.getScrollOffset(), {
-            adjustments: this.scrollAdjustments += delta,
-            behavior: void 0
-          });
-        }
-        this.pendingMeasuredCacheIndexes.push(item.index);
-        this.itemSizeCache = new Map(this.itemSizeCache.set(item.key, size));
-        this.notify(false);
-      }
-    };
-    this.measureElement = (node) => {
-      if (!node) {
-        this.elementsCache.forEach((cached, key) => {
-          if (!cached.isConnected) {
-            this.observer.unobserve(cached);
-            this.elementsCache.delete(key);
-          }
-        });
-        return;
-      }
-      this._measureElement(node, void 0);
-    };
-    this.getVirtualItems = memo(
-      () => [this.getVirtualIndexes(), this.getMeasurements()],
-      (indexes, measurements) => {
-        const virtualItems = [];
-        for (let k = 0, len = indexes.length; k < len; k++) {
-          const i = indexes[k];
-          const measurement = measurements[i];
-          virtualItems.push(measurement);
-        }
-        return virtualItems;
-      },
-      {
-        key: "getVirtualItems",
-        debug: () => this.options.debug
-      }
-    );
-    this.getVirtualItemForOffset = (offset) => {
-      const measurements = this.getMeasurements();
-      if (measurements.length === 0) {
-        return void 0;
-      }
-      return notUndefined(
-        measurements[findNearestBinarySearch(
-          0,
-          measurements.length - 1,
-          (index) => notUndefined(measurements[index]).start,
-          offset
-        )]
-      );
-    };
-    this.getMaxScrollOffset = () => {
-      if (!this.scrollElement)
-        return 0;
-      if ("scrollHeight" in this.scrollElement) {
-        return this.options.horizontal ? this.scrollElement.scrollWidth - this.scrollElement.clientWidth : this.scrollElement.scrollHeight - this.scrollElement.clientHeight;
-      } else {
-        const doc = this.scrollElement.document.documentElement;
-        return this.options.horizontal ? doc.scrollWidth - this.scrollElement.innerWidth : doc.scrollHeight - this.scrollElement.innerHeight;
-      }
-    };
-    this.getOffsetForAlignment = (toOffset, align, itemSize = 0) => {
-      if (!this.scrollElement)
-        return 0;
-      const size = this.getSize();
-      const scrollOffset = this.getScrollOffset();
-      if (align === "auto") {
-        align = toOffset >= scrollOffset + size ? "end" : "start";
-      }
-      if (align === "center") {
-        toOffset += (itemSize - size) / 2;
-      } else if (align === "end") {
-        toOffset -= size;
-      }
-      const maxOffset = this.getMaxScrollOffset();
-      return Math.max(Math.min(maxOffset, toOffset), 0);
-    };
-    this.getOffsetForIndex = (index, align = "auto") => {
-      index = Math.max(0, Math.min(index, this.options.count - 1));
-      const item = this.measurementsCache[index];
-      if (!item) {
-        return void 0;
-      }
-      const size = this.getSize();
-      const scrollOffset = this.getScrollOffset();
-      if (align === "auto") {
-        if (item.end >= scrollOffset + size - this.options.scrollPaddingEnd) {
-          align = "end";
-        } else if (item.start <= scrollOffset + this.options.scrollPaddingStart) {
-          align = "start";
-        } else {
-          return [scrollOffset, align];
-        }
-      }
-      if (align === "end" && index === this.options.count - 1) {
-        return [this.getMaxScrollOffset(), align];
-      }
-      const toOffset = align === "end" ? item.end + this.options.scrollPaddingEnd : item.start - this.options.scrollPaddingStart;
-      return [
-        this.getOffsetForAlignment(toOffset, align, item.size),
-        align
-      ];
-    };
-    this.isDynamicMode = () => this.elementsCache.size > 0;
-    this.scrollToOffset = (toOffset, { align = "start", behavior } = {}) => {
-      if (behavior === "smooth" && this.isDynamicMode()) {
-        console.warn(
-          "The `smooth` scroll behavior is not fully supported with dynamic size."
-        );
-      }
-      this._scrollToOffset(this.getOffsetForAlignment(toOffset, align), {
-        adjustments: void 0,
-        behavior
-      });
-    };
-    this.scrollToIndex = (index, { align: initialAlign = "auto", behavior } = {}) => {
-      if (behavior === "smooth" && this.isDynamicMode()) {
-        console.warn(
-          "The `smooth` scroll behavior is not fully supported with dynamic size."
-        );
-      }
-      index = Math.max(0, Math.min(index, this.options.count - 1));
-      this.currentScrollToIndex = index;
-      let attempts = 0;
-      const maxAttempts = 10;
-      const tryScroll = (currentAlign) => {
-        if (!this.targetWindow)
-          return;
-        const offsetInfo = this.getOffsetForIndex(index, currentAlign);
-        if (!offsetInfo) {
-          console.warn("Failed to get offset for index:", index);
-          return;
-        }
-        const [offset, align] = offsetInfo;
-        this._scrollToOffset(offset, { adjustments: void 0, behavior });
-        this.targetWindow.requestAnimationFrame(() => {
-          const verify = () => {
-            if (this.currentScrollToIndex !== index)
-              return;
-            const currentOffset = this.getScrollOffset();
-            const afterInfo = this.getOffsetForIndex(index, align);
-            if (!afterInfo) {
-              console.warn("Failed to get offset for index:", index);
-              return;
-            }
-            if (!approxEqual(afterInfo[0], currentOffset)) {
-              scheduleRetry(align);
-            }
-          };
-          if (this.isDynamicMode()) {
-            this.targetWindow.requestAnimationFrame(verify);
-          } else {
-            verify();
-          }
-        });
-      };
-      const scheduleRetry = (align) => {
-        if (!this.targetWindow)
-          return;
-        if (this.currentScrollToIndex !== index)
-          return;
-        attempts++;
-        if (attempts < maxAttempts) {
-          if (this.options.debug) {
-            console.info("Schedule retry", attempts, maxAttempts);
-          }
-          this.targetWindow.requestAnimationFrame(() => tryScroll(align));
-        } else {
-          console.warn(
-            `Failed to scroll to index ${index} after ${maxAttempts} attempts.`
-          );
-        }
-      };
-      tryScroll(initialAlign);
-    };
-    this.scrollBy = (delta, { behavior } = {}) => {
-      if (behavior === "smooth" && this.isDynamicMode()) {
-        console.warn(
-          "The `smooth` scroll behavior is not fully supported with dynamic size."
-        );
-      }
-      this._scrollToOffset(this.getScrollOffset() + delta, {
-        adjustments: void 0,
-        behavior
-      });
-    };
-    this.getTotalSize = () => {
-      var _a2;
-      var _a;
-      const measurements = this.getMeasurements();
-      let end;
-      if (measurements.length === 0) {
-        end = this.options.paddingStart;
-      } else if (this.options.lanes === 1) {
-        end = (_a2 = (_a = measurements[measurements.length - 1]) == null ? void 0 : _a.end) != null ? _a2 : 0;
-      } else {
-        const endByLane = Array(this.options.lanes).fill(null);
-        let endIndex = measurements.length - 1;
-        while (endIndex >= 0 && endByLane.some((val) => val === null)) {
-          const item = measurements[endIndex];
-          if (endByLane[item.lane] === null) {
-            endByLane[item.lane] = item.end;
-          }
-          endIndex--;
-        }
-        end = Math.max(...endByLane.filter((val) => val !== null));
-      }
-      return Math.max(
-        end - this.options.scrollMargin + this.options.paddingEnd,
-        0
-      );
-    };
-    this._scrollToOffset = (offset, {
-      adjustments,
-      behavior
-    }) => {
-      this.options.scrollToFn(offset, { behavior, adjustments }, this);
-    };
-    this.measure = () => {
-      this.itemSizeCache = /* @__PURE__ */ new Map();
-      this.laneAssignments = /* @__PURE__ */ new Map();
-      this.notify(false);
-    };
-    this.setOptions(opts);
-  }
-};
-var findNearestBinarySearch = (low, high, getCurrentValue, value) => {
-  while (low <= high) {
-    const middle = (low + high) / 2 | 0;
-    const currentValue = getCurrentValue(middle);
-    if (currentValue < value) {
-      low = middle + 1;
-    } else if (currentValue > value) {
-      high = middle - 1;
-    } else {
-      return middle;
-    }
-  }
-  if (low > 0) {
-    return low - 1;
-  } else {
-    return 0;
-  }
-};
-function calculateRange({
-  measurements,
-  outerSize,
-  scrollOffset,
-  lanes
-}) {
-  const lastIndex = measurements.length - 1;
-  const getOffset = (index) => measurements[index].start;
-  if (measurements.length <= lanes) {
-    return {
-      startIndex: 0,
-      endIndex: lastIndex
-    };
-  }
-  let startIndex = findNearestBinarySearch(
-    0,
-    lastIndex,
-    getOffset,
-    scrollOffset
-  );
-  let endIndex = startIndex;
-  if (lanes === 1) {
-    while (endIndex < lastIndex && measurements[endIndex].end < scrollOffset + outerSize) {
-      endIndex++;
-    }
-  } else if (lanes > 1) {
-    const endPerLane = Array(lanes).fill(0);
-    while (endIndex < lastIndex && endPerLane.some((pos) => pos < scrollOffset + outerSize)) {
-      const item = measurements[endIndex];
-      endPerLane[item.lane] = item.end;
-      endIndex++;
-    }
-    const startPerLane = Array(lanes).fill(scrollOffset + outerSize);
-    while (startIndex >= 0 && startPerLane.some((pos) => pos >= scrollOffset)) {
-      const item = measurements[startIndex];
-      startPerLane[item.lane] = item.start;
-      startIndex--;
-    }
-    startIndex = Math.max(0, startIndex - startIndex % lanes);
-    endIndex = Math.min(lastIndex, endIndex + (lanes - 1 - endIndex % lanes));
-  }
-  return { startIndex, endIndex };
-}
-
-// node_modules/@tanstack/react-virtual/dist/esm/index.js
-var useIsomorphicLayoutEffect = typeof document !== "undefined" ? React5.useLayoutEffect : React5.useEffect;
-function useVirtualizerBase({
-  useFlushSync = true,
-  ...options
-}) {
-  const rerender = React5.useReducer(() => ({}), {})[1];
-  const resolvedOptions = {
-    ...options,
-    onChange: (instance2, sync) => {
-      var _a;
-      if (useFlushSync && sync) {
-        (0, import_react_dom.flushSync)(rerender);
-      } else {
-        rerender();
-      }
-      (_a = options.onChange) == null ? void 0 : _a.call(options, instance2, sync);
-    }
-  };
-  const [instance] = React5.useState(
-    () => new Virtualizer(resolvedOptions)
-  );
-  instance.setOptions(resolvedOptions);
-  useIsomorphicLayoutEffect(() => {
-    return instance._didMount();
-  }, []);
-  useIsomorphicLayoutEffect(() => {
-    return instance._willUpdate();
-  });
-  return instance;
-}
-function useVirtualizer(options) {
-  return useVirtualizerBase({
-    observeElementRect,
-    observeElementOffset,
-    scrollToFn: elementScroll,
-    ...options
-  });
-}
-
-// src/hooks/useJournalScroll.ts
-var sizeCache = /* @__PURE__ */ new Map();
-var useJournalScroll = (entries) => {
-  const parentRef = (0, import_react8.useRef)(null);
-  const listItems = (0, import_react8.useMemo)(() => {
-    const items = [];
-    const grouped = groupByMonth(entries);
-    const sortedGroups = Object.keys(grouped).sort((a, b) => {
-      if (a === "\u4ECA\u5929")
-        return -1;
-      if (b === "\u4ECA\u5929")
-        return 1;
-      if (a === "\u6628\u5929")
-        return -1;
-      if (b === "\u6628\u5929")
-        return 1;
-      const parseMonthKey = (monthKey) => {
-        const match = monthKey.match(/(\d{4})年(\d{1,2})月/);
-        if (match) {
-          return new Date(parseInt(match[1]), parseInt(match[2]) - 1, 1);
-        }
-        return new Date();
-      };
-      const dateA = parseMonthKey(a);
-      const dateB = parseMonthKey(b);
-      return dateB.getTime() - dateA.getTime();
-    });
-    let index = 0;
-    for (const groupKey of sortedGroups) {
-      items.push({
-        type: "month-header",
-        monthKey: groupKey,
-        index: index++
-      });
-      for (const entry of grouped[groupKey]) {
-        items.push({
-          type: "card",
-          entry,
-          index: index++
-        });
-      }
-    }
-    return items;
-  }, [entries]);
-  const estimateSize = (0, import_react8.useCallback)((index) => {
-    if (sizeCache.has(index)) {
-      return sizeCache.get(index);
-    }
-    const item = listItems[index];
-    if (!item) {
-      return 50;
-    }
-    if (item.type === "month-header") {
-      return 50;
-    }
-    let estimatedHeight = 80;
-    if (item.entry) {
-      if (item.entry.images.length > 0) {
-        estimatedHeight += 200;
-      }
-      if (item.entry.preview) {
-        const previewLines = Math.ceil(item.entry.preview.length / 50);
-        estimatedHeight += Math.min(previewLines * 20, 60);
-      }
-    }
-    return estimatedHeight;
-  }, [listItems]);
-  const virtualizer = useVirtualizer({
-    count: listItems.length,
-    getScrollElement: () => {
-      if (parentRef.current) {
-        const scrollContainer = parentRef.current.closest(".journal-view-container");
-        return scrollContainer || parentRef.current;
-      }
-      return null;
-    },
-    estimateSize,
-    overscan: 5,
-    // 启用动态高度测量
-    measureElement: (element) => {
-      if (!element) {
-        return 0;
-      }
-      return element.getBoundingClientRect().height;
-    }
-  });
-  return {
-    parentRef,
-    virtualizer,
-    listItems
-  };
-};
 
 // src/components/JournalCard.tsx
 var import_react11 = __toESM(require_react());
@@ -25708,13 +24731,1124 @@ var JournalCard = (0, import_react11.memo)(({ entry }) => {
   return prevProps.entry.file.path === nextProps.entry.file.path && prevProps.entry.file.stat.mtime === nextProps.entry.file.stat.mtime && prevProps.entry.title === nextProps.entry.title && prevProps.entry.preview === nextProps.entry.preview && prevProps.entry.images.length === nextProps.entry.images.length && prevProps.entry.date.getTime() === nextProps.entry.date.getTime();
 });
 
+// src/utils/onThisDay.ts
+function isOnThisDay(entry) {
+  const today = new Date();
+  const d = new Date(entry.date);
+  return d.getMonth() === today.getMonth() && d.getDate() === today.getDate() && d.getFullYear() < today.getFullYear();
+}
+function getOnThisDayEntries(entries) {
+  return entries.filter(isOnThisDay).sort((a, b) => b.date.getTime() - a.date.getTime());
+}
+function getLatestOnThisDayWithinYear(entries) {
+  const onThisDay = getOnThisDayEntries(entries);
+  if (onThisDay.length === 0)
+    return null;
+  return onThisDay[0];
+}
+function formatYearsAgo(entry) {
+  const years = new Date().getFullYear() - new Date(entry.date).getFullYear();
+  return years === 1 ? "1 \u5E74\u524D" : `${years} \u5E74\u524D`;
+}
+
+// src/components/OnThisDaySection.tsx
+var OnThisDaySection = () => {
+  const { entries } = useJournalData();
+  const { displayMode } = useOnThisDay();
+  const onThisDayEntries = getOnThisDayEntries(entries);
+  if (displayMode === "hidden")
+    return null;
+  if (onThisDayEntries.length === 0)
+    return null;
+  const entriesToShow = displayMode === "single" ? [getLatestOnThisDayWithinYear(entries)] : onThisDayEntries;
+  return /* @__PURE__ */ import_react12.default.createElement("div", { className: "on-this-day-section" }, /* @__PURE__ */ import_react12.default.createElement("div", { className: "on-this-day-section-header" }, /* @__PURE__ */ import_react12.default.createElement("span", { className: "on-this-day-section-title" }, "\u90A3\u5E74\u4ECA\u65E5")), /* @__PURE__ */ import_react12.default.createElement("div", { className: "on-this-day-section-list" }, entriesToShow.map((entry) => /* @__PURE__ */ import_react12.default.createElement("div", { key: entry.file.path, className: "on-this-day-section-card-wrapper" }, /* @__PURE__ */ import_react12.default.createElement("div", { className: "on-this-day-section-label" }, formatYearsAgo(entry)), /* @__PURE__ */ import_react12.default.createElement(JournalCard, { entry })))));
+};
+
+// src/components/OnThisDayModal.tsx
+var import_react13 = __toESM(require_react());
+var OnThisDayModal = () => {
+  const { isModalOpen, closeModal } = useOnThisDay();
+  const { entries } = useJournalData();
+  const onThisDayEntries = getOnThisDayEntries(entries);
+  (0, import_react13.useEffect)(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape")
+        closeModal();
+    };
+    if (isModalOpen) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [isModalOpen, closeModal]);
+  if (!isModalOpen)
+    return null;
+  return /* @__PURE__ */ import_react13.default.createElement("div", { className: "on-this-day-modal-overlay", onClick: closeModal }, /* @__PURE__ */ import_react13.default.createElement(
+    "div",
+    {
+      className: "on-this-day-modal",
+      onClick: (e) => e.stopPropagation()
+    },
+    /* @__PURE__ */ import_react13.default.createElement("div", { className: "on-this-day-modal-header" }, /* @__PURE__ */ import_react13.default.createElement("h2", { className: "on-this-day-modal-title" }, "\u90A3\u5E74\u4ECA\u65E5"), /* @__PURE__ */ import_react13.default.createElement(
+      "button",
+      {
+        className: "on-this-day-modal-close",
+        onClick: closeModal,
+        title: "\u5173\u95ED",
+        "aria-label": "\u5173\u95ED"
+      },
+      /* @__PURE__ */ import_react13.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, /* @__PURE__ */ import_react13.default.createElement("line", { x1: "18", y1: "6", x2: "6", y2: "18" }), /* @__PURE__ */ import_react13.default.createElement("line", { x1: "6", y1: "6", x2: "18", y2: "18" }))
+    )),
+    /* @__PURE__ */ import_react13.default.createElement("div", { className: "on-this-day-modal-body" }, onThisDayEntries.length === 0 ? /* @__PURE__ */ import_react13.default.createElement("div", { className: "on-this-day-modal-empty" }, /* @__PURE__ */ import_react13.default.createElement("p", null, "\u6682\u65E0\u90A3\u5E74\u4ECA\u65E5\u7684\u8BB0\u5F55"), /* @__PURE__ */ import_react13.default.createElement("p", { className: "on-this-day-modal-empty-hint" }, "\u5728\u5F80\u5E74\u7684\u4ECA\u5929\u5199\u4E0B\u624B\u8BB0\uFF0C\u660E\u5E74\u4ECA\u65E5\u5373\u53EF\u5728\u6B64\u770B\u5230")) : /* @__PURE__ */ import_react13.default.createElement("div", { className: "on-this-day-modal-list" }, onThisDayEntries.map((entry) => /* @__PURE__ */ import_react13.default.createElement("div", { key: entry.file.path, className: "on-this-day-modal-item" }, /* @__PURE__ */ import_react13.default.createElement("div", { className: "on-this-day-modal-item-label" }, formatYearsAgo(entry), " \xB7 ", formatDate(entry.date)), /* @__PURE__ */ import_react13.default.createElement(JournalCard, { entry })))))
+  ));
+};
+
+// src/components/JournalList.tsx
+var import_react15 = __toESM(require_react());
+
+// src/hooks/useJournalScroll.ts
+var import_react14 = __toESM(require_react());
+
+// node_modules/@tanstack/react-virtual/dist/esm/index.js
+var React11 = __toESM(require_react(), 1);
+var import_react_dom = __toESM(require_react_dom(), 1);
+
+// node_modules/@tanstack/virtual-core/dist/esm/utils.js
+function memo3(getDeps, fn, opts) {
+  var _a;
+  let deps = (_a = opts.initialDeps) != null ? _a : [];
+  let result;
+  let isInitial = true;
+  function memoizedFunction() {
+    var _a2, _b, _c;
+    let depTime;
+    if (opts.key && ((_a2 = opts.debug) == null ? void 0 : _a2.call(opts)))
+      depTime = Date.now();
+    const newDeps = getDeps();
+    const depsChanged = newDeps.length !== deps.length || newDeps.some((dep, index) => deps[index] !== dep);
+    if (!depsChanged) {
+      return result;
+    }
+    deps = newDeps;
+    let resultTime;
+    if (opts.key && ((_b = opts.debug) == null ? void 0 : _b.call(opts)))
+      resultTime = Date.now();
+    result = fn(...newDeps);
+    if (opts.key && ((_c = opts.debug) == null ? void 0 : _c.call(opts))) {
+      const depEndTime = Math.round((Date.now() - depTime) * 100) / 100;
+      const resultEndTime = Math.round((Date.now() - resultTime) * 100) / 100;
+      const resultFpsPercentage = resultEndTime / 16;
+      const pad = (str, num) => {
+        str = String(str);
+        while (str.length < num) {
+          str = " " + str;
+        }
+        return str;
+      };
+      console.info(
+        `%c\u23F1 ${pad(resultEndTime, 5)} /${pad(depEndTime, 5)} ms`,
+        `
+            font-size: .6rem;
+            font-weight: bold;
+            color: hsl(${Math.max(
+          0,
+          Math.min(120 - 120 * resultFpsPercentage, 120)
+        )}deg 100% 31%);`,
+        opts == null ? void 0 : opts.key
+      );
+    }
+    if ((opts == null ? void 0 : opts.onChange) && !(isInitial && opts.skipInitialOnChange)) {
+      opts.onChange(result);
+    }
+    isInitial = false;
+    return result;
+  }
+  memoizedFunction.updateDeps = (newDeps) => {
+    deps = newDeps;
+  };
+  return memoizedFunction;
+}
+function notUndefined(value, msg) {
+  if (value === void 0) {
+    throw new Error(`Unexpected undefined${msg ? `: ${msg}` : ""}`);
+  } else {
+    return value;
+  }
+}
+var approxEqual = (a, b) => Math.abs(a - b) < 1.01;
+var debounce = (targetWindow, fn, ms) => {
+  let timeoutId;
+  return function(...args) {
+    targetWindow.clearTimeout(timeoutId);
+    timeoutId = targetWindow.setTimeout(() => fn.apply(this, args), ms);
+  };
+};
+
+// node_modules/@tanstack/virtual-core/dist/esm/index.js
+var getRect = (element) => {
+  const { offsetWidth, offsetHeight } = element;
+  return { width: offsetWidth, height: offsetHeight };
+};
+var defaultKeyExtractor = (index) => index;
+var defaultRangeExtractor = (range) => {
+  const start = Math.max(range.startIndex - range.overscan, 0);
+  const end = Math.min(range.endIndex + range.overscan, range.count - 1);
+  const arr = [];
+  for (let i = start; i <= end; i++) {
+    arr.push(i);
+  }
+  return arr;
+};
+var observeElementRect = (instance, cb) => {
+  const element = instance.scrollElement;
+  if (!element) {
+    return;
+  }
+  const targetWindow = instance.targetWindow;
+  if (!targetWindow) {
+    return;
+  }
+  const handler = (rect) => {
+    const { width, height } = rect;
+    cb({ width: Math.round(width), height: Math.round(height) });
+  };
+  handler(getRect(element));
+  if (!targetWindow.ResizeObserver) {
+    return () => {
+    };
+  }
+  const observer = new targetWindow.ResizeObserver((entries) => {
+    const run = () => {
+      const entry = entries[0];
+      if (entry == null ? void 0 : entry.borderBoxSize) {
+        const box = entry.borderBoxSize[0];
+        if (box) {
+          handler({ width: box.inlineSize, height: box.blockSize });
+          return;
+        }
+      }
+      handler(getRect(element));
+    };
+    instance.options.useAnimationFrameWithResizeObserver ? requestAnimationFrame(run) : run();
+  });
+  observer.observe(element, { box: "border-box" });
+  return () => {
+    observer.unobserve(element);
+  };
+};
+var addEventListenerOptions = {
+  passive: true
+};
+var supportsScrollend = typeof window == "undefined" ? true : "onscrollend" in window;
+var observeElementOffset = (instance, cb) => {
+  const element = instance.scrollElement;
+  if (!element) {
+    return;
+  }
+  const targetWindow = instance.targetWindow;
+  if (!targetWindow) {
+    return;
+  }
+  let offset = 0;
+  const fallback = instance.options.useScrollendEvent && supportsScrollend ? () => void 0 : debounce(
+    targetWindow,
+    () => {
+      cb(offset, false);
+    },
+    instance.options.isScrollingResetDelay
+  );
+  const createHandler = (isScrolling) => () => {
+    const { horizontal, isRtl } = instance.options;
+    offset = horizontal ? element["scrollLeft"] * (isRtl && -1 || 1) : element["scrollTop"];
+    fallback();
+    cb(offset, isScrolling);
+  };
+  const handler = createHandler(true);
+  const endHandler = createHandler(false);
+  element.addEventListener("scroll", handler, addEventListenerOptions);
+  const registerScrollendEvent = instance.options.useScrollendEvent && supportsScrollend;
+  if (registerScrollendEvent) {
+    element.addEventListener("scrollend", endHandler, addEventListenerOptions);
+  }
+  return () => {
+    element.removeEventListener("scroll", handler);
+    if (registerScrollendEvent) {
+      element.removeEventListener("scrollend", endHandler);
+    }
+  };
+};
+var measureElement = (element, entry, instance) => {
+  if (entry == null ? void 0 : entry.borderBoxSize) {
+    const box = entry.borderBoxSize[0];
+    if (box) {
+      const size = Math.round(
+        box[instance.options.horizontal ? "inlineSize" : "blockSize"]
+      );
+      return size;
+    }
+  }
+  return element[instance.options.horizontal ? "offsetWidth" : "offsetHeight"];
+};
+var elementScroll = (offset, {
+  adjustments = 0,
+  behavior
+}, instance) => {
+  var _a, _b;
+  const toOffset = offset + adjustments;
+  (_b = (_a = instance.scrollElement) == null ? void 0 : _a.scrollTo) == null ? void 0 : _b.call(_a, {
+    [instance.options.horizontal ? "left" : "top"]: toOffset,
+    behavior
+  });
+};
+var Virtualizer = class {
+  constructor(opts) {
+    this.unsubs = [];
+    this.scrollElement = null;
+    this.targetWindow = null;
+    this.isScrolling = false;
+    this.currentScrollToIndex = null;
+    this.measurementsCache = [];
+    this.itemSizeCache = /* @__PURE__ */ new Map();
+    this.laneAssignments = /* @__PURE__ */ new Map();
+    this.pendingMeasuredCacheIndexes = [];
+    this.prevLanes = void 0;
+    this.lanesChangedFlag = false;
+    this.lanesSettling = false;
+    this.scrollRect = null;
+    this.scrollOffset = null;
+    this.scrollDirection = null;
+    this.scrollAdjustments = 0;
+    this.elementsCache = /* @__PURE__ */ new Map();
+    this.observer = /* @__PURE__ */ (() => {
+      let _ro = null;
+      const get = () => {
+        if (_ro) {
+          return _ro;
+        }
+        if (!this.targetWindow || !this.targetWindow.ResizeObserver) {
+          return null;
+        }
+        return _ro = new this.targetWindow.ResizeObserver((entries) => {
+          entries.forEach((entry) => {
+            const run = () => {
+              this._measureElement(entry.target, entry);
+            };
+            this.options.useAnimationFrameWithResizeObserver ? requestAnimationFrame(run) : run();
+          });
+        });
+      };
+      return {
+        disconnect: () => {
+          var _a;
+          (_a = get()) == null ? void 0 : _a.disconnect();
+          _ro = null;
+        },
+        observe: (target) => {
+          var _a;
+          return (_a = get()) == null ? void 0 : _a.observe(target, { box: "border-box" });
+        },
+        unobserve: (target) => {
+          var _a;
+          return (_a = get()) == null ? void 0 : _a.unobserve(target);
+        }
+      };
+    })();
+    this.range = null;
+    this.setOptions = (opts2) => {
+      Object.entries(opts2).forEach(([key, value]) => {
+        if (typeof value === "undefined")
+          delete opts2[key];
+      });
+      this.options = {
+        debug: false,
+        initialOffset: 0,
+        overscan: 1,
+        paddingStart: 0,
+        paddingEnd: 0,
+        scrollPaddingStart: 0,
+        scrollPaddingEnd: 0,
+        horizontal: false,
+        getItemKey: defaultKeyExtractor,
+        rangeExtractor: defaultRangeExtractor,
+        onChange: () => {
+        },
+        measureElement,
+        initialRect: { width: 0, height: 0 },
+        scrollMargin: 0,
+        gap: 0,
+        indexAttribute: "data-index",
+        initialMeasurementsCache: [],
+        lanes: 1,
+        isScrollingResetDelay: 150,
+        enabled: true,
+        isRtl: false,
+        useScrollendEvent: false,
+        useAnimationFrameWithResizeObserver: false,
+        ...opts2
+      };
+    };
+    this.notify = (sync) => {
+      var _a, _b;
+      (_b = (_a = this.options).onChange) == null ? void 0 : _b.call(_a, this, sync);
+    };
+    this.maybeNotify = memo3(
+      () => {
+        this.calculateRange();
+        return [
+          this.isScrolling,
+          this.range ? this.range.startIndex : null,
+          this.range ? this.range.endIndex : null
+        ];
+      },
+      (isScrolling) => {
+        this.notify(isScrolling);
+      },
+      {
+        key: "maybeNotify",
+        debug: () => this.options.debug,
+        initialDeps: [
+          this.isScrolling,
+          this.range ? this.range.startIndex : null,
+          this.range ? this.range.endIndex : null
+        ]
+      }
+    );
+    this.cleanup = () => {
+      this.unsubs.filter(Boolean).forEach((d) => d());
+      this.unsubs = [];
+      this.observer.disconnect();
+      this.scrollElement = null;
+      this.targetWindow = null;
+    };
+    this._didMount = () => {
+      return () => {
+        this.cleanup();
+      };
+    };
+    this._willUpdate = () => {
+      var _a2;
+      var _a;
+      const scrollElement = this.options.enabled ? this.options.getScrollElement() : null;
+      if (this.scrollElement !== scrollElement) {
+        this.cleanup();
+        if (!scrollElement) {
+          this.maybeNotify();
+          return;
+        }
+        this.scrollElement = scrollElement;
+        if (this.scrollElement && "ownerDocument" in this.scrollElement) {
+          this.targetWindow = this.scrollElement.ownerDocument.defaultView;
+        } else {
+          this.targetWindow = (_a2 = (_a = this.scrollElement) == null ? void 0 : _a.window) != null ? _a2 : null;
+        }
+        this.elementsCache.forEach((cached) => {
+          this.observer.observe(cached);
+        });
+        this.unsubs.push(
+          this.options.observeElementRect(this, (rect) => {
+            this.scrollRect = rect;
+            this.maybeNotify();
+          })
+        );
+        this.unsubs.push(
+          this.options.observeElementOffset(this, (offset, isScrolling) => {
+            this.scrollAdjustments = 0;
+            this.scrollDirection = isScrolling ? this.getScrollOffset() < offset ? "forward" : "backward" : null;
+            this.scrollOffset = offset;
+            this.isScrolling = isScrolling;
+            this.maybeNotify();
+          })
+        );
+        this._scrollToOffset(this.getScrollOffset(), {
+          adjustments: void 0,
+          behavior: void 0
+        });
+      }
+    };
+    this.getSize = () => {
+      var _a;
+      if (!this.options.enabled) {
+        this.scrollRect = null;
+        return 0;
+      }
+      this.scrollRect = (_a = this.scrollRect) != null ? _a : this.options.initialRect;
+      return this.scrollRect[this.options.horizontal ? "width" : "height"];
+    };
+    this.getScrollOffset = () => {
+      var _a;
+      if (!this.options.enabled) {
+        this.scrollOffset = null;
+        return 0;
+      }
+      this.scrollOffset = (_a = this.scrollOffset) != null ? _a : typeof this.options.initialOffset === "function" ? this.options.initialOffset() : this.options.initialOffset;
+      return this.scrollOffset;
+    };
+    this.getFurthestMeasurement = (measurements, index) => {
+      const furthestMeasurementsFound = /* @__PURE__ */ new Map();
+      const furthestMeasurements = /* @__PURE__ */ new Map();
+      for (let m = index - 1; m >= 0; m--) {
+        const measurement = measurements[m];
+        if (furthestMeasurementsFound.has(measurement.lane)) {
+          continue;
+        }
+        const previousFurthestMeasurement = furthestMeasurements.get(
+          measurement.lane
+        );
+        if (previousFurthestMeasurement == null || measurement.end > previousFurthestMeasurement.end) {
+          furthestMeasurements.set(measurement.lane, measurement);
+        } else if (measurement.end < previousFurthestMeasurement.end) {
+          furthestMeasurementsFound.set(measurement.lane, true);
+        }
+        if (furthestMeasurementsFound.size === this.options.lanes) {
+          break;
+        }
+      }
+      return furthestMeasurements.size === this.options.lanes ? Array.from(furthestMeasurements.values()).sort((a, b) => {
+        if (a.end === b.end) {
+          return a.index - b.index;
+        }
+        return a.end - b.end;
+      })[0] : void 0;
+    };
+    this.getMeasurementOptions = memo3(
+      () => [
+        this.options.count,
+        this.options.paddingStart,
+        this.options.scrollMargin,
+        this.options.getItemKey,
+        this.options.enabled,
+        this.options.lanes
+      ],
+      (count, paddingStart, scrollMargin, getItemKey, enabled, lanes) => {
+        const lanesChanged = this.prevLanes !== void 0 && this.prevLanes !== lanes;
+        if (lanesChanged) {
+          this.lanesChangedFlag = true;
+        }
+        this.prevLanes = lanes;
+        this.pendingMeasuredCacheIndexes = [];
+        return {
+          count,
+          paddingStart,
+          scrollMargin,
+          getItemKey,
+          enabled,
+          lanes
+        };
+      },
+      {
+        key: false
+      }
+    );
+    this.getMeasurements = memo3(
+      () => [this.getMeasurementOptions(), this.itemSizeCache],
+      ({ count, paddingStart, scrollMargin, getItemKey, enabled, lanes }, itemSizeCache) => {
+        if (!enabled) {
+          this.measurementsCache = [];
+          this.itemSizeCache.clear();
+          this.laneAssignments.clear();
+          return [];
+        }
+        if (this.laneAssignments.size > count) {
+          for (const index of this.laneAssignments.keys()) {
+            if (index >= count) {
+              this.laneAssignments.delete(index);
+            }
+          }
+        }
+        if (this.lanesChangedFlag) {
+          this.lanesChangedFlag = false;
+          this.lanesSettling = true;
+          this.measurementsCache = [];
+          this.itemSizeCache.clear();
+          this.laneAssignments.clear();
+          this.pendingMeasuredCacheIndexes = [];
+        }
+        if (this.measurementsCache.length === 0 && !this.lanesSettling) {
+          this.measurementsCache = this.options.initialMeasurementsCache;
+          this.measurementsCache.forEach((item) => {
+            this.itemSizeCache.set(item.key, item.size);
+          });
+        }
+        const min = this.lanesSettling ? 0 : this.pendingMeasuredCacheIndexes.length > 0 ? Math.min(...this.pendingMeasuredCacheIndexes) : 0;
+        this.pendingMeasuredCacheIndexes = [];
+        if (this.lanesSettling && this.measurementsCache.length === count) {
+          this.lanesSettling = false;
+        }
+        const measurements = this.measurementsCache.slice(0, min);
+        const laneLastIndex = new Array(lanes).fill(
+          void 0
+        );
+        for (let m = 0; m < min; m++) {
+          const item = measurements[m];
+          if (item) {
+            laneLastIndex[item.lane] = m;
+          }
+        }
+        for (let i = min; i < count; i++) {
+          const key = getItemKey(i);
+          const cachedLane = this.laneAssignments.get(i);
+          let lane;
+          let start;
+          if (cachedLane !== void 0 && this.options.lanes > 1) {
+            lane = cachedLane;
+            const prevIndex = laneLastIndex[lane];
+            const prevInLane = prevIndex !== void 0 ? measurements[prevIndex] : void 0;
+            start = prevInLane ? prevInLane.end + this.options.gap : paddingStart + scrollMargin;
+          } else {
+            const furthestMeasurement = this.options.lanes === 1 ? measurements[i - 1] : this.getFurthestMeasurement(measurements, i);
+            start = furthestMeasurement ? furthestMeasurement.end + this.options.gap : paddingStart + scrollMargin;
+            lane = furthestMeasurement ? furthestMeasurement.lane : i % this.options.lanes;
+            if (this.options.lanes > 1) {
+              this.laneAssignments.set(i, lane);
+            }
+          }
+          const measuredSize = itemSizeCache.get(key);
+          const size = typeof measuredSize === "number" ? measuredSize : this.options.estimateSize(i);
+          const end = start + size;
+          measurements[i] = {
+            index: i,
+            start,
+            size,
+            end,
+            key,
+            lane
+          };
+          laneLastIndex[lane] = i;
+        }
+        this.measurementsCache = measurements;
+        return measurements;
+      },
+      {
+        key: "getMeasurements",
+        debug: () => this.options.debug
+      }
+    );
+    this.calculateRange = memo3(
+      () => [
+        this.getMeasurements(),
+        this.getSize(),
+        this.getScrollOffset(),
+        this.options.lanes
+      ],
+      (measurements, outerSize, scrollOffset, lanes) => {
+        return this.range = measurements.length > 0 && outerSize > 0 ? calculateRange({
+          measurements,
+          outerSize,
+          scrollOffset,
+          lanes
+        }) : null;
+      },
+      {
+        key: "calculateRange",
+        debug: () => this.options.debug
+      }
+    );
+    this.getVirtualIndexes = memo3(
+      () => {
+        let startIndex = null;
+        let endIndex = null;
+        const range = this.calculateRange();
+        if (range) {
+          startIndex = range.startIndex;
+          endIndex = range.endIndex;
+        }
+        this.maybeNotify.updateDeps([this.isScrolling, startIndex, endIndex]);
+        return [
+          this.options.rangeExtractor,
+          this.options.overscan,
+          this.options.count,
+          startIndex,
+          endIndex
+        ];
+      },
+      (rangeExtractor, overscan, count, startIndex, endIndex) => {
+        return startIndex === null || endIndex === null ? [] : rangeExtractor({
+          startIndex,
+          endIndex,
+          overscan,
+          count
+        });
+      },
+      {
+        key: "getVirtualIndexes",
+        debug: () => this.options.debug
+      }
+    );
+    this.indexFromElement = (node) => {
+      const attributeName = this.options.indexAttribute;
+      const indexStr = node.getAttribute(attributeName);
+      if (!indexStr) {
+        console.warn(
+          `Missing attribute name '${attributeName}={index}' on measured element.`
+        );
+        return -1;
+      }
+      return parseInt(indexStr, 10);
+    };
+    this._measureElement = (node, entry) => {
+      const index = this.indexFromElement(node);
+      const item = this.measurementsCache[index];
+      if (!item) {
+        return;
+      }
+      const key = item.key;
+      const prevNode = this.elementsCache.get(key);
+      if (prevNode !== node) {
+        if (prevNode) {
+          this.observer.unobserve(prevNode);
+        }
+        this.observer.observe(node);
+        this.elementsCache.set(key, node);
+      }
+      if (node.isConnected) {
+        this.resizeItem(index, this.options.measureElement(node, entry, this));
+      }
+    };
+    this.resizeItem = (index, size) => {
+      var _a;
+      const item = this.measurementsCache[index];
+      if (!item) {
+        return;
+      }
+      const itemSize = (_a = this.itemSizeCache.get(item.key)) != null ? _a : item.size;
+      const delta = size - itemSize;
+      if (delta !== 0) {
+        if (this.shouldAdjustScrollPositionOnItemSizeChange !== void 0 ? this.shouldAdjustScrollPositionOnItemSizeChange(item, delta, this) : item.start < this.getScrollOffset() + this.scrollAdjustments) {
+          if (this.options.debug) {
+            console.info("correction", delta);
+          }
+          this._scrollToOffset(this.getScrollOffset(), {
+            adjustments: this.scrollAdjustments += delta,
+            behavior: void 0
+          });
+        }
+        this.pendingMeasuredCacheIndexes.push(item.index);
+        this.itemSizeCache = new Map(this.itemSizeCache.set(item.key, size));
+        this.notify(false);
+      }
+    };
+    this.measureElement = (node) => {
+      if (!node) {
+        this.elementsCache.forEach((cached, key) => {
+          if (!cached.isConnected) {
+            this.observer.unobserve(cached);
+            this.elementsCache.delete(key);
+          }
+        });
+        return;
+      }
+      this._measureElement(node, void 0);
+    };
+    this.getVirtualItems = memo3(
+      () => [this.getVirtualIndexes(), this.getMeasurements()],
+      (indexes, measurements) => {
+        const virtualItems = [];
+        for (let k = 0, len = indexes.length; k < len; k++) {
+          const i = indexes[k];
+          const measurement = measurements[i];
+          virtualItems.push(measurement);
+        }
+        return virtualItems;
+      },
+      {
+        key: "getVirtualItems",
+        debug: () => this.options.debug
+      }
+    );
+    this.getVirtualItemForOffset = (offset) => {
+      const measurements = this.getMeasurements();
+      if (measurements.length === 0) {
+        return void 0;
+      }
+      return notUndefined(
+        measurements[findNearestBinarySearch(
+          0,
+          measurements.length - 1,
+          (index) => notUndefined(measurements[index]).start,
+          offset
+        )]
+      );
+    };
+    this.getMaxScrollOffset = () => {
+      if (!this.scrollElement)
+        return 0;
+      if ("scrollHeight" in this.scrollElement) {
+        return this.options.horizontal ? this.scrollElement.scrollWidth - this.scrollElement.clientWidth : this.scrollElement.scrollHeight - this.scrollElement.clientHeight;
+      } else {
+        const doc = this.scrollElement.document.documentElement;
+        return this.options.horizontal ? doc.scrollWidth - this.scrollElement.innerWidth : doc.scrollHeight - this.scrollElement.innerHeight;
+      }
+    };
+    this.getOffsetForAlignment = (toOffset, align, itemSize = 0) => {
+      if (!this.scrollElement)
+        return 0;
+      const size = this.getSize();
+      const scrollOffset = this.getScrollOffset();
+      if (align === "auto") {
+        align = toOffset >= scrollOffset + size ? "end" : "start";
+      }
+      if (align === "center") {
+        toOffset += (itemSize - size) / 2;
+      } else if (align === "end") {
+        toOffset -= size;
+      }
+      const maxOffset = this.getMaxScrollOffset();
+      return Math.max(Math.min(maxOffset, toOffset), 0);
+    };
+    this.getOffsetForIndex = (index, align = "auto") => {
+      index = Math.max(0, Math.min(index, this.options.count - 1));
+      const item = this.measurementsCache[index];
+      if (!item) {
+        return void 0;
+      }
+      const size = this.getSize();
+      const scrollOffset = this.getScrollOffset();
+      if (align === "auto") {
+        if (item.end >= scrollOffset + size - this.options.scrollPaddingEnd) {
+          align = "end";
+        } else if (item.start <= scrollOffset + this.options.scrollPaddingStart) {
+          align = "start";
+        } else {
+          return [scrollOffset, align];
+        }
+      }
+      if (align === "end" && index === this.options.count - 1) {
+        return [this.getMaxScrollOffset(), align];
+      }
+      const toOffset = align === "end" ? item.end + this.options.scrollPaddingEnd : item.start - this.options.scrollPaddingStart;
+      return [
+        this.getOffsetForAlignment(toOffset, align, item.size),
+        align
+      ];
+    };
+    this.isDynamicMode = () => this.elementsCache.size > 0;
+    this.scrollToOffset = (toOffset, { align = "start", behavior } = {}) => {
+      if (behavior === "smooth" && this.isDynamicMode()) {
+        console.warn(
+          "The `smooth` scroll behavior is not fully supported with dynamic size."
+        );
+      }
+      this._scrollToOffset(this.getOffsetForAlignment(toOffset, align), {
+        adjustments: void 0,
+        behavior
+      });
+    };
+    this.scrollToIndex = (index, { align: initialAlign = "auto", behavior } = {}) => {
+      if (behavior === "smooth" && this.isDynamicMode()) {
+        console.warn(
+          "The `smooth` scroll behavior is not fully supported with dynamic size."
+        );
+      }
+      index = Math.max(0, Math.min(index, this.options.count - 1));
+      this.currentScrollToIndex = index;
+      let attempts = 0;
+      const maxAttempts = 10;
+      const tryScroll = (currentAlign) => {
+        if (!this.targetWindow)
+          return;
+        const offsetInfo = this.getOffsetForIndex(index, currentAlign);
+        if (!offsetInfo) {
+          console.warn("Failed to get offset for index:", index);
+          return;
+        }
+        const [offset, align] = offsetInfo;
+        this._scrollToOffset(offset, { adjustments: void 0, behavior });
+        this.targetWindow.requestAnimationFrame(() => {
+          const verify = () => {
+            if (this.currentScrollToIndex !== index)
+              return;
+            const currentOffset = this.getScrollOffset();
+            const afterInfo = this.getOffsetForIndex(index, align);
+            if (!afterInfo) {
+              console.warn("Failed to get offset for index:", index);
+              return;
+            }
+            if (!approxEqual(afterInfo[0], currentOffset)) {
+              scheduleRetry(align);
+            }
+          };
+          if (this.isDynamicMode()) {
+            this.targetWindow.requestAnimationFrame(verify);
+          } else {
+            verify();
+          }
+        });
+      };
+      const scheduleRetry = (align) => {
+        if (!this.targetWindow)
+          return;
+        if (this.currentScrollToIndex !== index)
+          return;
+        attempts++;
+        if (attempts < maxAttempts) {
+          if (this.options.debug) {
+            console.info("Schedule retry", attempts, maxAttempts);
+          }
+          this.targetWindow.requestAnimationFrame(() => tryScroll(align));
+        } else {
+          console.warn(
+            `Failed to scroll to index ${index} after ${maxAttempts} attempts.`
+          );
+        }
+      };
+      tryScroll(initialAlign);
+    };
+    this.scrollBy = (delta, { behavior } = {}) => {
+      if (behavior === "smooth" && this.isDynamicMode()) {
+        console.warn(
+          "The `smooth` scroll behavior is not fully supported with dynamic size."
+        );
+      }
+      this._scrollToOffset(this.getScrollOffset() + delta, {
+        adjustments: void 0,
+        behavior
+      });
+    };
+    this.getTotalSize = () => {
+      var _a2;
+      var _a;
+      const measurements = this.getMeasurements();
+      let end;
+      if (measurements.length === 0) {
+        end = this.options.paddingStart;
+      } else if (this.options.lanes === 1) {
+        end = (_a2 = (_a = measurements[measurements.length - 1]) == null ? void 0 : _a.end) != null ? _a2 : 0;
+      } else {
+        const endByLane = Array(this.options.lanes).fill(null);
+        let endIndex = measurements.length - 1;
+        while (endIndex >= 0 && endByLane.some((val) => val === null)) {
+          const item = measurements[endIndex];
+          if (endByLane[item.lane] === null) {
+            endByLane[item.lane] = item.end;
+          }
+          endIndex--;
+        }
+        end = Math.max(...endByLane.filter((val) => val !== null));
+      }
+      return Math.max(
+        end - this.options.scrollMargin + this.options.paddingEnd,
+        0
+      );
+    };
+    this._scrollToOffset = (offset, {
+      adjustments,
+      behavior
+    }) => {
+      this.options.scrollToFn(offset, { behavior, adjustments }, this);
+    };
+    this.measure = () => {
+      this.itemSizeCache = /* @__PURE__ */ new Map();
+      this.laneAssignments = /* @__PURE__ */ new Map();
+      this.notify(false);
+    };
+    this.setOptions(opts);
+  }
+};
+var findNearestBinarySearch = (low, high, getCurrentValue, value) => {
+  while (low <= high) {
+    const middle = (low + high) / 2 | 0;
+    const currentValue = getCurrentValue(middle);
+    if (currentValue < value) {
+      low = middle + 1;
+    } else if (currentValue > value) {
+      high = middle - 1;
+    } else {
+      return middle;
+    }
+  }
+  if (low > 0) {
+    return low - 1;
+  } else {
+    return 0;
+  }
+};
+function calculateRange({
+  measurements,
+  outerSize,
+  scrollOffset,
+  lanes
+}) {
+  const lastIndex = measurements.length - 1;
+  const getOffset = (index) => measurements[index].start;
+  if (measurements.length <= lanes) {
+    return {
+      startIndex: 0,
+      endIndex: lastIndex
+    };
+  }
+  let startIndex = findNearestBinarySearch(
+    0,
+    lastIndex,
+    getOffset,
+    scrollOffset
+  );
+  let endIndex = startIndex;
+  if (lanes === 1) {
+    while (endIndex < lastIndex && measurements[endIndex].end < scrollOffset + outerSize) {
+      endIndex++;
+    }
+  } else if (lanes > 1) {
+    const endPerLane = Array(lanes).fill(0);
+    while (endIndex < lastIndex && endPerLane.some((pos) => pos < scrollOffset + outerSize)) {
+      const item = measurements[endIndex];
+      endPerLane[item.lane] = item.end;
+      endIndex++;
+    }
+    const startPerLane = Array(lanes).fill(scrollOffset + outerSize);
+    while (startIndex >= 0 && startPerLane.some((pos) => pos >= scrollOffset)) {
+      const item = measurements[startIndex];
+      startPerLane[item.lane] = item.start;
+      startIndex--;
+    }
+    startIndex = Math.max(0, startIndex - startIndex % lanes);
+    endIndex = Math.min(lastIndex, endIndex + (lanes - 1 - endIndex % lanes));
+  }
+  return { startIndex, endIndex };
+}
+
+// node_modules/@tanstack/react-virtual/dist/esm/index.js
+var useIsomorphicLayoutEffect = typeof document !== "undefined" ? React11.useLayoutEffect : React11.useEffect;
+function useVirtualizerBase({
+  useFlushSync = true,
+  ...options
+}) {
+  const rerender = React11.useReducer(() => ({}), {})[1];
+  const resolvedOptions = {
+    ...options,
+    onChange: (instance2, sync) => {
+      var _a;
+      if (useFlushSync && sync) {
+        (0, import_react_dom.flushSync)(rerender);
+      } else {
+        rerender();
+      }
+      (_a = options.onChange) == null ? void 0 : _a.call(options, instance2, sync);
+    }
+  };
+  const [instance] = React11.useState(
+    () => new Virtualizer(resolvedOptions)
+  );
+  instance.setOptions(resolvedOptions);
+  useIsomorphicLayoutEffect(() => {
+    return instance._didMount();
+  }, []);
+  useIsomorphicLayoutEffect(() => {
+    return instance._willUpdate();
+  });
+  return instance;
+}
+function useVirtualizer(options) {
+  return useVirtualizerBase({
+    observeElementRect,
+    observeElementOffset,
+    scrollToFn: elementScroll,
+    ...options
+  });
+}
+
+// src/hooks/useJournalScroll.ts
+var sizeCache = /* @__PURE__ */ new Map();
+var useJournalScroll = (entries) => {
+  const parentRef = (0, import_react14.useRef)(null);
+  const listItems = (0, import_react14.useMemo)(() => {
+    const items = [];
+    const grouped = groupByMonth(entries);
+    const sortedGroups = Object.keys(grouped).sort((a, b) => {
+      if (a === "\u4ECA\u5929")
+        return -1;
+      if (b === "\u4ECA\u5929")
+        return 1;
+      if (a === "\u6628\u5929")
+        return -1;
+      if (b === "\u6628\u5929")
+        return 1;
+      const parseMonthKey = (monthKey) => {
+        const match = monthKey.match(/(\d{4})年(\d{1,2})月/);
+        if (match) {
+          return new Date(parseInt(match[1]), parseInt(match[2]) - 1, 1);
+        }
+        return new Date();
+      };
+      const dateA = parseMonthKey(a);
+      const dateB = parseMonthKey(b);
+      return dateB.getTime() - dateA.getTime();
+    });
+    let index = 0;
+    for (const groupKey of sortedGroups) {
+      items.push({
+        type: "month-header",
+        monthKey: groupKey,
+        index: index++
+      });
+      for (const entry of grouped[groupKey]) {
+        items.push({
+          type: "card",
+          entry,
+          index: index++
+        });
+      }
+    }
+    return items;
+  }, [entries]);
+  const estimateSize = (0, import_react14.useCallback)((index) => {
+    if (sizeCache.has(index)) {
+      return sizeCache.get(index);
+    }
+    const item = listItems[index];
+    if (!item) {
+      return 50;
+    }
+    if (item.type === "month-header") {
+      return 50;
+    }
+    let estimatedHeight = 80;
+    if (item.entry) {
+      if (item.entry.images.length > 0) {
+        estimatedHeight += 200;
+      }
+      if (item.entry.preview) {
+        const previewLines = Math.ceil(item.entry.preview.length / 50);
+        estimatedHeight += Math.min(previewLines * 20, 60);
+      }
+    }
+    return estimatedHeight;
+  }, [listItems]);
+  const virtualizer = useVirtualizer({
+    count: listItems.length,
+    getScrollElement: () => {
+      if (parentRef.current) {
+        const scrollContainer = parentRef.current.closest(".journal-view-container");
+        return scrollContainer || parentRef.current;
+      }
+      return null;
+    },
+    estimateSize,
+    overscan: 5,
+    // 启用动态高度测量
+    measureElement: (element) => {
+      if (!element) {
+        return 0;
+      }
+      return element.getBoundingClientRect().height;
+    }
+  });
+  return {
+    parentRef,
+    virtualizer,
+    listItems
+  };
+};
+
 // src/components/JournalList.tsx
 var JournalList = () => {
   const { entries } = useJournalData();
   const { parentRef, virtualizer, listItems } = useJournalScroll(entries);
-  const itemRefs = (0, import_react12.useRef)(/* @__PURE__ */ new Map());
-  const scrollPositionRef = (0, import_react12.useRef)(0);
-  (0, import_react12.useEffect)(() => {
+  const itemRefs = (0, import_react15.useRef)(/* @__PURE__ */ new Map());
+  const scrollPositionRef = (0, import_react15.useRef)(0);
+  (0, import_react15.useEffect)(() => {
     const scrollElement = parentRef.current;
     if (!scrollElement)
       return;
@@ -25726,7 +25860,7 @@ var JournalList = () => {
       scrollElement.removeEventListener("scroll", handleScroll);
     };
   }, [parentRef]);
-  (0, import_react12.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     const scrollElement = parentRef.current;
     if (!scrollElement || scrollPositionRef.current === 0)
       return;
@@ -25736,16 +25870,16 @@ var JournalList = () => {
       }
     });
   }, [entries.length, parentRef]);
-  (0, import_react12.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     virtualizer.measure();
   }, [entries.length, virtualizer]);
-  return /* @__PURE__ */ import_react12.default.createElement(
+  return /* @__PURE__ */ import_react15.default.createElement(
     "div",
     {
       ref: parentRef,
       className: "journal-list-container"
     },
-    /* @__PURE__ */ import_react12.default.createElement(
+    /* @__PURE__ */ import_react15.default.createElement(
       "div",
       {
         style: {
@@ -25768,7 +25902,7 @@ var JournalList = () => {
           }
         };
         if (item.type === "month-header") {
-          return /* @__PURE__ */ import_react12.default.createElement(
+          return /* @__PURE__ */ import_react15.default.createElement(
             "div",
             {
               key: `month-${item.monthKey}`,
@@ -25782,11 +25916,11 @@ var JournalList = () => {
                 transform: `translateY(${virtualItem.start}px)`
               }
             },
-            /* @__PURE__ */ import_react12.default.createElement("h2", { className: "journal-month-title" }, item.monthKey)
+            /* @__PURE__ */ import_react15.default.createElement("h2", { className: "journal-month-title" }, item.monthKey)
           );
         }
         if (item.type === "card" && item.entry) {
-          return /* @__PURE__ */ import_react12.default.createElement(
+          return /* @__PURE__ */ import_react15.default.createElement(
             "div",
             {
               key: item.entry.file.path,
@@ -25800,7 +25934,7 @@ var JournalList = () => {
                 transform: `translateY(${virtualItem.start}px)`
               }
             },
-            /* @__PURE__ */ import_react12.default.createElement(JournalCard, { entry: item.entry })
+            /* @__PURE__ */ import_react15.default.createElement(JournalCard, { entry: item.entry })
           );
         }
         return null;
@@ -25810,33 +25944,33 @@ var JournalList = () => {
 };
 
 // src/components/JournalEmptyState.tsx
-var import_react13 = __toESM(require_react());
+var import_react16 = __toESM(require_react());
 var JournalEmptyState = () => {
   const { app } = useJournalView();
   const handleScan = async () => {
     console.log("Scan files");
   };
-  return /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-welcome" }, /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-welcome-card" }, /* @__PURE__ */ import_react13.default.createElement("h2", null, "\u6B22\u8FCE\u4F7F\u7528\u624B\u8BB0\u89C6\u56FE"), /* @__PURE__ */ import_react13.default.createElement("p", null, "\u8FD8\u6CA1\u6709\u627E\u5230\u4EFB\u4F55\u624B\u8BB0\u6587\u4EF6"), /* @__PURE__ */ import_react13.default.createElement("button", { className: "journal-welcome-button", onClick: handleScan }, "\u5F00\u59CB\u626B\u63CF")));
+  return /* @__PURE__ */ import_react16.default.createElement("div", { className: "journal-welcome" }, /* @__PURE__ */ import_react16.default.createElement("div", { className: "journal-welcome-card" }, /* @__PURE__ */ import_react16.default.createElement("h2", null, "\u6B22\u8FCE\u4F7F\u7528\u624B\u8BB0\u89C6\u56FE"), /* @__PURE__ */ import_react16.default.createElement("p", null, "\u8FD8\u6CA1\u6709\u627E\u5230\u4EFB\u4F55\u624B\u8BB0\u6587\u4EF6"), /* @__PURE__ */ import_react16.default.createElement("button", { className: "journal-welcome-button", onClick: handleScan }, "\u5F00\u59CB\u626B\u63CF")));
 };
 
 // src/components/JournalViewContainer.tsx
 var JournalViewWithWatchers = () => {
   useFileSystemWatchers();
-  return /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-content-wrapper" }, /* @__PURE__ */ import_react14.default.createElement(JournalHeader, null), /* @__PURE__ */ import_react14.default.createElement(JournalStats, null), /* @__PURE__ */ import_react14.default.createElement(JournalList, null));
+  return /* @__PURE__ */ import_react17.default.createElement(OnThisDayProvider, null, /* @__PURE__ */ import_react17.default.createElement("div", { className: "journal-content-wrapper" }, /* @__PURE__ */ import_react17.default.createElement(JournalHeader, null), /* @__PURE__ */ import_react17.default.createElement(JournalStats, null), /* @__PURE__ */ import_react17.default.createElement(OnThisDaySection, null), /* @__PURE__ */ import_react17.default.createElement(JournalList, null)), /* @__PURE__ */ import_react17.default.createElement(OnThisDayModal, null));
 };
 var JournalViewContent = () => {
   const { entries, isLoading, error, refresh, updateSingleEntry, updateEntryAfterRename } = useJournalEntries();
   if (isLoading) {
-    return /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react14.default.createElement("div", null, "\u52A0\u8F7D\u4E2D..."));
+    return /* @__PURE__ */ import_react17.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react17.default.createElement("div", null, "\u52A0\u8F7D\u4E2D..."));
   }
   if (error !== null && error !== void 0) {
     const errorMessage = error.message || String(error);
-    return /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react14.default.createElement("div", null, "\u9519\u8BEF: ", errorMessage));
+    return /* @__PURE__ */ import_react17.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react17.default.createElement("div", null, "\u9519\u8BEF: ", errorMessage));
   }
   if (entries.length === 0) {
-    return /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react14.default.createElement(JournalEmptyState, null));
+    return /* @__PURE__ */ import_react17.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react17.default.createElement(JournalEmptyState, null));
   }
-  return /* @__PURE__ */ import_react14.default.createElement(MenuProvider, null, /* @__PURE__ */ import_react14.default.createElement(
+  return /* @__PURE__ */ import_react17.default.createElement(MenuProvider, null, /* @__PURE__ */ import_react17.default.createElement(
     JournalDataProvider,
     {
       entries,
@@ -25846,13 +25980,13 @@ var JournalViewContent = () => {
       updateSingleEntry,
       updateEntryAfterRename
     },
-    /* @__PURE__ */ import_react14.default.createElement(JournalViewWithWatchers, null)
+    /* @__PURE__ */ import_react17.default.createElement(JournalViewWithWatchers, null)
   ));
 };
 var JournalViewContainer = () => {
-  const containerRef = (0, import_react14.useRef)(null);
+  const containerRef = (0, import_react17.useRef)(null);
   const scrollbarWidth = useScrollbarWidth();
-  (0, import_react14.useEffect)(() => {
+  (0, import_react17.useEffect)(() => {
     if (containerRef.current && scrollbarWidth > 0) {
       containerRef.current.style.setProperty(
         "--scrollbar-compensation",
@@ -25860,7 +25994,7 @@ var JournalViewContainer = () => {
       );
     }
   }, [scrollbarWidth]);
-  return /* @__PURE__ */ import_react14.default.createElement("div", { ref: containerRef, className: "journal-view-container" }, /* @__PURE__ */ import_react14.default.createElement(JournalViewContent, null));
+  return /* @__PURE__ */ import_react17.default.createElement("div", { ref: containerRef, className: "journal-view-container" }, /* @__PURE__ */ import_react17.default.createElement(JournalViewContent, null));
 };
 
 // src/view/JournalView.tsx
@@ -25946,7 +26080,7 @@ var JournalView = class extends import_obsidian5.ItemView {
       }
     }
     this.root.render(
-      /* @__PURE__ */ import_react15.default.createElement(import_react15.default.StrictMode, null, /* @__PURE__ */ import_react15.default.createElement(
+      /* @__PURE__ */ import_react18.default.createElement(import_react18.default.StrictMode, null, /* @__PURE__ */ import_react18.default.createElement(
         JournalViewProvider,
         {
           app: this.app,
@@ -25957,7 +26091,7 @@ var JournalView = class extends import_obsidian5.ItemView {
             this.renderReact();
           }
         },
-        /* @__PURE__ */ import_react15.default.createElement(JournalViewContainer, null)
+        /* @__PURE__ */ import_react18.default.createElement(JournalViewContainer, null)
       ))
     );
   }
@@ -25977,8 +26111,10 @@ var DEFAULT_SETTINGS = {
   // 默认图片间距 10px
   openInNewTab: true,
   // 默认在新标签页打开
-  enableEditorImageLayout: true
+  enableEditorImageLayout: true,
   // 默认在 Live Preview 中启用手记式图片布局
+  onThisDayDisplayMode: "single"
+  // 那年今日默认展示最近一条
 };
 
 // src/settings/JournalSettingTab.ts
@@ -26718,7 +26854,7 @@ var EditorImageLayout = class {
       wrap.appendChild(img);
       const deleteBtn = document.createElement("button");
       deleteBtn.addClass("journal-editor-image-delete");
-      deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+      deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
       deleteBtn.title = "\u5220\u9664\u56FE\u7247";
       deleteBtn.onclick = (e) => {
         e.stopPropagation();
@@ -26790,20 +26926,54 @@ var EditorImageLayout = class {
       new RegExp(`\\[([^\\]]*)\\]\\([^)]*${escapedName}[^)]*\\)`),
       new RegExp(`!?\\[\\[${escapedName}\\]\\]`)
     ];
-    let lineDeleted = false;
+    let lineIndex = -1;
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (patterns.some((p) => p.test(line))) {
-        const newContent = lines.filter((_, idx) => idx !== i).join("\n");
-        editor.setValue(newContent);
-        lineDeleted = true;
+      if (patterns.some((p) => p.test(lines[i]))) {
+        lineIndex = i;
         break;
       }
     }
-    if (lineDeleted) {
-      this.removeImageAndRebuildGallery(img, view.contentEl);
-      this.scheduleProcessWithRetries();
+    if (lineIndex < 0)
+      return;
+    const gallery = img.closest(".journal-images");
+    const remainingImgs = gallery ? Array.from(gallery.querySelectorAll("img.journal-editor-processed")).filter(
+      (el) => el !== img
+    ) : [];
+    const firstImgInGallery = gallery == null ? void 0 : gallery.querySelector("img.journal-editor-processed");
+    const needMoveFirst = !!gallery && !!firstImgInGallery && img === firstImgInGallery && remainingImgs.length >= 1;
+    let domUpdatedByMove = false;
+    if (needMoveFirst) {
+      const galleryParentEmbed = gallery.closest(".internal-embed");
+      const nextEmbed = galleryParentEmbed ? this.findNextSiblingEmbed(galleryParentEmbed) : null;
+      if (nextEmbed) {
+        nextEmbed.appendChild(gallery);
+        remainingImgs.forEach((i) => i.classList.remove("journal-editor-processed"));
+        gallery.className = "journal-images " + this.getLayoutClass(remainingImgs.length);
+        gallery.innerHTML = "";
+        this.organizeImagesInContainer(remainingImgs, gallery);
+        domUpdatedByMove = true;
+      }
     }
+    const newContent = lines.filter((_, idx) => idx !== lineIndex).join("\n");
+    editor.setValue(newContent);
+    if (!domUpdatedByMove) {
+      this.removeImageAndRebuildGallery(img, view.contentEl);
+    }
+    this.scheduleProcessWithRetries();
+  }
+  /** 查找与给定 embed 相邻的下一个 internal-embed（用于迁移 gallery） */
+  findNextSiblingEmbed(embed) {
+    const block = embed.closest("p, .cm-line, .cm-block") || embed;
+    let cur = block.nextElementSibling;
+    while (cur) {
+      const nextEmbed = cur.classList.contains("internal-embed") ? cur : cur.querySelector(".internal-embed");
+      if (nextEmbed)
+        return nextEmbed;
+      if (!this.isImageOnlyBlock(cur))
+        break;
+      cur = cur.nextElementSibling;
+    }
+    return null;
   }
   /** 从 gallery 中移除指定图片并立即重建布局 */
   removeImageAndRebuildGallery(img, scope) {

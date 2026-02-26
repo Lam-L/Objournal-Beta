@@ -52,6 +52,69 @@
 	font-size: 16px;
 }
 
+/* 空状态欢迎卡片与按钮 */
+.journal-welcome {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 200px;
+	padding: 40px 20px;
+}
+
+.journal-welcome-card {
+	text-align: center;
+	max-width: 360px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+}
+
+.journal-welcome-card h2 {
+	font-size: 20px;
+	font-weight: 600;
+	color: var(--text-normal);
+	margin: 0;
+}
+
+.journal-welcome-card p {
+	font-size: 15px;
+	color: var(--text-muted);
+	margin: 0;
+	line-height: 1.5;
+}
+
+.journal-welcome-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	padding: 0 24px;
+	font-size: 15px;
+	font-weight: 500;
+	color: #fff;
+	background: var(--interactive-accent, #3b82f6);
+	border: none;
+	border-radius: 12px;
+	cursor: pointer;
+	transition: background 0.2s ease, box-shadow 0.2s ease;
+	box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+}
+
+.journal-welcome-button:hover {
+	background: var(--interactive-accent-hover, #2563eb);
+	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.journal-welcome-button:active {
+	background: var(--interactive-accent-hover, #1d4ed8);
+}
+
+.journal-welcome-button:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+
 /* 内容包装器：所有内容（header、stats、list）都在同一个滚动容器中 */
 .journal-content-wrapper {
 	display: flex;
@@ -119,42 +182,117 @@
 	color: #e0e0e0 !important;
 }
 
+/* ========== 首页按钮设计系统（ui-ux-pro-max 规范） ========== */
+/* 触摸目标 ≥44px | 过渡 200ms | 无布局位移 | 可见 focus-ring */
+
 .journal-header-buttons {
 	display: flex;
-	gap: 8px;
+	gap: 10px;
 	align-items: center;
+}
+
+.journal-header-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 44px;
+	min-height: 44px;
+	padding: 0 14px;
+	color: var(--text-normal);
+	background: rgba(0, 0, 0, 0.04);
+	border: 1px solid rgba(0, 0, 0, 0.06);
+	border-radius: 12px;
+	cursor: pointer;
+	transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.journal-header-button:hover {
+	background: rgba(0, 0, 0, 0.08);
+	border-color: rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.journal-header-button:active {
+	background: rgba(0, 0, 0, 0.1);
+}
+
+.journal-header-button:focus-visible {
+	outline: 2px solid var(--interactive-accent, #3b82f6);
+	outline-offset: 2px;
+}
+
+.theme-dark .journal-header-button {
+	background: rgba(255, 255, 255, 0.06);
+	border-color: rgba(255, 255, 255, 0.08);
+}
+
+.theme-dark .journal-header-button:hover {
+	background: rgba(255, 255, 255, 0.1);
+	border-color: rgba(255, 255, 255, 0.12);
+}
+
+.journal-header-button-on-this-day {
+	padding: 0 16px;
+	gap: 8px;
+}
+
+.journal-header-button-on-this-day .journal-header-button-label {
+	font-size: 14px;
+	font-weight: 500;
+	white-space: nowrap;
+	letter-spacing: 0.02em;
+}
+
+.journal-header-button-on-this-day-inactive {
+	opacity: 0.6;
+}
+
+.journal-header-button-on-this-day-inactive:hover {
+	opacity: 1;
+}
+
+/* 主操作按钮：新建笔记 */
+.journal-header-button-primary {
+	background: var(--interactive-accent, #3b82f6);
+	border-color: transparent;
+	color: #fff;
+	box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+}
+
+.journal-header-button-primary:hover {
+	background: var(--interactive-accent-hover, #2563eb);
+	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.journal-header-button-primary:active {
+	background: var(--interactive-accent-hover, #1d4ed8);
 }
 
 .journal-refresh-button {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 40px;
-	height: 40px;
+	min-width: 44px;
+	min-height: 44px;
 	padding: 0;
-	color: var(--text-normal);
-	background: var(--background-secondary);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 8px;
+	border-radius: 12px;
 	cursor: pointer;
-	transition: all 0.2s ease;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .journal-refresh-button:hover {
 	background: var(--background-modifier-hover);
-	border-color: var(--background-modifier-border-hover);
-	transform: translateY(-1px);
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
-.journal-refresh-button:active {
-	transform: translateY(0);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.journal-refresh-button:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
 }
 
 .journal-refresh-button:disabled {
-	opacity: 0.6;
+	opacity: 0.5;
 	cursor: not-allowed;
 	pointer-events: none;
 }
@@ -162,37 +300,38 @@
 .journal-create-button {
 	display: flex;
 	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	padding: 0 20px;
 	gap: 8px;
-	padding: 10px 20px;
 	font-size: 14px;
 	font-weight: 500;
-	color: #ffffff;
+	color: #fff;
 	background: var(--interactive-accent, #3b82f6);
 	border: none;
-	border-radius: 8px;
+	border-radius: 12px;
 	cursor: pointer;
-	transition: all 0.2s ease;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	transition: background 0.2s ease, box-shadow 0.2s ease;
+	box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
 	white-space: nowrap;
 }
 
 .journal-create-button:hover {
 	background: var(--interactive-accent-hover, #2563eb);
-	transform: translateY(-1px);
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
 .journal-create-button:active {
-	transform: translateY(0);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	background: var(--interactive-accent-hover, #1d4ed8);
+}
+
+.journal-create-button:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
 }
 
 .journal-create-button svg {
 	flex-shrink: 0;
-}
-
-.journal-create-button span {
-	line-height: 1;
 }
 
 /* 统计信息（参考手记应用设计） */
@@ -447,6 +586,192 @@
 	color: #999999 !important;
 }
 
+/* 那年今日板块（首页展示） */
+/* 那年今日板块：与 journal-list 布局一致（标题同 journal-month-title，卡片间距同 journal-card） */
+.on-this-day-section {
+	margin-bottom: 16px;
+	width: 100%;
+}
+
+.on-this-day-section-header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 0;
+	padding-bottom: 8px;
+	margin-top: 16px;
+}
+
+.on-this-day-section-title {
+	font-size: 20px;
+	font-weight: 600;
+	color: #1a1a1a;
+	margin: 0;
+}
+
+.theme-dark .on-this-day-section-title {
+	color: #e0e0e0;
+}
+
+.on-this-day-section-list {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.on-this-day-section-card-wrapper {
+	position: relative;
+}
+
+.on-this-day-section-label {
+	font-size: 13px;
+	color: #888;
+	margin-bottom: 8px;
+}
+
+.theme-dark .on-this-day-section-label {
+	color: #aaa;
+}
+
+/* 那年今日内的 journal-card 取消 margin-bottom，由 list 的 gap 控制间距 */
+.on-this-day-section-list .journal-card {
+	margin-bottom: 0;
+}
+
+/* 那年今日弹窗 */
+.on-this-day-modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.4);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	padding: 24px;
+	animation: on-this-day-fade-in 0.2s ease;
+}
+
+.theme-dark .on-this-day-modal-overlay {
+	background: rgba(0, 0, 0, 0.6);
+}
+
+@keyframes on-this-day-fade-in {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+.on-this-day-modal {
+	background: var(--background-primary);
+	border-radius: 16px;
+	max-width: 560px;
+	width: 100%;
+	max-height: 80vh;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+	animation: on-this-day-modal-in 0.25s ease;
+}
+
+.theme-dark .on-this-day-modal {
+	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes on-this-day-modal-in {
+	from {
+		opacity: 0;
+		transform: scale(0.96) translateY(-10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+}
+
+.on-this-day-modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 24px 16px;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.on-this-day-modal-title {
+	font-size: 20px;
+	font-weight: 600;
+	margin: 0;
+	color: var(--text-normal);
+}
+
+.on-this-day-modal-close {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	padding: 0;
+	background: none;
+	border: none;
+	border-radius: 12px;
+	cursor: pointer;
+	color: var(--text-muted);
+	transition: background 0.2s ease, color 0.2s ease;
+}
+
+.on-this-day-modal-close:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.on-this-day-modal-close:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+
+.on-this-day-modal-body {
+	padding: 20px 24px 24px;
+	overflow-y: auto;
+	flex: 1;
+	min-height: 0;
+}
+
+.on-this-day-modal-empty {
+	text-align: center;
+	padding: 48px 24px;
+	color: var(--text-muted);
+}
+
+.on-this-day-modal-empty p {
+	margin: 0 0 8px;
+	font-size: 15px;
+}
+
+.on-this-day-modal-empty-hint {
+	font-size: 13px;
+	opacity: 0.8;
+}
+
+.on-this-day-modal-list {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+.on-this-day-modal-item {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.on-this-day-modal-item-label {
+	font-size: 13px;
+	color: var(--text-muted);
+}
+
 /* 月份分组 */
 .journal-month-section {
 	margin-bottom: 40px;
@@ -563,22 +888,22 @@
 	color: #e0e0e0 !important;
 }
 
-/* 卡片菜单按钮 */
+/* 卡片菜单按钮（触摸目标 ≥44px，负边距扩展可点区域） */
 .journal-card-menu-button {
 	position: relative;
-	width: 24px;
-	height: 24px;
+	min-width: 44px;
+	min-height: 44px;
+	padding: 12px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
 	opacity: 0;
-	transition: opacity 0.2s ease;
+	transition: opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
 	background: transparent !important;
 	border: none !important;
-	border-radius: 0;
-	padding: 0;
-	margin: 0;
+	border-radius: 10px;
+	margin: -6px -6px -6px 0;
 	z-index: 10;
 }
 
@@ -586,10 +911,23 @@
 	opacity: 1;
 }
 
+.journal-card-menu-button:hover {
+	background: rgba(0, 0, 0, 0.06) !important;
+}
+
+.theme-dark .journal-card-menu-button:hover {
+	background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.journal-card-menu-button:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+
 .journal-card-menu-button svg {
 	color: #666666;
-	width: 18px;
-	height: 18px;
+	width: 20px;
+	height: 20px;
 }
 
 .theme-dark .journal-card-menu-button svg {
@@ -601,7 +939,7 @@
 }
 
 .theme-dark .journal-card-menu-button:hover svg {
-	color: #cccccc;
+	color: #e0e0e0;
 }
 
 /* 卡片菜单 */
@@ -1302,34 +1640,75 @@
 
 .journal-editor-image-delete {
 	position: absolute;
-	top: 6px;
-	right: 6px;
-	width: 24px;
-	height: 24px;
+	top: 8px;
+	right: 8px;
+	width: 28px;
+	height: 28px;
 	padding: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba(0, 0, 0, 0.5);
+	background: rgba(60, 60, 67, 0.72);
+	backdrop-filter: blur(12px) saturate(150%);
+	-webkit-backdrop-filter: blur(12px) saturate(150%);
 	border: none;
-	border-radius: 4px;
+	border-radius: 50%;
 	cursor: pointer;
-	opacity: 0.7;
-	transition: opacity 0.2s, background 0.2s;
+	opacity: 0;
+	pointer-events: none;
+	transition:
+		opacity 0.25s ease,
+		transform 0.25s cubic-bezier(0.2, 0, 0, 1),
+		background 0.25s ease;
 	z-index: 2;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
 .journal-editor-image-delete:hover {
 	opacity: 1;
-	background: rgba(180, 50, 50, 0.9);
+	background: rgba(50, 50, 55, 0.85);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.journal-editor-image-delete:active {
+	transform: scale(0.92);
+	background: rgba(40, 40, 45, 0.9);
 }
 
 .journal-editor-image-delete svg {
-	color: #fff;
+	fill: none;
+	stroke: rgba(255, 255, 255, 0.95);
+	stroke-width: 2.25;
+	stroke-linecap: round;
+	color: rgba(255, 255, 255, 0.95);
 }
 
+.journal-editor-image-delete svg line {
+	stroke: inherit;
+}
+
+/* 仅悬浮图片容器时显示删除按钮 */
 .markdown-source-view .journal-image-container:hover .journal-editor-image-delete,
-.markdown-preview-view .journal-image-container:hover .journal-editor-image-delete,
-.journal-editor-image-delete:hover {
+.markdown-preview-view .journal-image-container:hover .journal-editor-image-delete {
 	opacity: 1;
+	pointer-events: auto;
+}
+
+/* 暗色主题下删除按钮（iOS 风格） */
+.theme-dark .journal-editor-image-delete {
+	background: rgba(80, 80, 88, 0.65);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark .journal-editor-image-delete:hover {
+	background: rgba(90, 90, 98, 0.78);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.theme-dark .journal-editor-image-delete:active {
+	background: rgba(100, 100, 108, 0.85);
+}
+
+.theme-dark .journal-editor-image-delete svg {
+	stroke: rgba(255, 255, 255, 0.92);
 }

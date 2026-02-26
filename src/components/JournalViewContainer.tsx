@@ -3,8 +3,11 @@ import { JournalDataProvider } from '../context/JournalDataContext';
 import { useJournalEntries } from '../hooks/useJournalEntries';
 import { useFileSystemWatchers } from '../hooks/useFileSystemWatchers';
 import { useScrollbarWidth } from '../hooks/useScrollbarWidth';
+import { OnThisDayProvider } from '../context/OnThisDayContext';
 import { JournalHeader } from './JournalHeader';
 import { JournalStats } from './JournalStats';
+import { OnThisDaySection } from './OnThisDaySection';
+import { OnThisDayModal } from './OnThisDayModal';
 import { JournalList } from './JournalList';
 import { JournalEmptyState } from './JournalEmptyState';
 import { MenuProvider } from './JournalCardMenu';
@@ -15,11 +18,15 @@ const JournalViewWithWatchers: React.FC = () => {
 	useFileSystemWatchers();
 
 	return (
-		<div className="journal-content-wrapper">
-			<JournalHeader />
-			<JournalStats />
-			<JournalList />
-		</div>
+		<OnThisDayProvider>
+			<div className="journal-content-wrapper">
+				<JournalHeader />
+				<JournalStats />
+				<OnThisDaySection />
+				<JournalList />
+			</div>
+			<OnThisDayModal />
+		</OnThisDayProvider>
 	);
 };
 

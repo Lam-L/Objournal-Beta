@@ -249,7 +249,6 @@ export class EditorImageLayout {
 			if (!g1.isConnected || !g2.isConnected) continue;
 			if (!this.areGalleriesAdjacent(g1, g2)) continue;
 
-			// 合并到 g1
 			const imgs1 = Array.from(g1.querySelectorAll('img.journal-editor-processed')) as HTMLImageElement[];
 			const imgs2 = Array.from(g2.querySelectorAll('img.journal-editor-processed')) as HTMLImageElement[];
 			const allImgs = [...imgs1, ...imgs2];
@@ -306,7 +305,6 @@ export class EditorImageLayout {
 		const existingImgs = Array.from(gallery.querySelectorAll('img.journal-editor-processed')) as HTMLImageElement[];
 		const allImages = [...existingImgs, ...newImages];
 
-		// 重建整个 gallery
 		gallery.className = 'journal-images ' + this.getLayoutClass(allImages.length);
 		gallery.innerHTML = '';
 		this.organizeImagesInContainer(allImages, gallery);
@@ -409,6 +407,7 @@ export class EditorImageLayout {
 			}
 		}
 
+		// 在第一个图片的父节点内插入 journal-images（Obsidian 需要此结构才能正确渲染）
 		const parent = firstImg.parentElement;
 		if (!parent) return;
 
@@ -417,7 +416,6 @@ export class EditorImageLayout {
 		const container = document.createElement('div');
 		container.addClasses(['journal-images', this.getLayoutClass(images.length)]);
 
-		// 插入空容器
 		try {
 			if (insertBefore && insertBefore.parentNode === parent) {
 				parent.insertBefore(container, insertBefore);
@@ -460,7 +458,8 @@ export class EditorImageLayout {
 			// 右上角删除按钮
 			const deleteBtn = document.createElement('button');
 			deleteBtn.addClass('journal-editor-image-delete');
-			deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+			deleteBtn.innerHTML =
+				'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
 			deleteBtn.title = '删除图片';
 			deleteBtn.onclick = (e) => {
 				e.stopPropagation();
@@ -542,23 +541,71 @@ export class EditorImageLayout {
 			new RegExp(`!?\\[\\[${escapedName}\\]\\]`),
 		];
 
-		let lineDeleted = false;
+		// 先找到要删除的行索引
+		let lineIndex = -1;
 		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i];
-			if (patterns.some((p) => p.test(line))) {
-				const newContent = lines.filter((_: string, idx: number) => idx !== i).join('\n');
-				editor.setValue(newContent);
-				lineDeleted = true;
+			if (patterns.some((p) => p.test(lines[i]))) {
+				lineIndex = i;
 				break;
 			}
 		}
+		if (lineIndex < 0) return;
 
-		if (lineDeleted) {
-			// 立即从 DOM 中移除该图片并重建布局，不等待 Obsidian 重渲染
-			this.removeImageAndRebuildGallery(img, view.contentEl);
-			// 再调度一次处理，确保与 Obsidian 渲染结果同步
-			this.scheduleProcessWithRetries();
+		// 仅当删除的是 gallery 中「第一张」图片时需迁移：gallery 始终在第一个 embed 内，
+		// 若删第一张，该 embed 会被移除；删第二张及以后则不会（被删的是其他 embed）。
+		const gallery = img.closest('.journal-images') as HTMLElement | null;
+		const remainingImgs = gallery
+			? (Array.from(gallery.querySelectorAll('img.journal-editor-processed')).filter(
+					(el) => el !== img
+			  ) as HTMLImageElement[])
+			: [];
+
+		const firstImgInGallery = gallery?.querySelector('img.journal-editor-processed');
+		const needMoveFirst =
+			!!gallery &&
+			!!firstImgInGallery &&
+			img === firstImgInGallery &&
+			remainingImgs.length >= 1;
+
+		let domUpdatedByMove = false;
+		if (needMoveFirst) {
+			const galleryParentEmbed = gallery!.closest('.internal-embed') as HTMLElement | null;
+			const nextEmbed = galleryParentEmbed
+				? this.findNextSiblingEmbed(galleryParentEmbed)
+				: null;
+			if (nextEmbed) {
+				nextEmbed.appendChild(gallery);
+				remainingImgs.forEach((i) => i.classList.remove('journal-editor-processed'));
+				gallery.className = 'journal-images ' + this.getLayoutClass(remainingImgs.length);
+				gallery.innerHTML = '';
+				this.organizeImagesInContainer(remainingImgs, gallery);
+				domUpdatedByMove = true;
+			}
 		}
+
+		// 删除 markdown 行
+		const newContent = lines.filter((_: string, idx: number) => idx !== lineIndex).join('\n');
+		editor.setValue(newContent);
+
+		if (!domUpdatedByMove) {
+			this.removeImageAndRebuildGallery(img, view.contentEl);
+		}
+		this.scheduleProcessWithRetries();
+	}
+
+	/** 查找与给定 embed 相邻的下一个 internal-embed（用于迁移 gallery） */
+	private findNextSiblingEmbed(embed: HTMLElement): HTMLElement | null {
+		const block = embed.closest('p, .cm-line, .cm-block') || embed;
+		let cur: Element | null = block.nextElementSibling;
+		while (cur) {
+			const nextEmbed = cur.classList.contains('internal-embed')
+				? cur
+				: (cur as HTMLElement).querySelector('.internal-embed');
+			if (nextEmbed) return nextEmbed as HTMLElement;
+			if (!this.isImageOnlyBlock(cur as HTMLElement)) break;
+			cur = cur.nextElementSibling;
+		}
+		return null;
 	}
 
 	/** 从 gallery 中移除指定图片并立即重建布局 */

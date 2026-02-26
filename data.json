@@ -10,5 +10,6 @@
   "imageGap": 4,
   "openInNewTab": false,
   "enableEditorImageLayout": true,
+  "onThisDayDisplayMode": "single",
   "enableAutoLayout": true
 }
