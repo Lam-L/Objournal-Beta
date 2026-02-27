@@ -1,4 +1,5 @@
 import { TFile, App } from 'obsidian';
+import { strings } from '../i18n';
 
 export interface ImageInfo {
 	name: string;
@@ -122,68 +123,6 @@ export function extractImagesFromContent(
 }
 
 /**
- * 从文件名提取日期
- */
-function parseDateFromFileName(fileName: string): Date | null {
-	// ISO 格式: 2026-01-12
-	const isoMatch = fileName.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
-	if (isoMatch) {
-		return new Date(
-			parseInt(isoMatch[1]),
-			parseInt(isoMatch[2]) - 1,
-			parseInt(isoMatch[3])
-		);
-	}
-
-	// 中文格式: 2026年1月12日
-	const chineseMatch = fileName.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
-	if (chineseMatch) {
-		return new Date(
-			parseInt(chineseMatch[1]),
-			parseInt(chineseMatch[2]) - 1,
-			parseInt(chineseMatch[3])
-		);
-	}
-
-	// 点分隔: 2026.01.12
-	const dotMatch = fileName.match(/(\d{4})\.(\d{1,2})\.(\d{1,2})/);
-	if (dotMatch) {
-		return new Date(
-			parseInt(dotMatch[1]),
-			parseInt(dotMatch[2]) - 1,
-			parseInt(dotMatch[3])
-		);
-	}
-
-	return null;
-}
-
-/**
- * 从正文内容提取日期
- */
-function parseDateFromContent(content: string): Date | null {
-	// 匹配多种日期格式
-	const patterns = [
-		/(\d{4})年(\d{1,2})月(\d{1,2})日/, // 2026年1月12日
-		/(\d{4})-(\d{1,2})-(\d{1,2})/, // 2026-01-12
-		/(\d{4})\/(\d{1,2})\/(\d{1,2})/, // 2026/01/12
-	];
-
-	for (const pattern of patterns) {
-		const match = content.match(pattern);
-		if (match) {
-			return new Date(
-				parseInt(match[1]),
-				parseInt(match[2]) - 1,
-				parseInt(match[3])
-			);
-		}
-	}
-
-	return null;
-}
-
-/**
  * 解析日期值
  */
 export function parseDate(dateValue: any): Date | null {
@@ -204,48 +143,33 @@ export function parseDate(dateValue: any): Date | null {
 }
 
 /**
- * 从文件提取日期（多种策略）
- * @param file 文件对象
- * @param content 文件内容
- * @param app Obsidian App 实例
- * @param customDateField 可选的日期字段名（frontmatter 中的字段名）。如果指定，优先使用该字段；如果该字段不存在，降级到文件创建时间。
+ * 从文件提取日期
+ * 优先级1：Frontmatter（自定义字段或 date/Date/created/created_time）
+ * 优先级2：文件创建时间
  */
 export function extractDate(file: TFile, content: string, app: App, customDateField?: string): Date | null {
-	// 策略1: 从文件名提取日期
-	const fileNameDate = parseDateFromFileName(file.basename);
-	if (fileNameDate) return fileNameDate;
-
-	// 策略2: 从 frontmatter 提取
+	// 优先级1：从 frontmatter 提取
 	const metadata = app.metadataCache.getFileCache(file);
 	if (metadata?.frontmatter) {
 		// 如果指定了自定义日期字段，优先使用该字段
 		if (customDateField && metadata.frontmatter[customDateField]) {
 			const parsed = parseDate(metadata.frontmatter[customDateField]);
 			if (parsed) return parsed;
-			// 如果自定义字段存在但解析失败，降级到文件创建时间
-			return new Date(file.stat.ctime);
 		}
 
-		// 如果没有指定自定义字段，使用默认的日期字段列表
-		const dateFields = ['date', 'Date', 'created', 'created_time'] as const;
-		for (const field of dateFields) {
-			if (metadata.frontmatter[field]) {
-				const parsed = parseDate(metadata.frontmatter[field]);
-				if (parsed) return parsed;
+		// 如果没有指定自定义字段或自定义字段无值，使用默认的日期字段列表
+		if (!customDateField) {
+			const dateFields = ['date', 'Date', 'created', 'created_time'] as const;
+			for (const field of dateFields) {
+				if (metadata.frontmatter[field]) {
+					const parsed = parseDate(metadata.frontmatter[field]);
+					if (parsed) return parsed;
+				}
 			}
 		}
 	}
 
-	// 如果指定了自定义日期字段但 frontmatter 中没有该字段，直接降级到文件创建时间
-	if (customDateField) {
-		return new Date(file.stat.ctime);
-	}
-
-	// 策略3: 从正文内容提取（支持中文格式）（仅在未指定自定义字段时使用）
-	const contentDate = parseDateFromContent(content);
-	if (contentDate) return contentDate;
-
-	// 策略4: 使用文件创建时间
+	// 优先级2：文件创建时间
 	return new Date(file.stat.ctime);
 }
 
@@ -296,20 +220,10 @@ export function countWords(content: string): number {
 }
 
 /**
- * 格式化日期显示
+ * 格式化日期显示（根据当前语言）
  */
 export function formatDate(date: Date): string {
-	const weekdays = [
-		'星期日',
-		'星期一',
-		'星期二',
-		'星期三',
-		'星期四',
-		'星期五',
-		'星期六',
-	];
-	return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${weekdays[date.getDay()]
-		}`;
+	return strings.formatDate(date);
 }
 
 /**
@@ -345,15 +259,12 @@ export function groupByMonth(
 
 		let groupKey: string;
 
-		// 判断是否是今天
 		if (isSameDay(entryDate, today)) {
-			groupKey = '今天';
+			groupKey = strings.dateGroups.today;
 		} else if (isSameDay(entryDate, yesterday)) {
-			// 判断是否是昨天
-			groupKey = '昨天';
+			groupKey = strings.dateGroups.yesterday;
 		} else {
-			// 其他日期按月份分组
-			groupKey = `${entryDate.getFullYear()}年${entryDate.getMonth() + 1}月`;
+			groupKey = strings.formatMonthGroupKey(entryDate.getFullYear(), entryDate.getMonth());
 		}
 
 		if (!grouped[groupKey]) {

@@ -1,32 +1,52 @@
 import React, { useEffect, useRef } from 'react';
 import { JournalDataProvider } from '../context/JournalDataContext';
+import { strings } from '../i18n';
 import { useJournalEntries } from '../hooks/useJournalEntries';
 import { useFileSystemWatchers } from '../hooks/useFileSystemWatchers';
 import { useScrollbarWidth } from '../hooks/useScrollbarWidth';
-import { OnThisDayProvider } from '../context/OnThisDayContext';
+import { JournalViewModeProvider, useJournalViewMode } from '../context/JournalViewModeContext';
 import { JournalHeader } from './JournalHeader';
 import { JournalStats } from './JournalStats';
 import { OnThisDaySection } from './OnThisDaySection';
-import { OnThisDayModal } from './OnThisDayModal';
 import { JournalList } from './JournalList';
+import { JournalCalendar } from './JournalCalendar';
 import { JournalEmptyState } from './JournalEmptyState';
 import { MenuProvider } from './JournalCardMenu';
+import { useJournalView } from '../context/JournalViewContext';
 
 // 内部组件：在 JournalDataProvider 内部使用文件系统监听器
 const JournalViewWithWatchers: React.FC = () => {
-	// 启用文件系统监听器（实时更新）
 	useFileSystemWatchers();
+	const { plugin } = useJournalView();
+	const showStats = (plugin as { settings?: { showJournalStats?: boolean } })?.settings?.showJournalStats === true;
 
 	return (
-		<OnThisDayProvider>
+		<JournalViewModeProvider>
 			<div className="journal-content-wrapper">
 				<JournalHeader />
-				<JournalStats />
+				{showStats && <JournalStats />}
+				<JournalViewContentArea />
+			</div>
+		</JournalViewModeProvider>
+	);
+};
+
+const JournalViewContentArea: React.FC = () => {
+	const { viewMode } = useJournalViewMode();
+	if (viewMode === 'calendar') {
+		return (
+			<div className="journal-calendar-with-list">
+				<JournalCalendar />
 				<OnThisDaySection />
 				<JournalList />
 			</div>
-			<OnThisDayModal />
-		</OnThisDayProvider>
+		);
+	}
+	return (
+		<>
+			<OnThisDaySection />
+			<JournalList />
+		</>
 	);
 };
 
@@ -36,7 +56,7 @@ const JournalViewContent: React.FC = () => {
 	if (isLoading) {
 		return (
 			<div className="journal-view-container">
-				<div>加载中...</div>
+				<div>{strings.common.loading}</div>
 			</div>
 		);
 	}
@@ -45,7 +65,7 @@ const JournalViewContent: React.FC = () => {
 		const errorMessage = (error as Error).message || String(error);
 		return (
 			<div className="journal-view-container">
-				<div>错误: {errorMessage}</div>
+				<div>{strings.common.error}: {errorMessage}</div>
 			</div>
 		);
 	}
@@ -60,11 +80,11 @@ const JournalViewContent: React.FC = () => {
 
 	return (
 		<MenuProvider>
-			<JournalDataProvider 
-				entries={entries} 
-				isLoading={isLoading} 
-				error={error} 
-				refresh={refresh} 
+			<JournalDataProvider
+				entries={entries}
+				isLoading={isLoading}
+				error={error}
+				refresh={refresh}
 				updateSingleEntry={updateSingleEntry}
 				updateEntryAfterRename={updateEntryAfterRename}
 			>
@@ -77,17 +97,38 @@ const JournalViewContent: React.FC = () => {
 export const JournalViewContainer: React.FC = () => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const scrollbarWidth = useScrollbarWidth();
+	const [hasOverflow, setHasOverflow] = React.useState(false);
 
 	useEffect(() => {
-		if (containerRef.current && scrollbarWidth > 0) {
-			// 动态设置右侧 padding，补偿滚动条宽度
-			// 这样左右 padding 在视觉上就完全一致了
-			containerRef.current.style.setProperty(
-				'--scrollbar-compensation',
-				`${scrollbarWidth}px`
-			);
-		}
-	}, [scrollbarWidth]);
+		const el = containerRef.current;
+		if (!el) return;
+
+		const checkOverflow = () => {
+			const overflow = el.scrollHeight > el.clientHeight;
+			setHasOverflow((prev) => (prev !== overflow ? overflow : prev));
+		};
+
+		checkOverflow();
+
+		const resizeObserver = new ResizeObserver(checkOverflow);
+		resizeObserver.observe(el);
+
+		const mutationObserver = new MutationObserver(() => {
+			requestAnimationFrame(checkOverflow);
+		});
+		mutationObserver.observe(el, { childList: true, subtree: true });
+
+		return () => {
+			resizeObserver.disconnect();
+			mutationObserver.disconnect();
+		};
+	}, []);
+
+	useEffect(() => {
+		if (!containerRef.current) return;
+		const compensation = hasOverflow ? scrollbarWidth : 0;
+		containerRef.current.style.setProperty('--scrollbar-width', `${compensation}px`);
+	}, [scrollbarWidth, hasOverflow]);
 
 	return (
 		<div ref={containerRef} className="journal-view-container">

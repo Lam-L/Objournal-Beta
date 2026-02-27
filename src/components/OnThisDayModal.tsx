@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useJournalData } from '../context/JournalDataContext';
 import { useOnThisDay } from '../context/OnThisDayContext';
+import { strings } from '../i18n';
 import { JournalCard } from './JournalCard';
 import { getOnThisDayEntries, formatYearsAgo } from '../utils/onThisDay';
 import { formatDate } from '../utils/utils';
@@ -33,12 +34,12 @@ export const OnThisDayModal: React.FC = () => {
 				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="on-this-day-modal-header">
-					<h2 className="on-this-day-modal-title">那年今日</h2>
+					<h2 className="on-this-day-modal-title">{strings.view.onThisDay}</h2>
 					<button
 						className="on-this-day-modal-close"
 						onClick={closeModal}
-						title="关闭"
-						aria-label="关闭"
+						title={strings.common.close}
+						aria-label={strings.common.close}
 					>
 						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
 							<line x1="18" y1="6" x2="6" y2="18" />
@@ -49,8 +50,8 @@ export const OnThisDayModal: React.FC = () => {
 				<div className="on-this-day-modal-body">
 					{onThisDayEntries.length === 0 ? (
 						<div className="on-this-day-modal-empty">
-							<p>暂无那年今日的记录</p>
-							<p className="on-this-day-modal-empty-hint">在往年的今天写下手记，明年今日即可在此看到</p>
+							<p>{strings.onThisDay.empty}</p>
+							<p className="on-this-day-modal-empty-hint">{strings.onThisDay.emptyHint}</p>
 						</div>
 					) : (
 						<div className="on-this-day-modal-list">

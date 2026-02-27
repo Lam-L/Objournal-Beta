@@ -1,5 +1,6 @@
 import React from 'react';
 import { useJournalView } from '../context/JournalViewContext';
+import { strings } from '../i18n';
 
 export const JournalEmptyState: React.FC = () => {
 	const { app } = useJournalView();
@@ -12,10 +13,10 @@ export const JournalEmptyState: React.FC = () => {
 	return (
 		<div className="journal-welcome">
 			<div className="journal-welcome-card">
-				<h2>欢迎使用手记视图</h2>
-				<p>还没有找到任何手记文件</p>
+				<h2>{strings.emptyState.welcomeTitle}</h2>
+				<p>{strings.emptyState.noEntries}</p>
 				<button className="journal-welcome-button" onClick={handleScan}>
-					开始扫描
+					{strings.emptyState.startScan}
 				</button>
 			</div>
 		</div>

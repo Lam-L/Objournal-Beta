@@ -1,6 +1,7 @@
 import React from 'react';
 import { useJournalData } from '../context/JournalDataContext';
 import { StatisticsCalculator } from '../utils/StatisticsCalculator';
+import { strings } from '../i18n';
 
 const formatNumber = (num: number): string => {
 	if (num >= 10000) {
@@ -47,7 +48,7 @@ export const JournalStats: React.FC = () => {
 					<div className="journal-stat-icon journal-stat-icon-flame" dangerouslySetInnerHTML={{ __html: createSVGIcon('flame', 20, '#ef4444') }} />
 					<div className="journal-stat-value">{formatNumber(consecutiveDays)}</div>
 				</div>
-				<div className="journal-stat-label">连续纪录天数</div>
+				<div className="journal-stat-label">{strings.stats.consecutiveDays}</div>
 			</div>
 
 			{/* 统计项 2：字数（红色对话气泡图标） */}
@@ -56,7 +57,7 @@ export const JournalStats: React.FC = () => {
 					<div className="journal-stat-icon journal-stat-icon-message" dangerouslySetInnerHTML={{ __html: createSVGIcon('message', 20, '#ef4444') }} />
 					<div className="journal-stat-value">{formatNumber(totalWords)}</div>
 				</div>
-				<div className="journal-stat-label">字数</div>
+				<div className="journal-stat-label">{strings.stats.totalWords}</div>
 			</div>
 
 			{/* 统计项 3：写手记天数（蓝色日历图标） */}
@@ -65,7 +66,7 @@ export const JournalStats: React.FC = () => {
 					<div className="journal-stat-icon journal-stat-icon-calendar" dangerouslySetInnerHTML={{ __html: createSVGIcon('calendar', 20, '#3b82f6') }} />
 					<div className="journal-stat-value">{formatNumber(totalDays)}</div>
 				</div>
-				<div className="journal-stat-label">写手记天数</div>
+				<div className="journal-stat-label">{strings.stats.totalDays}</div>
 			</div>
 		</div>
 	);

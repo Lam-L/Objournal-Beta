@@ -1,5 +1,6 @@
 import { Plugin, TFolder } from 'obsidian';
 import { JournalView, JOURNAL_VIEW_TYPE } from './view/JournalView';
+import { strings } from './i18n';
 import { JournalPluginSettings, DEFAULT_SETTINGS } from './settings';
 import { JournalSettingTab } from './settings/JournalSettingTab';
 import { EditorImageLayout } from './editor/EditorImageLayout';
@@ -29,7 +30,7 @@ export class JournalViewPlugin extends Plugin {
 		// 添加命令打开视图
 		this.addCommand({
 			id: 'open-journal-view',
-			name: '打开手记视图',
+			name: strings.commands.openJournal,
 			callback: async () => {
 				try {
 					await this.activateView();
@@ -42,7 +43,7 @@ export class JournalViewPlugin extends Plugin {
 		// 添加命令刷新手记视图
 		this.addCommand({
 			id: 'refresh-journal-view',
-			name: '刷新手记视图',
+			name: strings.commands.refreshJournal,
 			callback: () => {
 				if (this.view) {
 					this.view.refresh();
@@ -123,11 +124,13 @@ export class JournalViewPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			await this.loadData()
-		);
+		const data = (await this.loadData()) || {};
+		const migrated = { ...data };
+		// 迁移：移除旧的 defaultTemplate，改用 templatePath
+		if ('defaultTemplate' in migrated) {
+			delete migrated.defaultTemplate;
+		}
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, migrated);
 	}
 
 	async saveSettings() {

@@ -2,6 +2,7 @@ import { useRef, useMemo, useCallback } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { JournalEntry } from '../utils/utils';
 import { groupByMonth } from '../utils/utils';
+import { strings } from '../i18n';
 
 interface VirtualListItem {
 	type: 'month-header' | 'card';
@@ -21,19 +22,23 @@ export const useJournalScroll = (entries: JournalEntry[]) => {
 		const items: VirtualListItem[] = [];
 		const grouped = groupByMonth(entries);
 		
-		// 排序分组：今天 > 昨天 > 月份（按时间倒序）
 		const sortedGroups = Object.keys(grouped).sort((a, b) => {
-			// 特殊处理：今天和昨天始终在最前面
-			if (a === '今天') return -1;
-			if (b === '今天') return 1;
-			if (a === '昨天') return -1;
-			if (b === '昨天') return 1;
+			if (a === strings.dateGroups.today) return -1;
+			if (b === strings.dateGroups.today) return 1;
+			if (a === strings.dateGroups.yesterday) return -1;
+			if (b === strings.dateGroups.yesterday) return 1;
 			
-			// 如果都是月份，按时间倒序
 			const parseMonthKey = (monthKey: string): Date => {
-				const match = monthKey.match(/(\d{4})年(\d{1,2})月/);
-				if (match) {
-					return new Date(parseInt(match[1]), parseInt(match[2]) - 1, 1);
+				const zhMatch = monthKey.match(/(\d{4})年(\d{1,2})月/);
+				if (zhMatch) {
+					return new Date(parseInt(zhMatch[1]), parseInt(zhMatch[2]) - 1, 1);
+				}
+				const enMatch = monthKey.match(new RegExp(`(${strings.monthNames.join('|')}) (\\d{4})`, 'i'));
+				if (enMatch) {
+					const monthIdx = strings.monthNames.findIndex(m => m.toLowerCase() === enMatch[1].toLowerCase());
+					if (monthIdx >= 0) {
+						return new Date(parseInt(enMatch[2]), monthIdx, 1);
+					}
 				}
 				return new Date();
 			};
@@ -110,7 +115,7 @@ export const useJournalScroll = (entries: JournalEntry[]) => {
 			return null;
 		},
 		estimateSize,
-		overscan: 5,
+		overscan: 8,
 		// 启用动态高度测量
 		measureElement: (element) => {
 			if (!element) {

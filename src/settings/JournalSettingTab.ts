@@ -1,6 +1,7 @@
 import { PluginSettingTab, Setting, App, TFolder, TFile } from 'obsidian';
 import { JournalViewPlugin } from '../main';
 import { JournalPluginSettings } from '../settings';
+import { strings } from '../i18n';
 
 export class JournalSettingTab extends PluginSettingTab {
 	plugin: JournalViewPlugin;
@@ -14,7 +15,7 @@ export class JournalSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl('h2', { text: '手记视图设置' });
+		containerEl.createEl('h2', { text: strings.settings.title });
 
 		// 获取所有文件夹列表（递归获取所有子文件夹）
 		const getAllFolders = (): TFolder[] => {
@@ -74,11 +75,10 @@ export class JournalSettingTab extends PluginSettingTab {
 
 		// 日期字段配置（仅在选择了文件夹时显示）
 		const dateFieldSetting = new Setting(containerEl)
-			.setName('日期字段')
-			.setDesc('指定该文件夹下文件使用的日期字段（frontmatter 中的字段名）。如果文件没有该字段，将使用文件创建时间。选择"使用默认字段"则使用默认字段（date, Date, created, created_time）。')
+			.setName(strings.settings.dateField)
+			.setDesc(strings.settings.dateFieldDesc)
 			.addDropdown((dropdown) => {
-				// 添加常用日期字段选项
-				dropdown.addOption('', '使用默认字段');
+				dropdown.addOption('', strings.settings.useDefaultFields);
 				dropdown.addOption('date', 'date');
 				dropdown.addOption('Date', 'Date');
 				dropdown.addOption('created', 'created');
@@ -108,7 +108,7 @@ export class JournalSettingTab extends PluginSettingTab {
 					}
 				}
 
-				dropdown.addOption('custom', '自定义...');
+				dropdown.addOption('custom', strings.settings.custom);
 
 				// 设置当前值
 				currentPath = this.plugin.settings.defaultFolderPath || this.plugin.settings.folderPath || '';
@@ -140,7 +140,7 @@ export class JournalSettingTab extends PluginSettingTab {
 							// 如果选择"自定义"，显示输入框让用户输入
 							const customInput = document.createElement('input');
 							customInput.type = 'text';
-							customInput.placeholder = '输入自定义字段名';
+							customInput.placeholder = strings.settings.customFieldPlaceholder;
 							const currentDateField = folderPath ? (this.plugin.settings.folderDateFields[folderPath] || '') : '';
 							// 检查当前值是否在下拉选项中
 							const optionExists = Array.from(dropdown.selectEl.options).some(opt => opt.value === currentDateField && opt.value !== '---separator---');
@@ -297,7 +297,7 @@ export class JournalSettingTab extends PluginSettingTab {
 							if (!customInput) {
 								customInput = document.createElement('input');
 								customInput.type = 'text';
-								customInput.placeholder = '输入自定义字段名';
+								customInput.placeholder = strings.settings.customFieldPlaceholder;
 								customInput.style.width = '200px';
 								customInput.style.marginLeft = '10px';
 								customInput.classList.add('custom-date-field-input');
@@ -344,25 +344,88 @@ export class JournalSettingTab extends PluginSettingTab {
 			}
 		};
 
-		// 默认模板配置
-		new Setting(containerEl)
-			.setName('默认模板')
-			.setDesc('创建新笔记时使用的模板。支持变量：{{date}}（日期 YYYY-MM-DD）、{{year}}、{{month}}、{{day}}、{{title}}（标题）。留空则使用默认格式。')
-			.addTextArea((text) => {
-				text.setPlaceholder('例如：---\ndate: {{date}}\ntags: [日记]\n---\n\n# {{title}}\n\n');
-				text.setValue(this.plugin.settings.defaultTemplate || '');
-				text.inputEl.rows = 6;
-				text.inputEl.style.width = '100%';
-				text.onChange(async (value) => {
-					this.plugin.settings.defaultTemplate = value;
+		// 获取指定文件夹下的所有 .md 文件（不含子文件夹）
+		const getMarkdownFilesInFolder = (folderPath: string | null): TFile[] => {
+			if (!folderPath) return [];
+			const folder = this.app.vault.getAbstractFileByPath(folderPath);
+			if (!(folder instanceof TFolder)) return [];
+			return (folder.children || [])
+				.filter((c): c is TFile => c instanceof TFile && c.extension === 'md')
+				.sort((a, b) => a.path.localeCompare(b.path));
+		};
+
+		const templateFolderSetting = new Setting(containerEl)
+			.setName(strings.settings.templateFolder)
+			.setDesc(strings.settings.templateFolderDesc)
+			.addDropdown((dropdown) => {
+				dropdown.addOption('', strings.settings.templateNone);
+				for (const folder of getAllFolders()) {
+					dropdown.addOption(folder.path, folder.path);
+				}
+				dropdown.setValue(this.plugin.settings.templateFolderPath || '');
+				dropdown.onChange(async (value) => {
+					this.plugin.settings.templateFolderPath = value || null;
+					this.plugin.settings.templatePath = null; // 切换文件夹时清空模板选择
+					await this.plugin.saveSettings();
+					await updateTemplateFileDropdown();
+				});
+			});
+
+		const templateFileSetting = new Setting(containerEl)
+			.setName(strings.settings.templateFile)
+			.setDesc(strings.settings.templateFileDesc)
+			.addDropdown((dropdown) => {
+				dropdown.addOption('', strings.settings.templateFileNone);
+				const files = getMarkdownFilesInFolder(this.plugin.settings.templateFolderPath);
+				for (const file of files) {
+					dropdown.addOption(file.path, file.path);
+				}
+				dropdown.setValue(this.plugin.settings.templatePath || '');
+				dropdown.onChange(async (value) => {
+					this.plugin.settings.templatePath = value || null;
 					await this.plugin.saveSettings();
 				});
 			});
 
-		// Live Preview 中的图片布局
+		const updateTemplateFileDropdown = async () => {
+			const selectEl = templateFileSetting.settingEl.querySelector('select');
+			if (!selectEl) return;
+			while (selectEl.options.length > 0) {
+				selectEl.remove(0);
+			}
+			selectEl.add(new Option(strings.settings.templateFileNone, ''));
+			const files = getMarkdownFilesInFolder(this.plugin.settings.templateFolderPath);
+			for (const file of files) {
+				selectEl.add(new Option(file.path, file.path));
+			}
+			const validPath = this.plugin.settings.templatePath && files.some(f => f.path === this.plugin.settings.templatePath);
+			selectEl.value = validPath ? this.plugin.settings.templatePath! : '';
+			if (!validPath && this.plugin.settings.templatePath) {
+				this.plugin.settings.templatePath = null;
+				await this.plugin.saveSettings();
+			}
+		};
+
+		updateTemplateFileDropdown();
+
 		new Setting(containerEl)
-			.setName('编辑页手记式图片布局')
-			.setDesc('在 Live Preview 模式下，默认文件夹内的笔记中的图片将按首页手记卡片的布局展示（添加/删除图片实时更新）')
+			.setName(strings.settings.showJournalStats)
+			.setDesc(strings.settings.showJournalStatsDesc)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.showJournalStats === true)
+					.onChange(async (value) => {
+						this.plugin.settings.showJournalStats = value;
+						await this.plugin.saveSettings();
+						if (this.plugin.view) {
+							await this.plugin.view.refresh();
+						}
+					});
+			});
+
+		new Setting(containerEl)
+			.setName(strings.settings.editorImageLayout)
+			.setDesc(strings.settings.editorImageLayoutDesc)
 			.addToggle((toggle) => {
 				toggle
 					.setValue(this.plugin.settings.enableEditorImageLayout !== false)
@@ -372,13 +435,11 @@ export class JournalSettingTab extends PluginSettingTab {
 					});
 			});
 
-		// 默认文件夹选择（下拉）
 		new Setting(containerEl)
-			.setName('默认文件夹')
-			.setDesc('选择默认的日记文件夹。使用 Ctrl+P 打开手记视图时将自动打开此文件夹的视图。编辑页图片布局也仅在此文件夹内的笔记中生效。')
+			.setName(strings.settings.defaultFolder)
+			.setDesc(strings.settings.defaultFolderDesc)
 			.addDropdown((dropdown) => {
-				// 添加"扫描整个 Vault"选项
-				dropdown.addOption('', '扫描整个 Vault');
+				dropdown.addOption('', strings.settings.scanEntireVault);
 
 				// 添加所有文件夹选项
 				const folders = getAllFolders();
@@ -426,8 +487,8 @@ export class JournalSettingTab extends PluginSettingTab {
 		updateDateFieldVisibility();
 
 		new Setting(containerEl)
-			.setName('图片显示限制')
-			.setDesc('每个手记卡片最多显示的图片数量')
+			.setName(strings.settings.imageDisplayLimit)
+			.setDesc(strings.settings.imageDisplayLimitDesc)
 			.addSlider((slider) =>
 				slider
 					.setLimits(1, 10, 1)
@@ -444,8 +505,8 @@ export class JournalSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('图片间距')
-			.setDesc('图片容器之间的间距（像素）')
+			.setName(strings.settings.imageGap)
+			.setDesc(strings.settings.imageGapDesc)
 			.addSlider((slider) =>
 				slider
 					.setLimits(0, 30, 1)
@@ -464,23 +525,22 @@ export class JournalSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('打开笔记方式')
-			.setDesc('选择在手记视图中点击笔记卡片的打开方式。')
+			.setName(strings.settings.openNoteMode)
+			.setDesc(strings.settings.openNoteModeDesc)
 			.addToggle((toggle) => {
 				toggle
 					.setValue(this.plugin.settings.openInNewTab)
-					.setTooltip(this.plugin.settings.openInNewTab ? '当前：新标签页打开' : '当前：当前标签页打开')
+					.setTooltip(this.plugin.settings.openInNewTab ? strings.settings.tooltipNewTab : strings.settings.tooltipCurrentTab)
 					.onChange(async (value) => {
 						this.plugin.settings.openInNewTab = value;
 						await this.plugin.saveSettings();
-						// 更新 tooltip
-						toggle.setTooltip(value ? '当前：新标签页打开' : '当前：当前标签页打开');
+						toggle.setTooltip(value ? strings.settings.tooltipNewTab : strings.settings.tooltipCurrentTab);
 					});
 			})
 			.addExtraButton((button) => {
 				button
 					.setIcon('info')
-					.setTooltip('新标签页：在新标签页打开笔记（默认）\n当前标签页：在当前标签页打开笔记，可以使用回退键返回原视图')
+					.setTooltip(strings.settings.tooltipOpenMode)
 					.onClick(() => {});
 			});
 	}

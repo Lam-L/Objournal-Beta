@@ -6,11 +6,14 @@ export interface JournalPluginSettings {
 	imageLimit: number;
 	folderJournalViews: Record<string, string>; // 文件夹路径 -> 视图文件路径
 	folderDateFields: Record<string, string>; // 文件夹路径 -> 日期字段名（frontmatter 中的字段名）
-	defaultTemplate: string; // 创建新笔记时的默认模板
+	/** 模板文件夹路径，用于从中选择模板文件（如 "Templates"） */
+	templateFolderPath: string | null;
+	/** 创建新笔记时使用的模板文件路径（如 "Templates/Journal.md"），空则使用默认格式 */
+	templatePath: string | null;
 	imageGap: number; // 图片容器之间的间距（像素）
 	openInNewTab: boolean; // 是否在新标签页打开笔记（true=新标签页，false=当前标签页）
 	enableEditorImageLayout: boolean; // 在 Live Preview 中，默认文件夹内的笔记是否启用手记式图片布局
-	onThisDayDisplayMode: 'single' | 'all' | 'hidden'; // 那年今日展示模式：single=最近一条，all=全部，hidden=不展示
+	showJournalStats: boolean; // 是否展示统计栏（连续天数、字数、写手记天数）
 }
 
 export const DEFAULT_SETTINGS: JournalPluginSettings = {
@@ -18,10 +21,11 @@ export const DEFAULT_SETTINGS: JournalPluginSettings = {
 	defaultFolderPath: null,
 	imageLimit: 3,
 	folderJournalViews: {},
-	folderDateFields: {}, // 文件夹路径 -> 日期字段名
-	defaultTemplate: '', // 默认模板（空字符串表示使用默认格式）
-	imageGap: 10, // 默认图片间距 10px
-	openInNewTab: true, // 默认在新标签页打开
-	enableEditorImageLayout: true, // 默认在 Live Preview 中启用手记式图片布局
-	onThisDayDisplayMode: 'single', // 那年今日默认展示最近一条
+	folderDateFields: {},
+	templateFolderPath: null,
+	templatePath: null,
+	imageGap: 10,
+	openInNewTab: true,
+	enableEditorImageLayout: true,
+	showJournalStats: false,
 };

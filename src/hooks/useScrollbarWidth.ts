@@ -8,51 +8,35 @@ export const useScrollbarWidth = (): number => {
 	const [scrollbarWidth, setScrollbarWidth] = useState(0);
 
 	useEffect(() => {
-		// 创建一个临时的外层容器
-		const outer = document.createElement('div');
-		outer.style.visibility = 'hidden';
-		outer.style.overflow = 'scroll';
-		// @ts-ignore - msOverflowStyle 是 IE 特有的属性
-		outer.style.msOverflowStyle = 'scrollbar'; // 用于 IE
-		document.body.appendChild(outer);
-
-		// 创建一个内层容器
-		const inner = document.createElement('div');
-		outer.appendChild(inner);
-
-		// 计算滚动条宽度
-		const width = outer.offsetWidth - inner.offsetWidth;
-
-		// 清理
-		document.body.removeChild(outer);
-
-		setScrollbarWidth(width);
-
-		// 监听窗口大小变化，重新计算（某些情况下滚动条宽度可能变化）
-		const handleResize = () => {
+		const measure = (): number => {
 			const outer = document.createElement('div');
-			outer.style.visibility = 'hidden';
-			outer.style.overflow = 'scroll';
+			outer.style.cssText = 'visibility:hidden;overflow:scroll;width:100px;height:100px;position:absolute;top:-9999px;';
 			// @ts-ignore - msOverflowStyle 是 IE 特有的属性
 			outer.style.msOverflowStyle = 'scrollbar';
 			document.body.appendChild(outer);
 
 			const inner = document.createElement('div');
+			inner.style.width = '100%';
+			inner.style.height = '1px';
 			outer.appendChild(inner);
 
-			const newWidth = outer.offsetWidth - inner.offsetWidth;
+			const width = outer.offsetWidth - outer.clientWidth;
 			document.body.removeChild(outer);
+			return width;
+		};
 
-			if (newWidth !== scrollbarWidth) {
-				setScrollbarWidth(newWidth);
-			}
+		const width = measure();
+
+		setScrollbarWidth(width);
+
+		const handleResize = () => {
+			const newWidth = measure();
+			setScrollbarWidth((prev) => (newWidth !== prev ? newWidth : prev));
 		};
 
 		window.addEventListener('resize', handleResize);
-		return () => {
-			window.removeEventListener('resize', handleResize);
-		};
-	}, [scrollbarWidth]);
+		return () => window.removeEventListener('resize', handleResize);
+	}, []);
 
 	return scrollbarWidth;
 };

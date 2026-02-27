@@ -1,4 +1,5 @@
 import type { JournalEntry } from './utils';
+import { strings } from '../i18n';
 
 /** 判断是否为「那年今日」（同月同日，往年） */
 export function isOnThisDay(entry: JournalEntry): boolean {
@@ -29,5 +30,5 @@ export function getLatestOnThisDayWithinYear(entries: JournalEntry[]): JournalEn
 /** 格式化「X年前」 */
 export function formatYearsAgo(entry: JournalEntry): string {
 	const years = new Date().getFullYear() - new Date(entry.date).getFullYear();
-	return years === 1 ? '1 年前' : `${years} 年前`;
+	return strings.onThisDay.yearsAgo(years);
 }

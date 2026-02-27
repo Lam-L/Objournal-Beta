@@ -1,4 +1,5 @@
 import React, { memo, useRef, useState } from 'react';
+import { strings } from '../i18n';
 import { JournalEntry, formatDate } from '../utils/utils';
 import { CONTENT } from '../constants';
 import { JournalImageContainer } from './JournalImageContainer';
@@ -7,9 +8,11 @@ import { useJournalView } from '../context/JournalViewContext';
 
 interface JournalCardProps {
 	entry: JournalEntry;
+	/** 虚拟化列表中设为 true，图片直接渲染避免闪烁 */
+	skipLazyLoad?: boolean;
 }
 
-export const JournalCard: React.FC<JournalCardProps> = memo(({ entry }) => {
+export const JournalCard: React.FC<JournalCardProps> = memo(({ entry, skipLazyLoad = false }) => {
 	const { app, plugin } = useJournalView();
 	const cardRef = useRef<HTMLDivElement>(null);
 	const scrollContainerRef = useRef<HTMLElement | null>(null);
@@ -97,6 +100,7 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry }) => {
 					images={entry.images.slice(0, CONTENT.MAX_IMAGES_PER_CARD)}
 					totalImages={entry.images.length}
 					allImages={entry.images}
+					skipLazyLoad={skipLazyLoad}
 				/>
 			)}
 
@@ -114,6 +118,7 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry }) => {
 			<div className="journal-date-container">
 				<div className="journal-date">{formatDate(entry.date)}</div>
 				<JournalCardMenu
+					app={app}
 					entry={entry}
 					onDelete={async () => {
 						try {
@@ -121,7 +126,7 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry }) => {
 							// 文件删除后，实时更新会自动处理
 						} catch (error) {
 							console.error('删除文件失败:', error);
-							alert('删除文件失败，请重试。');
+							alert(strings.card.deleteFailed);
 						}
 					}}
 				/>

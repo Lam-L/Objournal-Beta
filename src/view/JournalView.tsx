@@ -1,4 +1,5 @@
 import { ItemView, WorkspaceLeaf, App, Plugin } from 'obsidian';
+import { strings } from '../i18n';
 import { createRoot, Root } from 'react-dom/client';
 import React from 'react';
 import { JournalViewProvider } from '../context/JournalViewContext';
@@ -28,7 +29,7 @@ export class JournalView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return '手记视图';
+		return strings.view.viewName;
 	}
 
 	getIcon(): string {
@@ -118,10 +119,10 @@ export class JournalView extends ItemView {
 					app={this.app}
 					plugin={this.plugin}
 					targetFolderPath={this.targetFolderPath}
-				setTargetFolderPath={(path: string | null) => {
-					this.targetFolderPath = path;
-					this.renderReact();
-				}}
+					setTargetFolderPath={(path: string | null) => {
+						this.targetFolderPath = path;
+						this.renderReact();
+					}}
 				>
 					<JournalViewContainer />
 				</JournalViewProvider>

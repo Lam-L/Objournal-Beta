@@ -2,12 +2,13 @@ import React from 'react';
 import { TFolder, TFile } from 'obsidian';
 import { useJournalView } from '../context/JournalViewContext';
 import { useJournalData } from '../context/JournalDataContext';
-import { useOnThisDay } from '../context/OnThisDayContext';
+import { useJournalViewMode } from '../context/JournalViewModeContext';
+import { strings } from '../i18n';
 
 export const JournalHeader: React.FC = () => {
 	const { app, plugin, targetFolderPath } = useJournalView();
 	const { refresh } = useJournalData();
-	const { cycleDisplayMode, displayMode } = useOnThisDay();
+	const { viewMode, cycleViewMode } = useJournalViewMode();
 
 	const handleCreateNote = async () => {
 		try {
@@ -36,58 +37,60 @@ export const JournalHeader: React.FC = () => {
 				return;
 			}
 
-			// 生成文件名（使用当前日期）
-			const today = new Date();
-			const year = today.getFullYear();
-			const month = String(today.getMonth() + 1).padStart(2, '0');
-			const day = String(today.getDate()).padStart(2, '0');
-			const fileName = `${year}-${month}-${day}.md`;
-			const filePath = targetFolder.path === '/'
-				? fileName
-				: `${targetFolder.path}/${fileName}`;
+			// 获取内容：仅当设置了模板文件时从模板读取并替换变量，否则留空
+			let fileContent = '';
+			const templatePath = (plugin as { settings?: { templatePath?: string | null } })?.settings?.templatePath;
 
-			// 检查文件是否已存在，如果存在则添加时间戳
-			let finalPath = filePath;
-			let counter = 1;
-			while (await app.vault.adapter.exists(finalPath)) {
+			if (templatePath) {
+				const today = new Date();
+				const year = today.getFullYear();
+				const month = String(today.getMonth() + 1).padStart(2, '0');
+				const day = String(today.getDate()).padStart(2, '0');
+				const titleStr = `${year}年${month}月${day}日`;
 				const timeStr = `${String(today.getHours()).padStart(2, '0')}-${String(today.getMinutes()).padStart(2, '0')}`;
-				finalPath = targetFolder.path === '/'
-					? `${year}-${month}-${day}-${timeStr}.md`
-					: `${targetFolder.path}/${year}-${month}-${day}-${timeStr}.md`;
-				counter++;
-				// 防止无限循环
-				if (counter > 100) break;
+				const templateFile = app.vault.getAbstractFileByPath(templatePath);
+				if (templateFile instanceof TFile) {
+					try {
+						const raw = await app.vault.read(templateFile);
+						fileContent = raw
+							.replace(/\{\{date\}\}/g, `${year}-${month}-${day}`)
+							.replace(/\{\{year\}\}/g, String(year))
+							.replace(/\{\{month\}\}/g, month)
+							.replace(/\{\{day\}\}/g, day)
+							.replace(/\{\{title\}\}/g, titleStr)
+							.replace(/\{\{time\}\}/g, timeStr);
+					} catch {
+						// 模板读取失败时留空
+					}
+				}
 			}
 
-			// 获取模板（从插件设置中获取）
-			let fileContent = '';
-			// @ts-ignore - plugin 可能是 JournalPlugin，需要访问 settings
-			if (plugin && (plugin as any).settings && (plugin as any).settings.defaultTemplate) {
-				// @ts-ignore
-				const template = (plugin as any).settings.defaultTemplate;
-				// 替换模板变量
-				fileContent = template
-					.replace(/\{\{date\}\}/g, `${year}-${month}-${day}`)
-					.replace(/\{\{year\}\}/g, String(year))
-					.replace(/\{\{month\}\}/g, month)
-					.replace(/\{\{day\}\}/g, day)
-					.replace(/\{\{title\}\}/g, `${year}年${month}月${day}日`);
-			} else {
-				// 使用默认格式
-				fileContent = `---
-date: ${year}-${month}-${day}
----
-
-# ${year}年${month}月${day}日
-
-`;
+			// 文件名：Untitled，冲突时加编号
+			let finalPath = targetFolder.path === '/' ? 'Untitled.md' : `${targetFolder.path}/Untitled.md`;
+			let counter = 1;
+			while (await app.vault.adapter.exists(finalPath)) {
+				finalPath = targetFolder.path === '/'
+					? `Untitled ${counter}.md`
+					: `${targetFolder.path}/Untitled ${counter}.md`;
+				counter++;
+				if (counter > 100) break;
 			}
 
 			// 创建文件
 			const newFile = await app.vault.create(finalPath, fileContent);
 
-			// 打开新创建的文件
-			await app.workspace.openLinkText(finalPath, '', true);
+			// 打开新创建的文件：根据设置决定在新标签页或当前标签页打开
+			const openInNewTab = (plugin as { settings?: { openInNewTab?: boolean } })?.settings?.openInNewTab !== false;
+			if (openInNewTab) {
+				await app.workspace.openLinkText(finalPath, '', true);
+			} else {
+				const activeLeaf = app.workspace.activeLeaf;
+				const targetLeaf =
+					activeLeaf?.getViewState?.().type === 'journal-view-react'
+						? activeLeaf
+						: app.workspace.getLeaf(false);
+				await targetLeaf?.openFile(newFile, { active: true });
+			}
 
 			// 等待文件元数据（创建时间）完全更新后刷新
 			// 延迟足够的时间，确保文件元数据已完全更新
@@ -113,35 +116,41 @@ date: ${year}-${month}-${day}
 	return (
 		<div className="journal-header">
 			<div className="journal-title-container">
-				<h1 className="journal-title-header">手记</h1>
+				<h1 className="journal-title-header">{strings.view.title}</h1>
 				<div className="journal-header-buttons">
 					<button
-						className={`journal-header-button journal-header-button-on-this-day ${displayMode === 'hidden' ? 'journal-header-button-on-this-day-inactive' : ''}`}
-						onClick={cycleDisplayMode}
-						title={
-							displayMode === 'single'
-								? '那年今日：最近一条（点击切换为展示全部）'
-								: displayMode === 'all'
-									? '那年今日：展示全部（点击切换为隐藏）'
-									: '那年今日：已隐藏（点击切换为展示）'
-						}
+						className={`journal-header-button journal-header-button-view-mode ${viewMode === 'calendar' ? 'journal-header-button-view-mode-active' : ''}`}
+						onClick={cycleViewMode}
+						title={viewMode === 'list' ? strings.view.switchToCalendar : strings.view.switchToList}
+						aria-label={viewMode === 'list' ? strings.view.switchToCalendar : strings.view.switchToList}
 					>
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-							<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-							<line x1="16" y1="2" x2="16" y2="6"></line>
-							<line x1="8" y1="2" x2="8" y2="6"></line>
-							<line x1="3" y1="10" x2="21" y2="10"></line>
-						</svg>
-						<span className="journal-header-button-label">那年今日</span>
+						{viewMode === 'list' ? (
+							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+								<rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+								<line x1="16" y1="2" x2="16" y2="6" />
+								<line x1="8" y1="2" x2="8" y2="6" />
+								<line x1="3" y1="10" x2="21" y2="10" />
+							</svg>
+						) : (
+							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+								<line x1="8" y1="6" x2="21" y2="6" />
+								<line x1="8" y1="12" x2="21" y2="12" />
+								<line x1="8" y1="18" x2="21" y2="18" />
+								<line x1="3" y1="6" x2="3.01" y2="6" />
+								<line x1="3" y1="12" x2="3.01" y2="12" />
+								<line x1="3" y1="18" x2="3.01" y2="18" />
+							</svg>
+						)}
 					</button>
 					<button
 						className="journal-header-button journal-header-button-primary"
 						onClick={handleCreateNote}
-						title="新建笔记"
+						title={strings.view.newNote}
+						aria-label={strings.view.newNote}
 					>
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-							<line x1="12" y1="5" x2="12" y2="19"></line>
-							<line x1="5" y1="12" x2="19" y2="12"></line>
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<line x1="12" y1="5" x2="12" y2="19" />
+							<line x1="5" y1="12" x2="19" y2="12" />
 						</svg>
 					</button>
 				</div>

@@ -1,10 +1,15 @@
-import { App, MarkdownPostProcessorContext, MarkdownView } from 'obsidian';
+import { App, MarkdownPostProcessorContext, MarkdownView, TFile } from 'obsidian';
+import { strings } from '../i18n';
 
 /**
- * Live Preview 下的编辑器图片布局
+ * Live Preview（编辑模式）下的编辑器图片布局
  * 在默认文件夹中的笔记，将图片按首页手记卡片的布局展示（1/2/3/4/5+ 张）
  * 支持实时：添加/删除图片时自动重新渲染
+ * 阅读模式不使用此布局，保持 Obsidian 原生渲染
+ * 超过 5 张图时拆成多个画廊，保证每张图都可见
  */
+const MAX_IMAGES_PER_GALLERY = 5;
+
 export class EditorImageLayout {
 	private app: App;
 	private plugin: { settings: any; registerEvent: (e: any) => void; registerMarkdownPostProcessor: (p: any) => any };
@@ -105,10 +110,17 @@ export class EditorImageLayout {
 		this.attachEditorObserver();
 
 		// 兜底：document.body 监听（当 editor 内部结构变化时，可能 observer 未覆盖到）
+		// 忽略 journal-view-container 内的变更，避免手记列表刷新时误触发处理，导致编辑器焦点异常
 		let debounceId: number | null = null;
-		const bodyObserver = new MutationObserver(() => {
+		const bodyObserver = new MutationObserver((mutations: MutationRecord[]) => {
+			const fromJournalView = mutations.some((m) => {
+				const el = m.target.nodeType === Node.ELEMENT_NODE ? (m.target as Element) : m.target.parentElement;
+				return el?.closest?.('.journal-view-container') != null;
+			});
+			if (fromJournalView) return;
+
 			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-			if (!view?.file || !this.shouldProcessFile(view.file.path)) return;
+			if (!view?.file || view.getMode() !== 'source' || !this.shouldProcessFile(view.file.path)) return;
 
 			if (debounceId) clearTimeout(debounceId);
 			debounceId = window.setTimeout(() => {
@@ -119,14 +131,14 @@ export class EditorImageLayout {
 		bodyObserver.observe(document.body, { childList: true, subtree: true });
 	}
 
-	/** 直接观察当前编辑器的 contentEl，DOM 变动时立即处理 */
+	/** 直接观察当前编辑器的 contentEl，DOM 变动时立即处理（仅编辑模式） */
 	private attachEditorObserver(): void {
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!view?.file) {
 			this.stopObservingEditor();
 			return;
 		}
-		if (!this.shouldProcessFile(view.file.path)) {
+		if (view.getMode() !== 'source' || !this.shouldProcessFile(view.file.path)) {
 			this.stopObservingEditor();
 			return;
 		}
@@ -160,20 +172,29 @@ export class EditorImageLayout {
 		}
 	}
 
-	/** 轮询：处理所有在默认文件夹内的 Markdown 视图（含 Live Preview、阅读模式） */
+	/** 轮询：仅处理编辑模式（Live Preview），阅读模式不应用 gallery */
 	private processAllRelevantViews(): void {
 		if (this.isProcessing) return;
 
 		this.app.workspace.iterateAllLeaves((leaf) => {
 			const view = leaf.view;
 			if (!(view instanceof MarkdownView) || !view.file) return;
+			if (view.getMode() !== 'source') return;
 			if (!this.shouldProcessFile(view.file.path)) return;
 
-			const containerEl = view.contentEl;
-			if (!containerEl) return;
+			const sourceEl = this.getSourceViewContainer(view.contentEl);
+			if (!sourceEl) return;
 
-			this.processElement(containerEl);
+			this.processElement(sourceEl);
 		});
+	}
+
+	/** 获取 markdown-source-view 容器，避免处理到阅读模式中注入的图片（journal-preview-image）导致重复 */
+	private getSourceViewContainer(contentEl: HTMLElement | undefined): HTMLElement | null {
+		if (!contentEl) return null;
+		// contentEl 同时包含 source + reading，只处理 source 避免视图切换时图片重复
+		const source = contentEl.querySelector('.markdown-source-view') as HTMLElement | null;
+		return source ?? contentEl;
 	}
 
 	/** 处理单个容器内的图片 */
@@ -185,7 +206,9 @@ export class EditorImageLayout {
 		const images = Array.from(containerEl.querySelectorAll('img')).filter(
 			(img) =>
 				!img.classList.contains('journal-editor-processed') &&
+				!img.classList.contains('journal-preview-image') &&
 				!img.closest('.journal-images') &&
+				!img.closest('.markdown-reading-view') &&
 				this.isValidImage(img as HTMLImageElement)
 		);
 
@@ -208,11 +231,12 @@ export class EditorImageLayout {
 	private processActiveEditor(): void {
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!view?.file || !this.shouldProcessFile(view.file.path)) return;
+		if (view.getMode() !== 'source') return;
 
-		const containerEl = view.contentEl;
-		if (!containerEl) return;
+		const sourceEl = this.getSourceViewContainer(view.contentEl);
+		if (!sourceEl) return;
 
-		this.processElement(containerEl);
+		this.processElement(sourceEl);
 	}
 
 	private updateExistingGalleries(editorEl: HTMLElement): void {
@@ -232,7 +256,7 @@ export class EditorImageLayout {
 		});
 	}
 
-	/** 合并相邻的 journal-images（如两个 internal-embed 各自包了一个 single，应合并为一个 double） */
+	/** 合并相邻的 journal-images（如两个 single 合并为一个 double）；合并后超过 5 张则跳过，避免 merge→split 死循环 */
 	private mergeAdjacentGalleries(scope: HTMLElement): void {
 		const galleries = Array.from(scope.querySelectorAll('.journal-images')) as HTMLElement[];
 		if (galleries.length < 2) return;
@@ -253,11 +277,12 @@ export class EditorImageLayout {
 			const imgs2 = Array.from(g2.querySelectorAll('img.journal-editor-processed')) as HTMLImageElement[];
 			const allImgs = [...imgs1, ...imgs2];
 
+			// 合并后超过 5 张则跳过，避免与「拆成多画廊」形成 merge→split 死循环导致 DOM 持续抖动
+			if (allImgs.length > MAX_IMAGES_PER_GALLERY) continue;
+
 			g1.className = 'journal-images ' + this.getLayoutClass(allImgs.length);
 			g1.innerHTML = '';
 			this.organizeImagesInContainer(allImgs, g1);
-
-			// 只移除空的 journal-images（g2），不移除 internal-embed，以保留 markdown 源码的显示
 			g2.remove();
 			galleries.splice(i + 1, 1);
 			i--;
@@ -300,14 +325,47 @@ export class EditorImageLayout {
 		return null;
 	}
 
-	/** 将新图片合并到已有 gallery 并重建布局 */
+	/** 将新图片合并到已有 gallery 并重建布局；超过 5 张时拆成多个画廊 */
 	private addImagesToExistingGallery(newImages: HTMLImageElement[], gallery: HTMLElement): void {
 		const existingImgs = Array.from(gallery.querySelectorAll('img.journal-editor-processed')) as HTMLImageElement[];
 		const allImages = [...existingImgs, ...newImages];
 
-		gallery.className = 'journal-images ' + this.getLayoutClass(allImages.length);
+		if (allImages.length <= MAX_IMAGES_PER_GALLERY) {
+			gallery.className = 'journal-images ' + this.getLayoutClass(allImages.length);
+			gallery.innerHTML = '';
+			this.organizeImagesInContainer(allImages, gallery);
+			return;
+		}
+
+		const chunks = this.chunkImages(allImages, MAX_IMAGES_PER_GALLERY);
+		const parent = gallery.parentElement;
+		if (!parent) return;
+
+		// 第一块放入现有 gallery
+		gallery.className = 'journal-images ' + this.getLayoutClass(chunks[0].length);
 		gallery.innerHTML = '';
-		this.organizeImagesInContainer(allImages, gallery);
+		this.organizeImagesInContainer(chunks[0], gallery);
+
+		// 后续块创建新画廊，插入到当前 gallery 后面
+		let insertBefore: ChildNode | null = gallery.nextSibling;
+		for (let i = 1; i < chunks.length; i++) {
+			const chunk = chunks[i];
+			const refImg = chunk[0];
+			const container = document.createElement('div');
+			container.addClasses(['journal-images', this.getLayoutClass(chunk.length)]);
+
+			try {
+				if (insertBefore && insertBefore.parentNode === parent) {
+					parent.insertBefore(container, insertBefore);
+				} else {
+					parent.appendChild(container);
+				}
+			} catch {
+				parent.appendChild(container);
+			}
+			this.organizeImagesInContainer(chunk, container);
+			insertBefore = container.nextSibling; // 下次插入到刚创建的容器后面
+		}
 	}
 
 	private groupConsecutiveImages(images: HTMLImageElement[]): HTMLImageElement[][] {
@@ -377,18 +435,52 @@ export class EditorImageLayout {
 
 	private processMarkdownImages(element: HTMLElement, context: MarkdownPostProcessorContext): void {
 		if (!this.shouldProcessFile(context.sourcePath)) return;
-		const now = Date.now();
-		if (now - this.lastProcessedTime < this.PROCESS_COOLDOWN) return;
 
-		const images = Array.from(element.querySelectorAll('img:not(.journal-editor-processed)')).filter(
-			(img) => !(img as HTMLElement).closest('.journal-images') && this.isValidImage(img as HTMLImageElement)
-		) as HTMLImageElement[];
+		// 阅读模式：Obsidian 有时会产出空的 internal-embed span（无 img 子节点），需手动注入图片
+		this.fixEmptyImageSpansInPreview(element, context);
+	}
 
-		if (images.length === 0) return;
+	/**
+	 * 阅读模式下，Obsidian 可能渲染出空的 image-embed span，缺少 img 子元素。
+	 * 通过解析 src/alt、解析 vault 路径、创建 img 来修复显示。
+	 */
+	private fixEmptyImageSpansInPreview(
+		element: HTMLElement,
+		context: MarkdownPostProcessorContext
+	): void {
+		const spans = element.querySelectorAll(
+			'.internal-embed.media-embed.image-embed:not(.journal-preview-image-fixed)'
+		);
 
-		const groups = this.groupConsecutiveImages(images);
-		groups.forEach((group) => this.wrapImageGroup(group, element));
-		this.lastProcessedTime = Date.now();
+		for (const span of Array.from(spans)) {
+			if (span.querySelector('img')) continue;
+
+			const src = (span.getAttribute('src') || span.getAttribute('alt') || '').trim();
+			if (!src) continue;
+
+			const imageFile = this.app.metadataCache.getFirstLinkpathDest(
+				src,
+				context.sourcePath
+			);
+			if (!(imageFile instanceof TFile)) continue;
+
+			const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico'];
+			if (!imageExtensions.includes(imageFile.extension.toLowerCase())) continue;
+
+			try {
+				const resourcePath = this.app.vault.getResourcePath(imageFile);
+				const img = document.createElement('img');
+				img.src = resourcePath;
+				img.alt = span.getAttribute('alt') || imageFile.basename;
+				img.loading = 'lazy';
+				img.decoding = 'async';
+				img.addClass('journal-preview-image');
+				span.appendChild(img);
+				span.addClass('journal-preview-image-fixed');
+			} catch {
+				// 忽略解析失败
+			}
+		}
 	}
 
 	private wrapImageGroup(images: HTMLImageElement[], editorEl?: HTMLElement): void {
@@ -407,26 +499,36 @@ export class EditorImageLayout {
 			}
 		}
 
-		// 在第一个图片的父节点内插入 journal-images（Obsidian 需要此结构才能正确渲染）
-		const parent = firstImg.parentElement;
-		if (!parent) return;
+		// 超过 5 张时拆成多个画廊，保证每张图都可见
+		const chunks = this.chunkImages(images, MAX_IMAGES_PER_GALLERY);
 
-		const insertBefore = firstImg.nextSibling;
+		for (let i = 0; i < chunks.length; i++) {
+			const chunk = chunks[i];
+			const refImg = chunk[0]; // 用于确定插入位置的参考节点（组织图片时会移动它，故先保存引用）
+			const parent = refImg.parentElement;
+			if (!parent) continue;
 
-		const container = document.createElement('div');
-		container.addClasses(['journal-images', this.getLayoutClass(images.length)]);
+			const container = document.createElement('div');
+			container.addClasses(['journal-images', this.getLayoutClass(chunk.length)]);
 
-		try {
-			if (insertBefore && insertBefore.parentNode === parent) {
-				parent.insertBefore(container, insertBefore);
-			} else {
-				parent.insertBefore(container, firstImg);
+			// 先插入空容器（在移动节点之前，避免 insertBefore 引用失效）
+			try {
+				parent.insertBefore(container, refImg);
+			} catch {
+				parent.appendChild(container);
 			}
-		} catch {
-			parent.insertBefore(container, firstImg);
-		}
 
-		this.organizeImagesInContainer(images, container);
+			this.organizeImagesInContainer(chunk, container);
+		}
+	}
+
+	/** 将图片数组按每批 maxPer 张切分 */
+	private chunkImages(images: HTMLImageElement[], maxPer: number): HTMLImageElement[][] {
+		const chunks: HTMLImageElement[][] = [];
+		for (let i = 0; i < images.length; i += maxPer) {
+			chunks.push(images.slice(i, i + maxPer));
+		}
+		return chunks;
 	}
 
 	private getLayoutClass(count: number): string {
@@ -439,10 +541,11 @@ export class EditorImageLayout {
 
 	/**
 	 * 按首页 JournalImageContainer 的结构组织图片
+	 * 调用方保证 images 最多 5 张（拆成多画廊后每批最多 5 张）
 	 */
 	private organizeImagesInContainer(images: HTMLImageElement[], container: HTMLElement): void {
-		const count = Math.min(images.length, 5);
-		const moreCount = images.length > 5 ? images.length - 5 : 0;
+		const count = Math.min(images.length, MAX_IMAGES_PER_GALLERY);
+		const moreCount = images.length > MAX_IMAGES_PER_GALLERY ? images.length - MAX_IMAGES_PER_GALLERY : 0;
 
 		const createWrapper = (img: HTMLImageElement, className: string, showMore?: number): HTMLElement => {
 			const wrap = document.createElement('div');
@@ -459,8 +562,8 @@ export class EditorImageLayout {
 			const deleteBtn = document.createElement('button');
 			deleteBtn.addClass('journal-editor-image-delete');
 			deleteBtn.innerHTML =
-				'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-			deleteBtn.title = '删除图片';
+				'<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+			deleteBtn.title = strings.editor.deleteImage;
 			deleteBtn.onclick = (e) => {
 				e.stopPropagation();
 				e.preventDefault();

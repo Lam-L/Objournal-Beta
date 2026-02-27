@@ -105,7 +105,7 @@ export const JournalList: React.FC = () => {
                                     transform: `translateY(${virtualItem.start}px)`,
                                 }}
                             >
-                                <JournalCard entry={item.entry} />
+                                <JournalCard entry={item.entry} skipLazyLoad />
                             </div>
                         );
                     }

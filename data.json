@@ -6,10 +6,12 @@
   "folderDateFields": {
     "垃圾箱日记": "日期"
   },
-  "defaultTemplate": "",
+  "templateFolderPath": "Templates",
+  "templatePath": "Templates/日记.md",
   "imageGap": 4,
   "openInNewTab": false,
   "enableEditorImageLayout": true,
-  "onThisDayDisplayMode": "single",
+  "showJournalStats": false,
+  "onThisDayDisplayMode": "all",
   "enableAutoLayout": true
 }

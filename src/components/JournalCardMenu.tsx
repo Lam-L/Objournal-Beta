@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef, useContext, createContext } from 'react';
+import { App } from 'obsidian';
 import { JournalEntry } from '../utils/utils';
+import { strings } from '../i18n';
+import { DeleteConfirmModal } from '../utils/DeleteConfirmModal';
 
 // 全局菜单状态管理（确保只有一个菜单打开）
 interface MenuContextValue {
@@ -27,11 +30,12 @@ const useMenuContext = () => {
 };
 
 interface JournalCardMenuProps {
+	app: App;
 	entry: JournalEntry;
 	onDelete: () => void;
 }
 
-export const JournalCardMenu: React.FC<JournalCardMenuProps> = ({ entry, onDelete }) => {
+export const JournalCardMenu: React.FC<JournalCardMenuProps> = ({ app, entry, onDelete }) => {
 	const { openMenuId, setOpenMenuId } = useMenuContext();
 	const menuId = entry.file.path;
 	const isOpen = openMenuId === menuId;
@@ -72,13 +76,15 @@ export const JournalCardMenu: React.FC<JournalCardMenuProps> = ({ entry, onDelet
 		}
 	};
 
-	const handleDeleteClick = async (e: React.MouseEvent) => {
+	const handleDeleteClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		const confirmed = confirm(`确定要删除 "${entry.title || entry.file.basename}" 吗？\n\n此操作无法撤销。`);
-		if (confirmed) {
-			onDelete();
-			setOpenMenuId(null);
-		}
+		setOpenMenuId(null); // 先关闭菜单，避免焦点问题
+		new DeleteConfirmModal(app, {
+			message: strings.card.deleteConfirm(entry.title || entry.file.basename),
+			confirmText: strings.common.delete,
+			cancelText: strings.common.cancel,
+			onConfirm: onDelete,
+		}).open();
 	};
 
 	const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
@@ -140,7 +146,7 @@ export const JournalCardMenu: React.FC<JournalCardMenuProps> = ({ entry, onDelet
 							<polyline points="3 6 5 6 21 6"></polyline>
 							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
 						</svg>
-						<span>删除</span>
+						<span>{strings.common.delete}</span>
 					</div>
 				</div>
 			)}
