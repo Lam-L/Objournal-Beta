@@ -19,7 +19,7 @@
 如果手记视图对你有帮助，欢迎通过以下方式支持我：
 
 - [Ko-fi 请我喝杯咖啡](https://ko-fi.com/jacelin) ☕️
-- 微信赞赏：![微信赞赏码](docs/wechat-tip.png)
+- 微信赞赏：![微信赞赏码](assets/wechat-tip.png)
 
 ---
 

@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Docs (dev notes, analysis - not for distribution)
+docs/
+
 # Build output
 *.map
 
