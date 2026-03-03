@@ -16,7 +16,9 @@
 如果日記視圖對你有幫助，歡迎透過以下方式支持我：
 
 - [Ko-fi 請我喝杯咖啡](https://ko-fi.com/jacelin) ☕️
-- 微信讚賞：<img src="assets/wechat-tip.png" width="160" alt="微信讚賞碼" />
+- 微信讚賞：
+
+  <img src="assets/wechat-tip.png" width="160" alt="微信讚賞碼" />
 
 ---
 
