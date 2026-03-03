@@ -11,6 +11,8 @@ export const THUMBNAIL = {
 	maxHeight: 1080,
 	output: { mimeType: 'image/webp' as const, iosMimeType: 'image/png' as const, quality: 0.92 },
 	keyVersion: 6,
+	/** Max IndexedDB storage for thumbnails (bytes). LRU eviction when over. */
+	storageQuotaBytes: 200 * 1024 * 1024, // 200 MB
 	/** Max in-memory cached blobs (LRU) */
 	cacheMaxEntries: 200,
 	/** Throttle ms before retry regenerate (reference nn FEATURE_IMAGE_REGEN_THROTTLE) */

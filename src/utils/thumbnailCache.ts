@@ -34,6 +34,10 @@ export class ThumbnailBlobCache {
 	remove(key: string): void {
 		this.entries.delete(key);
 	}
+
+	removeMany(keys: string[]): void {
+		for (const k of keys) this.entries.delete(k);
+	}
 }
 
 export const thumbnailBlobCache = new ThumbnailBlobCache();

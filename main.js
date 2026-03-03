@@ -24317,6 +24317,9 @@ var THUMBNAIL = {
   maxHeight: 1080,
   output: { mimeType: "image/webp", iosMimeType: "image/png", quality: 0.92 },
   keyVersion: 6,
+  /** Max IndexedDB storage for thumbnails (bytes). LRU eviction when over. */
+  storageQuotaBytes: 200 * 1024 * 1024,
+  // 200 MB
   /** Max in-memory cached blobs (LRU) */
   cacheMaxEntries: 200,
   /** Throttle ms before retry regenerate (reference nn FEATURE_IMAGE_REGEN_THROTTLE) */
@@ -24485,8 +24488,10 @@ var JournalIndexedDBStorage = class {
     const tx = this.db.transaction([THUMBNAIL_STORE_NAME], "readonly");
     const store = tx.objectStore(THUMBNAIL_STORE_NAME);
     const record = await idbRequestToPromise(store.get(key), `getThumbnail ${key}`);
-    if ((record == null ? void 0 : record.blob) instanceof Blob && record.blob.size > 0)
+    if ((record == null ? void 0 : record.blob) instanceof Blob && record.blob.size > 0) {
+      this.touchThumbnail(key, record.blob);
       return record.blob;
+    }
     return null;
   }
   /** Batch get thumbnail blobs (single transaction, reference nn preload) */
@@ -24507,18 +24512,25 @@ var JournalIndexedDBStorage = class {
       )
     );
     const map = /* @__PURE__ */ new Map();
-    for (const r of results)
-      if (r)
+    for (const r of results) {
+      if (r) {
         map.set(r[0], r[1]);
+        this.touchThumbnail(r[0], r[1]);
+      }
+    }
     return map;
   }
-  /** Put thumbnail blob */
-  async putThumbnailBlob(key, blob) {
+  /** Put thumbnail blob. Runs LRU eviction when over quota. Calls onEvicted for keys removed from IDB. */
+  async putThumbnailBlob(key, blob, onEvicted) {
     if (!this.db)
       return;
+    const record = { blob, lastAccessedAt: Date.now() };
     const tx = this.db.transaction([THUMBNAIL_STORE_NAME], "readwrite");
-    tx.objectStore(THUMBNAIL_STORE_NAME).put({ blob }, key);
+    tx.objectStore(THUMBNAIL_STORE_NAME).put(record, key);
     await this.finishTransaction(tx);
+    const evicted = await this.evictThumbnailsIfOverQuota();
+    if (evicted.length > 0 && onEvicted)
+      onEvicted(evicted);
   }
   /** Delete thumbnail blob */
   async deleteThumbnailBlob(key) {
@@ -24528,6 +24540,57 @@ var JournalIndexedDBStorage = class {
     tx.objectStore(THUMBNAIL_STORE_NAME).delete(key);
     await this.finishTransaction(tx);
   }
+  /** Fire-and-forget touch to update lastAccessedAt for LRU */
+  touchThumbnail(key, blob) {
+    if (!this.db)
+      return;
+    const tx = this.db.transaction([THUMBNAIL_STORE_NAME], "readwrite");
+    tx.objectStore(THUMBNAIL_STORE_NAME).put({ blob, lastAccessedAt: Date.now() }, key);
+  }
+  /** Evict oldest thumbnails by lastAccessedAt until under quota. Returns evicted keys. */
+  async evictThumbnailsIfOverQuota() {
+    var _a2;
+    if (!((_a2 = this.db) == null ? void 0 : _a2.objectStoreNames.contains(THUMBNAIL_STORE_NAME)))
+      return [];
+    const quota = THUMBNAIL.storageQuotaBytes;
+    const entries = [];
+    const store = this.db.transaction([THUMBNAIL_STORE_NAME], "readonly").objectStore(THUMBNAIL_STORE_NAME);
+    const req = store.openCursor();
+    await new Promise((resolve, reject) => {
+      req.onsuccess = () => {
+        var _a3;
+        const cursor = req.result;
+        if (cursor) {
+          const record = cursor.value;
+          const size = (record == null ? void 0 : record.blob) instanceof Blob ? record.blob.size : 0;
+          const lastAccessedAt = (_a3 = record == null ? void 0 : record.lastAccessedAt) != null ? _a3 : 0;
+          entries.push({ key: cursor.key, size, lastAccessedAt });
+          cursor.continue();
+        } else
+          resolve();
+      };
+      req.onerror = () => reject(req.error);
+    });
+    let total = entries.reduce((s, e) => s + e.size, 0);
+    if (total <= quota)
+      return [];
+    entries.sort((a, b) => a.lastAccessedAt - b.lastAccessedAt);
+    const toDelete = [];
+    for (const e of entries) {
+      if (total <= quota)
+        break;
+      toDelete.push(e.key);
+      total -= e.size;
+    }
+    if (toDelete.length === 0)
+      return [];
+    const delTx = this.db.transaction([THUMBNAIL_STORE_NAME], "readwrite");
+    const delStore = delTx.objectStore(THUMBNAIL_STORE_NAME);
+    for (const k of toDelete)
+      delStore.delete(k);
+    await this.finishTransaction(delTx);
+    return toDelete;
+  }
   /** P5: Move thumbnail blob on file rename (reference nn moveBlob) */
   async moveThumbnailBlob(oldKey, newKey) {
     if (!this.db)
@@ -24536,7 +24599,7 @@ var JournalIndexedDBStorage = class {
     const store = tx.objectStore(THUMBNAIL_STORE_NAME);
     const record = await idbRequestToPromise(store.get(oldKey), "get");
     if ((record == null ? void 0 : record.blob) instanceof Blob && record.blob.size > 0) {
-      store.put({ blob: record.blob }, newKey);
+      store.put({ blob: record.blob, lastAccessedAt: Date.now() }, newKey);
       store.delete(oldKey);
     }
     await this.finishTransaction(tx);
@@ -24979,6 +25042,10 @@ var ThumbnailBlobCache = class {
   remove(key) {
     this.entries.delete(key);
   }
+  removeMany(keys) {
+    for (const k of keys)
+      this.entries.delete(k);
+  }
 };
 var thumbnailBlobCache = new ThumbnailBlobCache();
 
@@ -25055,7 +25122,7 @@ async function generateAndStoreThumbnail(app, imagePath, mtime) {
     const blob = new Blob([buffer], { type: mime });
     const result = await resizeToThumbnail(blob);
     if (result) {
-      await storage.putThumbnailBlob(key, result);
+      await storage.putThumbnailBlob(key, result, (evicted) => thumbnailBlobCache.removeMany(evicted));
       thumbnailBlobCache.set(key, result);
       if (LOGGING.THUMBNAIL)
         console.log(`${LOGGING.PREFIX} [\u7F29\u7565\u56FE] \u751F\u6210\u5E76\u5199\u5165 IndexedDB: ${imagePath}`);

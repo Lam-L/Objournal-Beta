@@ -64,7 +64,7 @@ export async function generateAndStoreThumbnail(
 		const result = await resizeToThumbnail(blob);
 
 		if (result) {
-			await storage.putThumbnailBlob(key, result);
+			await storage.putThumbnailBlob(key, result, (evicted) => thumbnailBlobCache.removeMany(evicted));
 			thumbnailBlobCache.set(key, result);
 			if (LOGGING.THUMBNAIL) console.log(`${LOGGING.PREFIX} [缩略图] 生成并写入 IndexedDB: ${imagePath}`);
 			return result;
