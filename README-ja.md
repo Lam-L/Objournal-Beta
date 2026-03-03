@@ -1,9 +1,6 @@
 # Journal View（ジャーナルビュー）
 
-### Read in your language
-
-| [English](README.md) | [简体中文](README-zh_cn.md) | [日本語](README-ja.md) | [繁體中文](README-zh_tw.md) |
-|----------------------|----------------------------|------------------------|----------------------------|
+**Read in your language:** [English](README.md) · [简体中文](README-zh_cn.md) · [日本語](README-ja.md) · [繁體中文](README-zh_tw.md)
 
 ---
 
