@@ -2,11 +2,11 @@ import { App, MarkdownPostProcessorContext, MarkdownView, TFile } from 'obsidian
 import { strings } from '../i18n';
 
 /**
- * Live Preview（编辑模式）下的编辑器图片布局
- * 在默认文件夹中的笔记，将图片按首页手记卡片的布局展示（1/2/3/4/5+ 张）
- * 支持实时：添加/删除图片时自动重新渲染
- * 阅读模式不使用此布局，保持 Obsidian 原生渲染
- * 超过 5 张图时拆成多个画廊，保证每张图都可见
+ * Editor image layout in Live Preview (edit mode).
+ * Notes in the default folder display images in the same layout as journal cards (1/2/3/4/5+ images).
+ * Real-time: re-renders automatically when adding/removing images.
+ * Reading mode uses native Obsidian rendering.
+ * Images > 5 are split into multiple galleries.
  */
 const MAX_IMAGES_PER_GALLERY = 5;
 
@@ -26,7 +26,7 @@ export class EditorImageLayout {
 		this.plugin = plugin;
 	}
 
-	/** 多次延迟执行，应对 Obsidian 的异步渲染 */
+	/** Schedule retries with multiple delays to handle Obsidian's async rendering */
 	private scheduleProcessWithRetries(): void {
 		this.cancelScheduledProcess();
 		const delays = [30, 100, 250, 500, 900];
@@ -45,17 +45,17 @@ export class EditorImageLayout {
 	}
 
 	initialize(): void {
-		// 1. Markdown 后处理器
+		// 1. Markdown post-processor
 		this.plugin.registerMarkdownPostProcessor((element: HTMLElement, context: MarkdownPostProcessorContext) => {
 			this.processMarkdownImages(element, context);
 		});
 
-		// 2. 定时轮询：每 200ms 检查并处理所有相关 Markdown 视图（保证实时）
+		// 2. Poll every 200ms to process all relevant Markdown views
 		this.pollIntervalId = window.setInterval(() => {
 			this.processAllRelevantViews();
 		}, 200);
 
-		// 3. 事件触发
+		// 3. Event triggers
 		this.plugin.registerEvent(this.app.workspace.on('editor-change', () => this.scheduleProcessWithRetries()));
 		this.plugin.registerEvent(this.app.workspace.on('file-open', () => this.scheduleProcessWithRetries()));
 		this.plugin.registerEvent(this.app.workspace.on('layout-change', () => this.scheduleProcessWithRetries()));
@@ -79,7 +79,7 @@ export class EditorImageLayout {
 		if (!filePath) return false;
 
 		const defaultFolderPath = settings.defaultFolderPath as string;
-		const enableLayout = settings.enableEditorImageLayout !== false; // 默认开启
+		const enableLayout = settings.enableEditorImageLayout !== false; // default on
 
 		if (!enableLayout) return false;
 
@@ -100,17 +100,17 @@ export class EditorImageLayout {
 	}
 
 	private setupMutationObserver(): void {
-		// 监听 active-leaf 变化，切换到当前编辑器的 DOM 进行观察
+		// Listen for active-leaf change to observe current editor DOM
 		this.plugin.registerEvent(
 			this.app.workspace.on('active-leaf-change', () => {
 				this.attachEditorObserver();
 			})
 		);
-		// 初始化时 attaching
+		// Attach on init
 		this.attachEditorObserver();
 
-		// 兜底：document.body 监听（当 editor 内部结构变化时，可能 observer 未覆盖到）
-		// 忽略 journal-view-container 内的变更，避免手记列表刷新时误触发处理，导致编辑器焦点异常
+		// Fallback: observe document.body when editor structure changes and observer may miss it
+		// Ignore changes inside journal-view-container to avoid focus issues when journal list refreshes
 		let debounceId: number | null = null;
 		const bodyObserver = new MutationObserver((mutations: MutationRecord[]) => {
 			const fromJournalView = mutations.some((m) => {
@@ -131,7 +131,7 @@ export class EditorImageLayout {
 		bodyObserver.observe(document.body, { childList: true, subtree: true });
 	}
 
-	/** 直接观察当前编辑器的 contentEl，DOM 变动时立即处理（仅编辑模式） */
+	/** Observe current editor contentEl, process immediately on DOM change (edit mode only) */
 	private attachEditorObserver(): void {
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!view?.file) {
@@ -149,7 +149,7 @@ export class EditorImageLayout {
 		this.stopObservingEditor();
 
 		this.editorObserver = new MutationObserver(() => {
-			// 下一帧处理，避免 DOM 尚未完全更新
+			// Process next frame to allow DOM to finish updating
 			requestAnimationFrame(() => {
 				setTimeout(() => this.processActiveEditor(), 0);
 			});
@@ -172,7 +172,7 @@ export class EditorImageLayout {
 		}
 	}
 
-	/** 轮询：仅处理编辑模式（Live Preview），阅读模式不应用 gallery */
+	/** Poll: only process edit mode (Live Preview), reading mode does not use gallery */
 	private processAllRelevantViews(): void {
 		if (this.isProcessing) return;
 
@@ -189,15 +189,15 @@ export class EditorImageLayout {
 		});
 	}
 
-	/** 获取 markdown-source-view 容器，避免处理到阅读模式中注入的图片（journal-preview-image）导致重复 */
+	/** Get markdown-source-view container, avoid processing reading-mode images (journal-preview-image) which would cause duplicates */
 	private getSourceViewContainer(contentEl: HTMLElement | undefined): HTMLElement | null {
 		if (!contentEl) return null;
-		// contentEl 同时包含 source + reading，只处理 source 避免视图切换时图片重复
+		// contentEl contains both source + reading, only process source to avoid image duplicates on view switch
 		const source = contentEl.querySelector('.markdown-source-view') as HTMLElement | null;
 		return source ?? contentEl;
 	}
 
-	/** 处理单个容器内的图片 */
+	/** Process images within a single container */
 	private processElement(containerEl: HTMLElement): void {
 		if (this.isProcessing) return;
 
@@ -242,10 +242,10 @@ export class EditorImageLayout {
 	private updateExistingGalleries(editorEl: HTMLElement): void {
 		const galleries = Array.from(editorEl.querySelectorAll('.journal-images')) as HTMLElement[];
 
-		// 1. 合并相邻的 gallery（如同一行两个 internal-embed 各自有 journal-images-single → 合并为 journal-images-double）
+		// 1. Merge adjacent galleries (e.g. two journal-images-single on same line → journal-images-double)
 		this.mergeAdjacentGalleries(editorEl);
 
-		// 2. 移除空 gallery
+		// 2. Remove empty galleries
 		const galleriesAfterMerge = Array.from(editorEl.querySelectorAll('.journal-images')) as HTMLElement[];
 		galleriesAfterMerge.forEach((gallery) => {
 			const imgs = gallery.querySelectorAll('img.journal-editor-processed');
@@ -256,12 +256,12 @@ export class EditorImageLayout {
 		});
 	}
 
-	/** 合并相邻的 journal-images（如两个 single 合并为一个 double）；合并后超过 5 张则跳过，避免 merge→split 死循环 */
+	/** Merge adjacent journal-images (e.g. two singles → one double); skip if merged count > 5 to avoid merge→split loop */
 	private mergeAdjacentGalleries(scope: HTMLElement): void {
 		const galleries = Array.from(scope.querySelectorAll('.journal-images')) as HTMLElement[];
 		if (galleries.length < 2) return;
 
-		// 按 DOM 顺序
+		// Sort by DOM order
 		galleries.sort((a, b) => {
 			const pos = a.compareDocumentPosition(b);
 			return pos & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
@@ -277,7 +277,7 @@ export class EditorImageLayout {
 			const imgs2 = Array.from(g2.querySelectorAll('img.journal-editor-processed')) as HTMLImageElement[];
 			const allImgs = [...imgs1, ...imgs2];
 
-			// 合并后超过 5 张则跳过，避免与「拆成多画廊」形成 merge→split 死循环导致 DOM 持续抖动
+			// Skip if > 5 to avoid merge→split loop with gallery splitting causing DOM jitter
 			if (allImgs.length > MAX_IMAGES_PER_GALLERY) continue;
 
 			g1.className = 'journal-images ' + this.getLayoutClass(allImgs.length);
@@ -289,14 +289,14 @@ export class EditorImageLayout {
 		}
 	}
 
-	/** 两个 gallery 是否相邻（中间无实质内容） */
+	/** Whether two galleries are adjacent (no substantial content between them) */
 	private areGalleriesAdjacent(g1: HTMLElement, g2: HTMLElement): boolean {
 		const p1 = g1.closest('.internal-embed, .cm-line, p');
 		const p2 = g2.closest('.internal-embed, .cm-line, p');
 		if (!p1 || !p2) return false;
 		if (p1 === p2) return true;
 
-		// p1 和 p2 是兄弟，或 p2 在 p1 的 nextSibling 链上
+		// p1 and p2 are siblings, or p2 is in p1's nextSibling chain
 		let cur: Element | null = p1.nextElementSibling;
 		while (cur) {
 			if (cur === p2) return true;
@@ -306,7 +306,7 @@ export class EditorImageLayout {
 		return false;
 	}
 
-	/** 查找与给定图片相邻的现有 gallery（新图可合并到该 gallery） */
+	/** Find existing gallery adjacent to given image (new images can merge into it) */
 	private findAdjacentGallery(img: HTMLImageElement, scope: HTMLElement): HTMLElement | null {
 		let el: Element | null = img.parentElement;
 		while (el && scope.contains(el)) {
@@ -325,7 +325,7 @@ export class EditorImageLayout {
 		return null;
 	}
 
-	/** 将新图片合并到已有 gallery 并重建布局；超过 5 张时拆成多个画廊 */
+	/** Merge new images into existing gallery and rebuild layout; split into multiple galleries when > 5 */
 	private addImagesToExistingGallery(newImages: HTMLImageElement[], gallery: HTMLElement): void {
 		const existingImgs = Array.from(gallery.querySelectorAll('img.journal-editor-processed')) as HTMLImageElement[];
 		const allImages = [...existingImgs, ...newImages];
@@ -341,12 +341,12 @@ export class EditorImageLayout {
 		const parent = gallery.parentElement;
 		if (!parent) return;
 
-		// 第一块放入现有 gallery
+		// Put first chunk in existing gallery
 		gallery.className = 'journal-images ' + this.getLayoutClass(chunks[0].length);
 		gallery.innerHTML = '';
 		this.organizeImagesInContainer(chunks[0], gallery);
 
-		// 后续块创建新画廊，插入到当前 gallery 后面
+		// Create new galleries for remaining chunks, insert after current gallery
 		let insertBefore: ChildNode | null = gallery.nextSibling;
 		for (let i = 1; i < chunks.length; i++) {
 			const chunk = chunks[i];
@@ -364,7 +364,7 @@ export class EditorImageLayout {
 				parent.appendChild(container);
 			}
 			this.organizeImagesInContainer(chunk, container);
-			insertBefore = container.nextSibling; // 下次插入到刚创建的容器后面
+			insertBefore = container.nextSibling; // Next insert after newly created container
 		}
 	}
 
@@ -388,31 +388,31 @@ export class EditorImageLayout {
 	}
 
 	private areImagesConsecutive(img1: HTMLImageElement, img2: HTMLImageElement): boolean {
-		// 策略1：同一段落/块内（如 ![[a]] ![[b]] 在同一行）
+		// Strategy 1: Same paragraph/block (e.g. ![[a]] ![[b]] on same line)
 		const p1 = img1.closest('p');
 		const p2 = img2.closest('p');
 		if (p1 && p2 && p1 === p2) return true;
 		if (img1.parentElement === img2.parentElement) return true;
 
-		// 策略2：相邻的块（如两行 ![[a]] 和 ![[b]]，每行单独成块）
-		// Obsidian 中每行可能是 p、.cm-line、或 .internal-embed 的父级
+		// Strategy 2: Adjacent blocks (e.g. ![[a]] and ![[b]] on separate lines)
+		// In Obsidian each line may be p, .cm-line, or parent of .internal-embed
 		const block1 = img1.closest('p, .cm-line, .cm-block, .internal-embed');
 		const block2 = img2.closest('p, .cm-line, .cm-block, .internal-embed');
 		if (!block1 || !block2) return false;
 		if (block1 === block2) return true;
 
-		// 从 block1 向上查找，看 block2 是否在 block1 的「下一个兄弟」路径上
+		// Walk up from block1, check if block2 is in block1's nextSibling path
 		let el: Element | null = block1;
 		while (el) {
 			let next: Element | null = el.nextElementSibling;
 			while (next) {
 				if (next === block2 || next.contains(block2) || block2.contains(next)) return true;
-				// 中间只有空节点或仅含图片的容器则继续
+				// Continue if only empty nodes or image-only containers in between
 				if (this.isImageOnlyBlock(next as HTMLElement)) {
 					next = next.nextElementSibling;
 					continue;
 				}
-				// 中间有非图片内容，不连续
+				// Non-image content in between, not consecutive
 				break;
 			}
 			el = el.parentElement;
@@ -420,12 +420,12 @@ export class EditorImageLayout {
 		return false;
 	}
 
-	/** 元素是否仅为图片/embed，无实质性文本 */
+	/** Whether element is image/embed only with no substantial text */
 	private isImageOnlyBlock(el: HTMLElement): boolean {
 		if (!el) return true;
 		const text = (el.textContent || '').trim();
 		if (text.length > 0) {
-			// 排除仅 alt 等产生的小段文本，主要看是否有非 img 的实质内容
+			// Exclude minor text from alt etc., focus on non-img substantial content
 			const imgs = el.querySelectorAll('img');
 			const imgTextLen = Array.from(imgs).reduce((s, i) => s + (i.alt?.length || 0), 0);
 			if (text.length > imgTextLen + 2) return false;
@@ -436,13 +436,13 @@ export class EditorImageLayout {
 	private processMarkdownImages(element: HTMLElement, context: MarkdownPostProcessorContext): void {
 		if (!this.shouldProcessFile(context.sourcePath)) return;
 
-		// 阅读模式：Obsidian 有时会产出空的 internal-embed span（无 img 子节点），需手动注入图片
+		// Reading mode: Obsidian may produce empty internal-embed span (no img child), inject img manually
 		this.fixEmptyImageSpansInPreview(element, context);
 	}
 
 	/**
-	 * 阅读模式下，Obsidian 可能渲染出空的 image-embed span，缺少 img 子元素。
-	 * 通过解析 src/alt、解析 vault 路径、创建 img 来修复显示。
+	 * In reading mode, Obsidian may render empty image-embed span without img child.
+	 * Fix display by parsing src/alt, resolving vault path, and creating img.
 	 */
 	private fixEmptyImageSpansInPreview(
 		element: HTMLElement,
@@ -478,7 +478,7 @@ export class EditorImageLayout {
 				span.appendChild(img);
 				span.addClass('journal-preview-image-fixed');
 			} catch {
-				// 忽略解析失败
+				// Ignore parse failure
 			}
 		}
 	}
@@ -490,7 +490,7 @@ export class EditorImageLayout {
 		}
 
 		const firstImg = images[0];
-		// 优先合并到相邻的已有 gallery
+		// Prefer merging into adjacent existing gallery
 		if (editorEl) {
 			const adjacentGallery = this.findAdjacentGallery(firstImg, editorEl);
 			if (adjacentGallery) {
@@ -499,19 +499,19 @@ export class EditorImageLayout {
 			}
 		}
 
-		// 超过 5 张时拆成多个画廊，保证每张图都可见
+		// Split into multiple galleries when > 5 to keep all images visible
 		const chunks = this.chunkImages(images, MAX_IMAGES_PER_GALLERY);
 
 		for (let i = 0; i < chunks.length; i++) {
 			const chunk = chunks[i];
-			const refImg = chunk[0]; // 用于确定插入位置的参考节点（组织图片时会移动它，故先保存引用）
+			const refImg = chunk[0]; // Reference node for insert position (saved before organizing since nodes move)
 			const parent = refImg.parentElement;
 			if (!parent) continue;
 
 			const container = document.createElement('div');
 			container.addClasses(['journal-images', this.getLayoutClass(chunk.length)]);
 
-			// 先插入空容器（在移动节点之前，避免 insertBefore 引用失效）
+			// Insert empty container first (before moving nodes to avoid insertBefore ref becoming invalid)
 			try {
 				parent.insertBefore(container, refImg);
 			} catch {
@@ -522,7 +522,7 @@ export class EditorImageLayout {
 		}
 	}
 
-	/** 将图片数组按每批 maxPer 张切分 */
+	/** Split image array into chunks of maxPer each */
 	private chunkImages(images: HTMLImageElement[], maxPer: number): HTMLImageElement[][] {
 		const chunks: HTMLImageElement[][] = [];
 		for (let i = 0; i < images.length; i += maxPer) {
@@ -540,8 +540,8 @@ export class EditorImageLayout {
 	}
 
 	/**
-	 * 按首页 JournalImageContainer 的结构组织图片
-	 * 调用方保证 images 最多 5 张（拆成多画廊后每批最多 5 张）
+	 * Organize images by JournalImageContainer layout
+	 * Caller ensures max 5 images per batch (when split into multiple galleries)
 	 */
 	private organizeImagesInContainer(images: HTMLImageElement[], container: HTMLElement): void {
 		const count = Math.min(images.length, MAX_IMAGES_PER_GALLERY);
@@ -558,7 +558,7 @@ export class EditorImageLayout {
 			img.style.objectFit = 'cover';
 			wrap.appendChild(img);
 
-			// 右上角删除按钮
+			// Delete button (top-right)
 			const deleteBtn = document.createElement('button');
 			deleteBtn.addClass('journal-editor-image-delete');
 			deleteBtn.innerHTML =
@@ -621,7 +621,7 @@ export class EditorImageLayout {
 		container.appendChild(rightGrid);
 	}
 
-	/** 从 Markdown 源码中删除对应图片的引用行，并立即更新 DOM */
+	/** Remove the image reference from Markdown source and update DOM immediately */
 	private deleteImageFromSource(img: HTMLImageElement): void {
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!view?.editor || !view.contentEl?.contains(img)) return;
@@ -630,7 +630,7 @@ export class EditorImageLayout {
 		const content = editor.getValue();
 		const lines = content.split('\n');
 
-		// 从 img 的 alt 或 src 提取文件名
+		// Extract filename from img alt or src
 		const alt = (img.getAttribute('alt') || '').trim();
 		const src = img.getAttribute('src') || '';
 		const fileName = alt || this.extractFileNameFromSrc(src);
@@ -644,18 +644,28 @@ export class EditorImageLayout {
 			new RegExp(`!?\\[\\[${escapedName}\\]\\]`),
 		];
 
-		// 先找到要删除的行索引
+		// Find line index containing this image reference
 		let lineIndex = -1;
+		let matchingPattern: RegExp | null = null;
 		for (let i = 0; i < lines.length; i++) {
-			if (patterns.some((p) => p.test(lines[i]))) {
+			const p = patterns.find((pat) => pat.test(lines[i]));
+			if (p) {
 				lineIndex = i;
+				matchingPattern = p;
 				break;
 			}
 		}
-		if (lineIndex < 0) return;
+		if (lineIndex < 0 || !matchingPattern) return;
 
-		// 仅当删除的是 gallery 中「第一张」图片时需迁移：gallery 始终在第一个 embed 内，
-		// 若删第一张，该 embed 会被移除；删第二张及以后则不会（被删的是其他 embed）。
+		// Same line may have multiple images (e.g. ![[a]] ![[b]]), only remove this image's reference, not the whole line
+		const lineContent = lines[lineIndex];
+		const newLineContent = lineContent
+			.replace(matchingPattern, '')
+			.replace(/\s+/g, ' ')
+			.trim();
+
+		// Only migrate when deleting the "first" image in gallery: gallery is always in the first embed,
+		// deleting first removes that embed; deleting 2nd+ does not (deleted one is in another embed).
 		const gallery = img.closest('.journal-images') as HTMLElement | null;
 		const remainingImgs = gallery
 			? (Array.from(gallery.querySelectorAll('img.journal-editor-processed')).filter(
@@ -686,9 +696,14 @@ export class EditorImageLayout {
 			}
 		}
 
-		// 删除 markdown 行
-		const newContent = lines.filter((_: string, idx: number) => idx !== lineIndex).join('\n');
-		editor.setValue(newContent);
+		// Update markdown: remove whole line if only this image remains, else just remove this image reference
+		const newLines = [...lines];
+		if (newLineContent === '') {
+			newLines.splice(lineIndex, 1);
+		} else {
+			newLines[lineIndex] = newLineContent;
+		}
+		editor.setValue(newLines.join('\n'));
 
 		if (!domUpdatedByMove) {
 			this.removeImageAndRebuildGallery(img, view.contentEl);
@@ -696,7 +711,7 @@ export class EditorImageLayout {
 		this.scheduleProcessWithRetries();
 	}
 
-	/** 查找与给定 embed 相邻的下一个 internal-embed（用于迁移 gallery） */
+	/** Find next sibling internal-embed adjacent to given embed (for gallery migration) */
 	private findNextSiblingEmbed(embed: HTMLElement): HTMLElement | null {
 		const block = embed.closest('p, .cm-line, .cm-block') || embed;
 		let cur: Element | null = block.nextElementSibling;
@@ -711,7 +726,7 @@ export class EditorImageLayout {
 		return null;
 	}
 
-	/** 从 gallery 中移除指定图片并立即重建布局 */
+	/** Remove specified image from gallery and rebuild layout immediately */
 	private removeImageAndRebuildGallery(img: HTMLImageElement, scope: HTMLElement): void {
 		const gallery = img.closest('.journal-images') as HTMLElement | null;
 		if (!gallery || !scope.contains(gallery)) return;
@@ -726,7 +741,7 @@ export class EditorImageLayout {
 			return;
 		}
 
-		// 清除 journal-editor-processed 以便 organizeImagesInContainer 重新处理
+		// Clear journal-editor-processed so organizeImagesInContainer can re-process
 		remainingImgs.forEach((i) => i.classList.remove('journal-editor-processed'));
 
 		gallery.className = 'journal-images ' + this.getLayoutClass(remainingImgs.length);

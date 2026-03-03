@@ -1,44 +1,46 @@
 /**
- * 插件常量配置
+ * Plugin constants
  */
 
-// 分页配置
+// Pagination
 export const PAGINATION = {
 	ITEMS_PER_PAGE: 20,
 	BATCH_SIZE: 10,
 } as const;
 
-// 内容处理配置
+// Content processing
 export const CONTENT = {
 	MAX_PREVIEW_LENGTH: 200,
-	MAX_CONTENT_READ_LENGTH: 2000, // 元数据优先加载时读取的前N个字符
+	MAX_CONTENT_READ_LENGTH: 2000, // N chars to read when metadata-first loading
 	MAX_IMAGES_PER_CARD: 5,
 } as const;
 
-// 图片懒加载配置
+// Image lazy loading
 export const IMAGE_LOADING = {
 	ROOT_MARGIN: '50px',
 	LAZY_LOADING: true,
 } as const;
 
-// UI 延迟配置
+// UI delays
 export const UI_DELAYS = {
-	FILE_OPEN_DELAY: 100, // 文件打开延迟（ms）
-	RENDER_DELAY: 50, // 渲染延迟（ms）
-	SCAN_DELAY: 100, // 扫描延迟（ms）
+	FILE_OPEN_DELAY: 100, // File open delay (ms)
+	RENDER_DELAY: 50, // Render delay (ms)
+	SCAN_DELAY: 100, // Scan delay (ms)
 } as const;
 
-// 日志配置
+// Logging
 export const LOGGING = {
-	ENABLED: true, // 调试时设为 true
+	ENABLED: true, // Set true for debugging
 	PREFIX: '[JournalView]',
+	/** Log thumbnail cache hits/misses and generation (set true to debug IndexedDB) */
+	THUMBNAIL: true,
 } as const;
 
-// 文件过滤配置
+// File filter
 export const FILE_FILTER = {
 	EXCLUDED_PREFIXES: ['.'],
 	EXCLUDED_NAMES: ['手记视图'],
 } as const;
 
-// 日期字段配置
+// Date fields
 export const DATE_FIELDS = ['date', 'Date', 'created', 'created_time'] as const;

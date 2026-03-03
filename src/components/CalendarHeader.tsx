@@ -8,14 +8,14 @@ interface CalendarHeaderProps {
 	onGoToToday: () => void;
 }
 
-/* ChevronLeft - 轻量 SVG 描边图标 */
+/* ChevronLeft - light SVG stroke icon */
 const ChevronLeftIcon = () => (
 	<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
 		<polyline points="15 18 9 12 15 6" />
 	</svg>
 );
 
-/* ChevronRight - 轻量 SVG 描边图标 */
+/* ChevronRight - light SVG stroke icon */
 const ChevronRightIcon = () => (
 	<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
 		<polyline points="9 18 15 12 9 6" />

@@ -20,7 +20,7 @@ export const useJournalPagination = (entries: JournalEntry[]) => {
 		}
 
 		setIsLoadingMore(true);
-		// 模拟加载延迟
+		// Simulate load delay
 		setTimeout(() => {
 			setCurrentPage(prev => prev + 1);
 			setIsLoadingMore(false);
@@ -60,7 +60,7 @@ export const useJournalPagination = (entries: JournalEntry[]) => {
 		setIsLoadingMore(false);
 	}, []);
 
-	// 当 entries 变化时，重置分页
+	// Reset pagination when entries change
 	useEffect(() => {
 		resetPagination();
 	}, [entries.length, resetPagination]);

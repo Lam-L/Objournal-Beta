@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, App, Plugin } from 'obsidian';
+import { ItemView, WorkspaceLeaf, App, Plugin, EventRef } from 'obsidian';
 import { strings } from '../i18n';
 import { createRoot, Root } from 'react-dom/client';
 import React from 'react';
@@ -7,10 +7,14 @@ import { JournalViewContainer } from '../components/JournalViewContainer';
 
 export const JOURNAL_VIEW_TYPE = 'journal-view-react';
 
+/** Dispatched when this view's leaf becomes active; virtualizer listens to remeasure */
+export const JOURNAL_VIEW_ACTIVE_EVENT = 'journal-view-react:active';
+
 export class JournalView extends ItemView {
 	private root: Root | null = null;
 	private plugin: Plugin | null = null;
 	public targetFolderPath: string | null = null;
+	private activeLeafEventRef: EventRef | null = null;
 
 	constructor(leaf: WorkspaceLeaf, app: App, plugin?: Plugin) {
 		super(leaf);
@@ -18,7 +22,7 @@ export class JournalView extends ItemView {
 	}
 
 	async refresh(): Promise<void> {
-		// 重新渲染 React 组件以触发数据刷新
+		// Re-render React component to trigger data refresh
 		if (this.root) {
 			this.renderReact();
 		}
@@ -43,12 +47,12 @@ export class JournalView extends ItemView {
 	}
 
 	async setState(state: any): Promise<void> {
-		// 如果状态中有 targetFolderPath，使用它
-		// 否则保持当前值（如果存在），避免被意外清空
+		// If state has targetFolderPath, use it
+		// Otherwise keep current value (if any) to avoid accidental clear
 		if (state?.targetFolderPath !== undefined) {
 			this.targetFolderPath = state.targetFolderPath;
 		} else if (this.targetFolderPath === null && this.plugin) {
-			// 如果当前值为 null 且状态中没有，尝试从插件设置中恢复
+			// If current is null and state has none, try to restore from plugin settings
 			const pluginSettings = (this.plugin as any).settings;
 			if (pluginSettings?.defaultFolderPath) {
 				this.targetFolderPath = pluginSettings.defaultFolderPath;
@@ -56,21 +60,31 @@ export class JournalView extends ItemView {
 				this.targetFolderPath = pluginSettings.folderPath;
 			}
 		}
-		// 如果 React 组件已渲染，更新它
+		// If React component already rendered, update it
 		if (this.root) {
 			this.renderReact();
 		}
 	}
 
 	async onOpen(): Promise<void> {
-		// 使用 ItemView 的 contentEl（Obsidian 官方 API），避免依赖 DOM 结构
+		// Use ItemView contentEl (Obsidian official API), avoid DOM structure dependency
 		const container = this.contentEl;
 		if (!container) {
 			return;
 		}
 
-		// 确保 targetFolderPath 被正确设置
-		// 优先使用已保存的状态，如果没有则从插件设置中恢复
+		// When this view's leaf becomes active, notify virtualizer to remeasure (fixes white screen on tab switch)
+		this.activeLeafEventRef = this.app.workspace.on('active-leaf-change', () => {
+			if (this.app.workspace.activeLeaf?.view === this && this.contentEl) {
+				this.contentEl.dispatchEvent(new CustomEvent(JOURNAL_VIEW_ACTIVE_EVENT));
+			}
+		});
+		if (this.plugin) {
+			this.plugin.registerEvent(this.activeLeafEventRef);
+		}
+
+		// Ensure targetFolderPath is set correctly
+		// Prefer saved state; if none, restore from plugin settings
 		if (this.targetFolderPath === null && this.plugin) {
 			const pluginSettings = (this.plugin as any).settings;
 			if (pluginSettings?.defaultFolderPath) {
@@ -80,7 +94,7 @@ export class JournalView extends ItemView {
 			}
 		}
 
-		// 应用图片间距设置
+		// Apply image gap setting
 		if (this.plugin) {
 			const pluginSettings = (this.plugin as any).settings;
 			if (pluginSettings?.imageGap !== undefined) {
@@ -88,12 +102,16 @@ export class JournalView extends ItemView {
 			}
 		}
 
-		// 创建 React Root
+		// Create React Root
 		this.root = createRoot(container);
 		this.renderReact();
 	}
 
 	async onClose(): Promise<void> {
+		if (this.activeLeafEventRef) {
+			this.app.workspace.offref(this.activeLeafEventRef);
+			this.activeLeafEventRef = null;
+		}
 		if (this.root) {
 			this.root.unmount();
 			this.root = null;
@@ -105,7 +123,7 @@ export class JournalView extends ItemView {
 			return;
 		}
 
-		// 应用图片间距设置（每次渲染时更新）
+		// Apply image gap setting (update on each render)
 		if (this.plugin) {
 			const pluginSettings = (this.plugin as any).settings;
 			if (pluginSettings?.imageGap !== undefined) {

@@ -1,9 +1,9 @@
 /**
- * 日历相关工具函数
+ * Calendar utility functions
  */
 
 /**
- * 将 Date 转为 ISO 日期字符串 (YYYY-MM-DD)
+ * Convert Date to ISO date string (YYYY-MM-DD)
  */
 export function dateToIso(date: Date): string {
 	const y = date.getFullYear();
@@ -13,7 +13,7 @@ export function dateToIso(date: Date): string {
 }
 
 /**
- * 判断两个日期是否是同一天
+ * Check if two dates are the same day
  */
 export function isSameDay(date1: Date, date2: Date): boolean {
 	return (
@@ -23,21 +23,21 @@ export function isSameDay(date1: Date, date2: Date): boolean {
 	);
 }
 
-/** 月历中单格的类型：当月日期 | 上月尾 | 下月头 */
+/** Day cell type in calendar: current month | prev month tail | next month head */
 export type DayCellType = 'current' | 'prev' | 'next';
 
 export interface CalendarDay {
 	date: Date;
 	iso: string;
 	type: DayCellType;
-	/** 是否为今天 */
+	/** Whether today */
 	isToday: boolean;
 }
 
 /**
- * 生成某月的日历网格（周日为第一天）
- * 行数随月份变化（4~6 行），紧贴内容无多余空白
- * 包含上月尾和下月头以填充空白
+ * Generate calendar grid for a month (Sunday as first day)
+ * Row count varies 4~6 by month; compact layout
+ * Includes prev month tail and next month head to fill gaps
  */
 export function getMonthGrid(cursorMonth: Date): CalendarDay[] {
 	const year = cursorMonth.getFullYear();
@@ -45,11 +45,11 @@ export function getMonthGrid(cursorMonth: Date): CalendarDay[] {
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 
-	// 当月第一天
+	// First day of current month
 	const firstDay = new Date(year, month, 1);
-	const firstDayOfWeek = firstDay.getDay(); // 0=周日, 1=周一, ...
+	const firstDayOfWeek = firstDay.getDay(); // 0=Sun, 1=Mon, ...
 
-	// 上月最后几天
+	// Last days of previous month
 	const prevMonthLastDate = new Date(year, month, 0).getDate();
 	const prevMonthDays: CalendarDay[] = [];
 	for (let i = firstDayOfWeek - 1; i >= 0; i--) {
@@ -63,7 +63,7 @@ export function getMonthGrid(cursorMonth: Date): CalendarDay[] {
 		});
 	}
 
-	// 当月所有天
+	// All days of current month
 	const currentMonthDays = new Date(year, month + 1, 0).getDate();
 	const currentDays: CalendarDay[] = [];
 	for (let d = 1; d <= currentMonthDays; d++) {
@@ -76,7 +76,7 @@ export function getMonthGrid(cursorMonth: Date): CalendarDay[] {
 		});
 	}
 
-	// 下月头几天（补满最小行数，使日历紧贴内容：4~6 行随月份变化）
+	// First days of next month (fill min rows, 4~6 by month)
 	const totalSoFar = prevMonthDays.length + currentDays.length;
 	const minRowsNeeded = Math.ceil(totalSoFar / 7);
 	const cellsNeeded = minRowsNeeded * 7;

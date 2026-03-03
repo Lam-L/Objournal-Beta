@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
 import { ImageInfo } from '../utils/utils';
+import { useThumbnailUrl } from '../hooks/useThumbnailUrl';
+import { useJournalView } from '../context/JournalViewContext';
 
 interface JournalImageContainerProps {
 	images: ImageInfo[];
 	totalImages: number;
 	allImages: ImageInfo[];
-	/** 虚拟化列表中设为 true，直接渲染 img 避免 placeholder 闪烁 */
+	/** When true in virtualized list, render img directly to avoid placeholder flicker */
 	skipLazyLoad?: boolean;
 }
 
@@ -18,7 +20,10 @@ interface ImageItemProps {
 }
 
 const ImageItem: React.FC<ImageItemProps> = ({ image, index, className, showMoreCount, skipLazyLoad }) => {
+	const { app } = useJournalView();
+	const displayUrl = useThumbnailUrl(image, app);
 	const [isLoaded, setIsLoaded] = useState(skipLazyLoad);
+	const [hasError, setHasError] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const imgRef = useRef<HTMLImageElement>(null);
 
@@ -51,17 +56,26 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, index, className, showMore
 
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		// TODO: 实现图片查看器
+		// TODO: Implement image viewer
 		console.log('Open image viewer', image);
 	};
 
-	const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-		console.error('Failed to load image:', image.url);
+	const handleImageError = () => {
+		setHasError(true);
 		setIsLoaded(true);
 	};
 
-	// 虚拟化列表：直接渲染 img，避免 placeholder → img 切换造成的闪烁
+	// Virtualized list: render img directly to avoid flicker from placeholder → img transition
 	const shouldShowImg = skipLazyLoad || isLoaded;
+
+	// On error: show minimal placeholder (reference notebook-navigator: avoid broken image)
+	if (hasError) {
+		return (
+			<div className={`journal-image-container journal-image-container--error ${className || ''}`}>
+				<div className="journal-image-placeholder" />
+			</div>
+		);
+	}
 
 	return (
 		<div
@@ -72,7 +86,7 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, index, className, showMore
 			{shouldShowImg ? (
 				<img
 					ref={imgRef}
-					src={image.url}
+					src={displayUrl}
 					alt={image.altText || image.name}
 					className="journal-image"
 					loading="lazy"
@@ -101,7 +115,7 @@ export const JournalImageContainer: React.FC<JournalImageContainerProps> = memo(
 	skipLazyLoad = false,
 }) => {
 	const imageCount = images.length;
-	// 5+ 张图使用 multiple 类名，而不是 five
+	// 5+ images use 'multiple' class instead of 'five'
 	const containerClass = `journal-images journal-images-${imageCount === 1 ? 'single' : imageCount === 2 ? 'double' : imageCount === 3 ? 'triple' : imageCount === 4 ? 'quad' : 'multiple'}`;
 	const moreCount = totalImages > images.length ? totalImages - images.length : undefined;
 
@@ -167,6 +181,9 @@ export const JournalImageContainer: React.FC<JournalImageContainerProps> = memo(
 		prevProps.images.length === nextProps.images.length &&
 		prevProps.totalImages === nextProps.totalImages &&
 		prevProps.skipLazyLoad === nextProps.skipLazyLoad &&
-		prevProps.images.every((img, index) => img.path === nextProps.images[index]?.path)
+		prevProps.images.every((img, index) => {
+			const next = nextProps.images[index];
+			return next && img.path === next.path && img.mtime === next.mtime;
+		})
 	);
 });

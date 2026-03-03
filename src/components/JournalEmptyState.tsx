@@ -6,7 +6,7 @@ export const JournalEmptyState: React.FC = () => {
 	const { app } = useJournalView();
 
 	const handleScan = async () => {
-		// TODO: 实现扫描逻辑
+		// TODO: Implement scan logic
 		console.log('Scan files');
 	};
 

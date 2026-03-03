@@ -4,7 +4,7 @@ import { JournalEntry } from '../utils/utils';
 import { strings } from '../i18n';
 import { DeleteConfirmModal } from '../utils/DeleteConfirmModal';
 
-// 全局菜单状态管理（确保只有一个菜单打开）
+// Global menu state (ensure only one menu is open)
 interface MenuContextValue {
 	openMenuId: string | null;
 	setOpenMenuId: (id: string | null) => void;
@@ -42,7 +42,7 @@ export const JournalCardMenu: React.FC<JournalCardMenuProps> = ({ app, entry, on
 	const menuRef = useRef<HTMLDivElement>(null);
 	const buttonRef = useRef<HTMLDivElement>(null);
 
-	// 点击外部关闭菜单
+	// Close menu when clicking outside
 	useEffect(() => {
 		if (!isOpen) return;
 
@@ -57,7 +57,7 @@ export const JournalCardMenu: React.FC<JournalCardMenuProps> = ({ app, entry, on
 			}
 		};
 
-		// 延迟添加事件监听器，避免立即触发
+		// Delay adding listener to avoid immediate trigger
 		setTimeout(() => {
 			document.addEventListener('click', handleClickOutside);
 		}, 0);
@@ -68,7 +68,7 @@ export const JournalCardMenu: React.FC<JournalCardMenuProps> = ({ app, entry, on
 	}, [isOpen, setOpenMenuId]);
 
 	const handleButtonClick = (e: React.MouseEvent) => {
-		e.stopPropagation(); // 阻止事件冒泡到卡片
+		e.stopPropagation(); // Prevent event bubbling to card
 		if (isOpen) {
 			setOpenMenuId(null);
 		} else {
@@ -78,7 +78,7 @@ export const JournalCardMenu: React.FC<JournalCardMenuProps> = ({ app, entry, on
 
 	const handleDeleteClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		setOpenMenuId(null); // 先关闭菜单，避免焦点问题
+		setOpenMenuId(null); // Close menu first to avoid focus issues
 		new DeleteConfirmModal(app, {
 			message: strings.card.deleteConfirm(entry.title || entry.file.basename),
 			confirmText: strings.common.delete,
@@ -89,7 +89,7 @@ export const JournalCardMenu: React.FC<JournalCardMenuProps> = ({ app, entry, on
 
 	const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
 
-	// 计算菜单位置（在菜单打开后）
+	// Compute menu position (after menu opens)
 	useEffect(() => {
 		if (!isOpen || !buttonRef.current || !menuRef.current) {
 			return;
@@ -105,7 +105,7 @@ export const JournalCardMenu: React.FC<JournalCardMenuProps> = ({ app, entry, on
 			const cardRect = card.getBoundingClientRect();
 			const menuRect = menuRef.current.getBoundingClientRect();
 
-			// 菜单显示在按钮上方，右对齐
+			// Menu displays above button, right-aligned
 			const relativeTop = buttonRect.top - cardRect.top;
 			const relativeRight = cardRect.right - buttonRect.right;
 
@@ -116,7 +116,7 @@ export const JournalCardMenu: React.FC<JournalCardMenuProps> = ({ app, entry, on
 			});
 		};
 
-		// 延迟计算，确保菜单已渲染
+		// Delay compute to ensure menu is rendered
 		setTimeout(updateMenuPosition, 0);
 	}, [isOpen]);
 

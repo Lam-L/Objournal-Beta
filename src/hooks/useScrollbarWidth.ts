@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 
 /**
- * 计算滚动条宽度的 Hook
- * 用于补偿滚动条对 padding 的影响
+ * Hook to compute scrollbar width
+ * Used to compensate for scrollbar impact on padding
  */
 export const useScrollbarWidth = (): number => {
 	const [scrollbarWidth, setScrollbarWidth] = useState(0);
@@ -11,7 +11,7 @@ export const useScrollbarWidth = (): number => {
 		const measure = (): number => {
 			const outer = document.createElement('div');
 			outer.style.cssText = 'visibility:hidden;overflow:scroll;width:100px;height:100px;position:absolute;top:-9999px;';
-			// @ts-ignore - msOverflowStyle 是 IE 特有的属性
+			// @ts-ignore - msOverflowStyle is IE-specific
 			outer.style.msOverflowStyle = 'scrollbar';
 			document.body.appendChild(outer);
 

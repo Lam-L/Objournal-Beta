@@ -2,6 +2,9 @@ import { useEffect, useRef, useCallback } from 'react';
 import { TAbstractFile, TFile, EventRef } from 'obsidian';
 import { useJournalView } from '../context/JournalViewContext';
 import { useJournalData } from '../context/JournalDataContext';
+import { getStorage } from '../storage/storageLifecycle';
+import { getThumbnailKey, canGenerateThumbnail } from '../utils/thumbnailGenerator';
+import { thumbnailBlobCache } from '../utils/thumbnailCache';
 
 export const useFileSystemWatchers = () => {
     const { app, targetFolderPath } = useJournalView();
@@ -33,7 +36,7 @@ export const useFileSystemWatchers = () => {
         refreshTimerRef.current = window.setTimeout(() => {
             refresh();
             refreshTimerRef.current = null;
-        }, 500); // 增加防抖时间到 500ms，减少频繁刷新
+        }, 500); // Increase debounce to 500ms to reduce frequent refresh
     }, [refresh]);
 
     useEffect(() => {
@@ -44,6 +47,9 @@ export const useFileSystemWatchers = () => {
         };
 
         const handleFileDelete = (file: TAbstractFile) => {
+            if (file && 'path' in file) {
+                getStorage()?.delete(file.path).catch((e) => console.warn('Journal View: IndexedDB delete failed', e));
+            }
             if (shouldRefreshForFile(file)) {
                 debouncedRefresh();
             }
@@ -51,7 +57,7 @@ export const useFileSystemWatchers = () => {
 
         const handleFileModify = (file: TAbstractFile) => {
             if (shouldRefreshForFile(file) && file instanceof TFile) {
-                // 对于修改操作，使用增量更新
+                // For modify, use incremental update
                 updateSingleEntry(file);
             }
         };
@@ -61,13 +67,22 @@ export const useFileSystemWatchers = () => {
             const newPathInTarget = shouldRefreshForFile(file);
 
             if (oldPathInTarget || newPathInTarget) {
-                // 如果新路径在目标文件夹中，使用增量更新
+                // If new path in target folder, use incremental update
                 if (newPathInTarget && file instanceof TFile) {
                     updateEntryAfterRename(file, oldPath);
                 } else {
-                    // 如果文件移出目标文件夹，使用全量刷新
+                    // If file moved out of target folder, use full refresh
                     debouncedRefresh();
                 }
+            }
+
+            // P5: Move thumbnail blob when image file is renamed (reference nn)
+            if (file instanceof TFile && canGenerateThumbnail(file.path)) {
+                const mtime = file.stat.mtime;
+                const oldKey = getThumbnailKey(oldPath, mtime);
+                const newKey = getThumbnailKey(file.path, mtime);
+                thumbnailBlobCache.remove(oldKey);
+                getStorage()?.moveThumbnailBlob(oldKey, newKey).catch(() => {});
             }
         };
 
@@ -77,12 +92,12 @@ export const useFileSystemWatchers = () => {
             }
 
             if (shouldRefreshForFile(file) && file instanceof TFile) {
-                // 对于元数据变化，使用增量更新
+                // For metadata change, use incremental update
                 updateSingleEntry(file);
             }
         };
 
-        // 注册 Vault 事件监听器
+        // Register Vault event listeners
         const vaultEventRefs: EventRef[] = [
             app.vault.on('create', handleFileCreate),
             app.vault.on('delete', handleFileDelete),
@@ -90,21 +105,21 @@ export const useFileSystemWatchers = () => {
             app.vault.on('modify', handleFileModify),
         ];
 
-        // 注册 Metadata Cache 事件监听器
+        // Register Metadata Cache event listener
         const metadataEventRef = app.metadataCache.on('changed', handleMetadataChange);
 
-        // 保存所有事件引用
+        // Save all event refs
         eventRefsRef.current = [...vaultEventRefs, metadataEventRef];
 
-        // 清理函数
+        // Cleanup
         return () => {
-            // 清理防抖定时器
+            // Clear debounce timer
             if (refreshTimerRef.current) {
                 clearTimeout(refreshTimerRef.current);
                 refreshTimerRef.current = null;
             }
 
-            // 清理所有事件监听器
+            // Unregister all event listeners
             eventRefsRef.current.forEach((eventRef) => {
                 app.vault.offref(eventRef);
             });

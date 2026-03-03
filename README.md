@@ -4,6 +4,16 @@
 
 [Obsidian](https://obsidian.md) 插件，使用 React + TypeScript 构建，提供月历视图、列表视图、那年今日、手记式图片布局等能力。
 
+### Read in your language
+
+| [English](#readme-en) | [简体中文](#readme-zh_cn) | [日本語](#readme-ja) | [繁體中文](#readme-zh_tw) |
+|----------------------|--------------------------|---------------------|---------------------------|
+
+<a id="readme-en"></a>
+<a id="readme-zh_cn"></a>
+<a id="readme-ja"></a>
+<a id="readme-zh_tw"></a>
+
 ---
 
 ## ✨ 功能特性
@@ -29,6 +39,18 @@
 - **虚拟化列表**：基于 @tanstack/react-virtual，长列表性能优化
 - **文件系统监听**：新建、修改、删除、重命名时自动刷新
 - **可配置日期字段**：支持 frontmatter 中 `date`、`Date`、`created`、`created_time` 等，或自定义字段
+
+---
+
+## 📸 截图展示
+
+| 月历视图 | 列表视图 | 编辑页画廊 |
+|----------|----------|------------|
+| ![月历视图](showcaseimages/e24c0350cb6e08962aded61c8e4722f7.png) | ![列表视图](showcaseimages/7bd2abb4b582a8e8e5293561d35a39c8.png) | ![编辑页画廊](showcaseimages/f8ab7b261496c728d4ff90369ca53b75.png) |
+
+- **月历视图**：按月展示，日期格内显示缩略图，下方展示那年今日与当日条目
+- **列表视图**：时间线式列表，按今天/昨天/往年分组，手记卡片支持多图布局
+- **编辑页画廊**：Live Preview 下手记式图片布局，多图自动排版
 
 ---
 

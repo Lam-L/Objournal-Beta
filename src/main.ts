@@ -4,6 +4,7 @@ import { strings } from './i18n';
 import { JournalPluginSettings, DEFAULT_SETTINGS } from './settings';
 import { JournalSettingTab } from './settings/JournalSettingTab';
 import { EditorImageLayout } from './editor/EditorImageLayout';
+import { initializeStorage, shutdownStorage } from './storage/storageLifecycle';
 
 export class JournalViewPlugin extends Plugin {
 	settings: JournalPluginSettings;
@@ -13,21 +14,26 @@ export class JournalViewPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		// 应用图片间距到全局（编辑页图片布局需要）
+		// Apply image gap globally (editor image layout needs it)
 		document.documentElement.style.setProperty('--journal-image-gap', `${this.settings.imageGap}px`);
 
-		// Live Preview 下的手记式图片布局（默认文件夹内的笔记）
+		// Complete IndexedDB init before registering view to avoid storage not ready when view opens
+		await initializeStorage(this.app).catch((e) => {
+			console.warn('Journal View: IndexedDB init failed', e);
+		});
+
+		// Journal-style image layout in Live Preview (notes in default folder)
 		this.editorImageLayout = new EditorImageLayout(this.app, this);
 		this.editorImageLayout.initialize();
 
-		// 注册视图
+		// Register view
 		this.registerView(JOURNAL_VIEW_TYPE, (leaf) => {
 			const view = new JournalView(leaf, this.app, this);
 			this.view = view;
 			return view;
 		});
 
-		// 添加命令打开视图
+		// Add command to open view
 		this.addCommand({
 			id: 'open-journal-view',
 			name: strings.commands.openJournal,
@@ -40,7 +46,7 @@ export class JournalViewPlugin extends Plugin {
 			},
 		});
 
-		// 添加命令刷新手记视图
+		// Add command to refresh journal view
 		this.addCommand({
 			id: 'refresh-journal-view',
 			name: strings.commands.refreshJournal,
@@ -51,10 +57,10 @@ export class JournalViewPlugin extends Plugin {
 			},
 		});
 
-		// 添加设置标签
+		// Add settings tab
 		this.addSettingTab(new JournalSettingTab(this.app, this));
 
-		// 如果已经有打开的视图，激活它
+		// If view already open, activate it
 		this.app.workspace.onLayoutReady(() => {
 			const existingLeaf = this.app.workspace.getLeavesOfType(
 				JOURNAL_VIEW_TYPE
@@ -69,6 +75,7 @@ export class JournalViewPlugin extends Plugin {
 
 	async onunload() {
 		this.editorImageLayout?.destroy();
+		shutdownStorage();
 		console.log('Journal View Plugin (React) unloaded');
 	}
 
@@ -77,7 +84,7 @@ export class JournalViewPlugin extends Plugin {
 		let leaf = workspace.getLeavesOfType(JOURNAL_VIEW_TYPE)[0];
 
 		if (!leaf) {
-			// 在主内容区域打开（而不是侧边栏）
+			// Open in main content area (not sidebar)
 			const newLeaf = workspace.getLeaf(true);
 			if (newLeaf) {
 				await newLeaf.setViewState({ type: JOURNAL_VIEW_TYPE, active: true });
@@ -86,30 +93,30 @@ export class JournalViewPlugin extends Plugin {
 		}
 
 		if (leaf && leaf.view instanceof JournalView) {
-			// 确保 targetFolderPath 被正确设置
+			// Ensure targetFolderPath is set correctly
 			let targetPath: string | null = null;
 
-			// 如果设置了默认文件夹，使用默认文件夹
+			// If default folder is set, use it
 			if (this.settings.defaultFolderPath) {
 				const defaultFolder = this.app.vault.getAbstractFileByPath(this.settings.defaultFolderPath);
 				if (defaultFolder instanceof TFolder) {
 					targetPath = defaultFolder.path;
 				}
 			} else if (this.settings.folderPath) {
-				// 如果没有设置默认文件夹，使用旧的 folderPath 设置（向后兼容）
+				// If no default folder, use legacy folderPath (backward compatibility)
 				const folder = this.app.vault.getAbstractFileByPath(this.settings.folderPath);
 				if (folder instanceof TFolder) {
 					targetPath = folder.path;
 				}
 			}
 
-			// 强制设置 targetFolderPath（即使相同也要设置，确保状态正确）
-			// 这样可以确保即使视图被替换后重新打开，也能正确恢复
+			// Force set targetFolderPath (even if same, ensures correct state)
+			// Ensures correct restore when view is replaced and reopened
 			const previousPath = leaf.view.targetFolderPath;
 			leaf.view.targetFolderPath = targetPath;
 			
-			// 如果路径改变了，或者视图刚被打开（需要初始化），则刷新
-			// 通过检查 leaf 的 viewState 来判断视图是否刚被创建
+			// Refresh if path changed or view just opened (needs init)
+			// Check leaf's viewState to determine if view was just created
 			const viewState = leaf.getViewState();
 			const isNewView = !viewState.state || !viewState.state.targetFolderPath;
 			
@@ -117,7 +124,7 @@ export class JournalViewPlugin extends Plugin {
 				await leaf.view.refresh();
 			}
 
-			// 关键：使用 setActiveLeaf 确保 tab 被激活、视图可见（revealLeaf 可能不够）
+			// Use setActiveLeaf to ensure tab is active and view visible (revealLeaf may be insufficient)
 			workspace.setActiveLeaf(leaf, { focus: true });
 			workspace.revealLeaf(leaf);
 		}
@@ -126,7 +133,7 @@ export class JournalViewPlugin extends Plugin {
 	async loadSettings() {
 		const data = (await this.loadData()) || {};
 		const migrated = { ...data };
-		// 迁移：移除旧的 defaultTemplate，改用 templatePath
+		// Migration: remove old defaultTemplate, use templatePath
 		if ('defaultTemplate' in migrated) {
 			delete migrated.defaultTemplate;
 		}

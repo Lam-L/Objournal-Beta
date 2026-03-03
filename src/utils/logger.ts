@@ -1,7 +1,7 @@
 import { LOGGING } from '../constants';
 
 /**
- * 简单的日志工具
+ * Simple logging utility
  */
 class Logger {
 	private enabled: boolean;
@@ -23,7 +23,7 @@ class Logger {
 	}
 
 	error(message: string, ...args: any[]): void {
-		// 错误日志始终显示
+		// Error logs always shown
 		console.error(this.formatMessage('ERROR', message), ...args);
 	}
 

@@ -36,7 +36,7 @@ export const OnThisDayProvider: React.FC<OnThisDayProviderProps> = ({ children }
 			if (!plugin || !(plugin as any).settings) return;
 			(plugin as any).settings.onThisDayDisplayMode = mode;
 			(plugin as any).saveSettings?.();
-			// 触发视图刷新以反映新状态
+			// Trigger view refresh to reflect new state
 			(plugin as any).view?.refresh?.();
 		},
 		[plugin]

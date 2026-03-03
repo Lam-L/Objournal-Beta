@@ -2,6 +2,11 @@ import React, { useRef, useEffect } from 'react';
 import { useJournalData } from '../context/JournalDataContext';
 import { useJournalScroll } from '../hooks/useJournalScroll';
 import { JournalCard } from './JournalCard';
+import { JOURNAL_VIEW_ACTIVE_EVENT } from '../view/JournalView';
+
+function getScrollContainer(parent: HTMLDivElement | null): HTMLElement | null {
+    return parent?.closest('.journal-view-container') as HTMLElement | null;
+}
 
 export const JournalList: React.FC = () => {
     const { entries } = useJournalData();
@@ -9,38 +14,57 @@ export const JournalList: React.FC = () => {
     const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
     const scrollPositionRef = useRef<number>(0);
 
-    // 保存滚动位置
+    // Save scroll position (scroll happens on journal-view-container)
     useEffect(() => {
-        const scrollElement = parentRef.current;
-        if (!scrollElement) return;
+        const scrollEl = getScrollContainer(parentRef.current);
+        if (!scrollEl) return;
 
         const handleScroll = () => {
-            scrollPositionRef.current = scrollElement.scrollTop;
+            scrollPositionRef.current = scrollEl.scrollTop;
         };
 
-        scrollElement.addEventListener('scroll', handleScroll, { passive: true });
-        return () => {
-            scrollElement.removeEventListener('scroll', handleScroll);
-        };
+        scrollEl.addEventListener('scroll', handleScroll, { passive: true });
+        return () => scrollEl.removeEventListener('scroll', handleScroll);
     }, [parentRef]);
 
-    // 恢复滚动位置（当 entries 变化时）
+    // Restore scroll position (when entries change)
     useEffect(() => {
-        const scrollElement = parentRef.current;
-        if (!scrollElement || scrollPositionRef.current === 0) return;
+        const scrollEl = getScrollContainer(parentRef.current);
+        if (!scrollEl || scrollPositionRef.current === 0) return;
 
-        // 使用 requestAnimationFrame 确保在渲染后恢复
         requestAnimationFrame(() => {
-            if (scrollElement) {
-                scrollElement.scrollTop = scrollPositionRef.current;
-            }
+            const el = getScrollContainer(parentRef.current);
+            if (el) el.scrollTop = scrollPositionRef.current;
         });
     }, [entries.length, parentRef]);
 
-    // 当虚拟项变化时，更新测量
+    // Update measurement when virtual items change (only when container is ready - reference nn isScrollContainerReady)
     useEffect(() => {
-        virtualizer.measure();
+        const scrollEl = getScrollContainer(parentRef.current);
+        if (scrollEl) {
+            const rect = scrollEl.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                virtualizer.measure();
+            }
+        }
     }, [entries.length, virtualizer]);
+
+    // Remeasure when view becomes active (fixes white screen on tab switch)
+    useEffect(() => {
+        const handler = () => {
+            requestAnimationFrame(() => {
+                const scrollEl = getScrollContainer(parentRef.current);
+                if (scrollEl) {
+                    const rect = scrollEl.getBoundingClientRect();
+                    if (rect.width > 0 && rect.height > 0) {
+                        virtualizer.measure();
+                    }
+                }
+            });
+        };
+        document.addEventListener(JOURNAL_VIEW_ACTIVE_EVENT, handler);
+        return () => document.removeEventListener(JOURNAL_VIEW_ACTIVE_EVENT, handler);
+    }, [virtualizer]);
 
     return (
         <div
@@ -71,11 +95,12 @@ export const JournalList: React.FC = () => {
                     };
 
                     if (item.type === 'month-header') {
-                        // 使用 monthKey 作为稳定的 key
+                        // Use monthKey as stable key
                         return (
                             <div
                                 key={`month-${item.monthKey}`}
                                 ref={setRef}
+                                className="journal-virtual-item"
                                 data-index={virtualItem.index}
                                 style={{
                                     position: 'absolute',
@@ -91,11 +116,12 @@ export const JournalList: React.FC = () => {
                     }
 
                     if (item.type === 'card' && item.entry) {
-                        // 使用 file.path 作为稳定的 key，而不是 virtualItem.key
+                        // Use file.path as stable key instead of virtualItem.key
                         return (
                             <div
                                 key={item.entry.file.path}
                                 ref={setRef}
+                                className="journal-virtual-item"
                                 data-index={virtualItem.index}
                                 style={{
                                     position: 'absolute',

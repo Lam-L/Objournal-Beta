@@ -8,8 +8,8 @@ export interface DeleteConfirmModalOptions {
 }
 
 /**
- * Obsidian 原生风格的确认对话框，替代 window.confirm()
- * 使用原生 Modal 可避免焦点丢失问题（如删除后编辑器无法获得光标）
+ * Native Obsidian-style confirm dialog, replaces window.confirm()
+ * Native Modal avoids focus loss (e.g. editor cannot get cursor after delete)
  */
 export class DeleteConfirmModal extends Modal {
 	private options: DeleteConfirmModalOptions;

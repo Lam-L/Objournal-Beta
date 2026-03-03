@@ -12,7 +12,7 @@ export const JournalHeader: React.FC = () => {
 
 	const handleCreateNote = async () => {
 		try {
-			// 确定目标文件夹
+			// Determine target folder
 			let targetFolder: TFolder | null = null;
 
 			if (targetFolderPath) {
@@ -22,22 +22,22 @@ export const JournalHeader: React.FC = () => {
 				}
 			}
 
-			// 如果没有指定文件夹，使用Vault根目录
+			// If no folder specified, use Vault root
 			if (!targetFolder) {
-				// 尝试获取第一个顶级文件夹，或者使用根目录
+				// Try first top-level folder or root
 				const rootFolders = app.vault.getAllFolders();
 				if (rootFolders.length > 0) {
-					// 使用第一个文件夹的父目录（通常是根目录）
+					// Use first folder's parent (usually root)
 					targetFolder = rootFolders[0].parent;
 				}
 			}
 
 			if (!targetFolder) {
-				console.error('无法确定目标文件夹');
+				console.error('Cannot determine target folder');
 				return;
 			}
 
-			// 获取内容：仅当设置了模板文件时从模板读取并替换变量，否则留空
+			// Get content: read from template and replace variables only when template is set, else empty
 			let fileContent = '';
 			const templatePath = (plugin as { settings?: { templatePath?: string | null } })?.settings?.templatePath;
 
@@ -60,12 +60,12 @@ export const JournalHeader: React.FC = () => {
 							.replace(/\{\{title\}\}/g, titleStr)
 							.replace(/\{\{time\}\}/g, timeStr);
 					} catch {
-						// 模板读取失败时留空
+						// Leave empty on template read failure
 					}
 				}
 			}
 
-			// 文件名：Untitled，冲突时加编号
+			// Filename: Untitled, append number on conflict
 			let finalPath = targetFolder.path === '/' ? 'Untitled.md' : `${targetFolder.path}/Untitled.md`;
 			let counter = 1;
 			while (await app.vault.adapter.exists(finalPath)) {
@@ -76,10 +76,10 @@ export const JournalHeader: React.FC = () => {
 				if (counter > 100) break;
 			}
 
-			// 创建文件
+			// Create file
 			const newFile = await app.vault.create(finalPath, fileContent);
 
-			// 打开新创建的文件：根据设置决定在新标签页或当前标签页打开
+			// Open new file: new tab or current tab based on settings
 			const openInNewTab = (plugin as { settings?: { openInNewTab?: boolean } })?.settings?.openInNewTab !== false;
 			if (openInNewTab) {
 				await app.workspace.openLinkText(finalPath, '', true);
@@ -92,24 +92,21 @@ export const JournalHeader: React.FC = () => {
 				await targetLeaf?.openFile(newFile, { active: true });
 			}
 
-			// 等待文件元数据（创建时间）完全更新后刷新
-			// 延迟足够的时间，确保文件元数据已完全更新
+			// Wait for file metadata (ctime) to be fully updated before refresh
 			setTimeout(async () => {
-				// 重新获取文件对象，确保获取最新的元数据
 				const file = app.vault.getAbstractFileByPath(finalPath);
 				if (file instanceof TFile) {
-					console.debug('准备刷新，新文件信息:', {
+					console.debug('Refreshing, new file info:', {
 						path: file.path,
 						ctime: new Date(file.stat.ctime).toISOString(),
 						ctimeMs: file.stat.ctime
 					});
 				}
 
-				// 执行刷新
 				await refresh();
 			}, 500);
 		} catch (error) {
-			console.error('创建笔记失败:', error);
+			console.error('Failed to create note:', error);
 		}
 	};
 
@@ -119,20 +116,19 @@ export const JournalHeader: React.FC = () => {
 				<h1 className="journal-title-header">{strings.view.title}</h1>
 				<div className="journal-header-buttons">
 					<button
-						className={`journal-header-button journal-header-button-view-mode ${viewMode === 'calendar' ? 'journal-header-button-view-mode-active' : ''}`}
+						className={`clickable-icon nav-action-button journal-view-mode-toggle ${viewMode === 'calendar' ? 'journal-header-button-view-mode-active' : ''}`}
 						onClick={cycleViewMode}
-						title={viewMode === 'list' ? strings.view.switchToCalendar : strings.view.switchToList}
 						aria-label={viewMode === 'list' ? strings.view.switchToCalendar : strings.view.switchToList}
 					>
 						{viewMode === 'list' ? (
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="svg-icon lucide-calendar">
 								<rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
 								<line x1="16" y1="2" x2="16" y2="6" />
 								<line x1="8" y1="2" x2="8" y2="6" />
 								<line x1="3" y1="10" x2="21" y2="10" />
 							</svg>
 						) : (
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="svg-icon lucide-list">
 								<line x1="8" y1="6" x2="21" y2="6" />
 								<line x1="8" y1="12" x2="21" y2="12" />
 								<line x1="8" y1="18" x2="21" y2="18" />
@@ -143,14 +139,13 @@ export const JournalHeader: React.FC = () => {
 						)}
 					</button>
 					<button
-						className="journal-header-button journal-header-button-primary"
+						className="clickable-icon nav-action-button"
 						onClick={handleCreateNote}
-						title={strings.view.newNote}
 						aria-label={strings.view.newNote}
 					>
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-							<line x1="12" y1="5" x2="12" y2="19" />
-							<line x1="5" y1="12" x2="19" y2="12" />
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="svg-icon lucide-edit">
+							<path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+							<path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
 						</svg>
 					</button>
 				</div>

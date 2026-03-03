@@ -11,7 +11,7 @@
   "imageGap": 4,
   "openInNewTab": false,
   "enableEditorImageLayout": true,
-  "showJournalStats": false,
+  "showJournalStats": true,
   "onThisDayDisplayMode": "all",
   "enableAutoLayout": true
 }

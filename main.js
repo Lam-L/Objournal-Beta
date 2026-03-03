@@ -1093,7 +1093,7 @@ var require_react_development = __commonJS({
           }
           return dispatcher.useContext(Context);
         }
-        function useState9(initialState) {
+        function useState10(initialState) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useState(initialState);
         }
@@ -1101,11 +1101,11 @@ var require_react_development = __commonJS({
           var dispatcher = resolveDispatcher();
           return dispatcher.useReducer(reducer, initialArg, init);
         }
-        function useRef9(initialValue) {
+        function useRef10(initialValue) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useRef(initialValue);
         }
-        function useEffect9(create, deps) {
+        function useEffect12(create, deps) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useEffect(create, deps);
         }
@@ -1888,15 +1888,15 @@ var require_react_development = __commonJS({
         exports.useContext = useContext5;
         exports.useDebugValue = useDebugValue;
         exports.useDeferredValue = useDeferredValue;
-        exports.useEffect = useEffect9;
+        exports.useEffect = useEffect12;
         exports.useId = useId;
         exports.useImperativeHandle = useImperativeHandle;
         exports.useInsertionEffect = useInsertionEffect;
         exports.useLayoutEffect = useLayoutEffect2;
         exports.useMemo = useMemo3;
         exports.useReducer = useReducer2;
-        exports.useRef = useRef9;
-        exports.useState = useState9;
+        exports.useRef = useRef10;
+        exports.useState = useState10;
         exports.useSyncExternalStore = useSyncExternalStore;
         exports.useTransition = useTransition;
         exports.version = ReactVersion;
@@ -23568,10 +23568,10 @@ __export(main_exports, {
   default: () => main_default
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian10 = require("obsidian");
+var import_obsidian14 = require("obsidian");
 
 // src/view/JournalView.tsx
-var import_obsidian7 = require("obsidian");
+var import_obsidian11 = require("obsidian");
 
 // src/i18n/index.ts
 var import_obsidian = require("obsidian");
@@ -23639,6 +23639,12 @@ This action cannot be undone.`,
   },
   settings: {
     title: "Journal View Settings",
+    sectionBasics: "Basics",
+    sectionTemplate: "Template",
+    sectionDisplay: "View & Display",
+    sectionEditor: "Editor",
+    sectionInteraction: "Interaction",
+    sectionMaintenance: "Maintenance",
     dateField: "Date field",
     dateFieldDesc: 'The frontmatter field name for dates. If the file lacks this field, file creation time is used. Choose "Use default" for date, Date, created, created_time.',
     useDefaultFields: "Use default fields",
@@ -23667,7 +23673,16 @@ This action cannot be undone.`,
     tooltipCurrentTab: "Currently: open in current tab",
     tooltipOpenMode: "New tab: open in new tab (default)\nCurrent tab: open in current tab, use Back to return",
     showJournalStats: "Show statistics bar",
-    showJournalStatsDesc: "Display consecutive days, word count, and days with entries at the top of the journal view"
+    showJournalStatsDesc: "Display consecutive days, word count, and days with entries at the top of the journal view",
+    storageUsage: "IndexedDB storage usage",
+    storageUsageCalculating: "Calculating...",
+    storageUsageError: "Unable to retrieve",
+    storageUsageEntries: "Entries",
+    storageUsageThumbnails: "Thumbnails",
+    storageUsageTotal: "Total",
+    clearCache: "Clear cache",
+    clearCacheDesc: "Clear the IndexedDB cache. Use this if entries are stale or to free space. The next open will rebuild the cache.",
+    clearCacheButton: "Clear"
   },
   editor: {
     deleteImage: "Delete image"
@@ -23737,6 +23752,12 @@ var STRINGS_ZH_CN = {
   },
   settings: {
     title: "\u624B\u8BB0\u89C6\u56FE\u8BBE\u7F6E",
+    sectionBasics: "\u57FA\u7840\u8BBE\u7F6E",
+    sectionTemplate: "\u6A21\u677F",
+    sectionDisplay: "\u89C6\u56FE\u4E0E\u663E\u793A",
+    sectionEditor: "\u7F16\u8F91\u5668",
+    sectionInteraction: "\u4EA4\u4E92",
+    sectionMaintenance: "\u7EF4\u62A4",
     dateField: "\u65E5\u671F\u5B57\u6BB5",
     dateFieldDesc: '\u6307\u5B9A\u8BE5\u6587\u4EF6\u5939\u4E0B\u6587\u4EF6\u4F7F\u7528\u7684\u65E5\u671F\u5B57\u6BB5\uFF08frontmatter \u4E2D\u7684\u5B57\u6BB5\u540D\uFF09\u3002\u5982\u679C\u6587\u4EF6\u6CA1\u6709\u8BE5\u5B57\u6BB5\uFF0C\u5C06\u4F7F\u7528\u6587\u4EF6\u521B\u5EFA\u65F6\u95F4\u3002\u9009\u62E9"\u4F7F\u7528\u9ED8\u8BA4\u5B57\u6BB5"\u5219\u4F7F\u7528 date, Date, created, created_time\u3002',
     useDefaultFields: "\u4F7F\u7528\u9ED8\u8BA4\u5B57\u6BB5",
@@ -23765,10 +23786,245 @@ var STRINGS_ZH_CN = {
     tooltipCurrentTab: "\u5F53\u524D\uFF1A\u5F53\u524D\u6807\u7B7E\u9875\u6253\u5F00",
     tooltipOpenMode: "\u65B0\u6807\u7B7E\u9875\uFF1A\u5728\u65B0\u6807\u7B7E\u9875\u6253\u5F00\u7B14\u8BB0\uFF08\u9ED8\u8BA4\uFF09\n\u5F53\u524D\u6807\u7B7E\u9875\uFF1A\u5728\u5F53\u524D\u6807\u7B7E\u9875\u6253\u5F00\u7B14\u8BB0\uFF0C\u53EF\u4EE5\u4F7F\u7528\u56DE\u9000\u952E\u8FD4\u56DE\u539F\u89C6\u56FE",
     showJournalStats: "\u663E\u793A\u7EDF\u8BA1\u680F",
-    showJournalStatsDesc: "\u5728\u624B\u8BB0\u89C6\u56FE\u9876\u90E8\u5C55\u793A\u8FDE\u7EED\u5929\u6570\u3001\u5B57\u6570\u548C\u6709\u8BB0\u5F55\u7684\u5929\u6570"
+    showJournalStatsDesc: "\u5728\u624B\u8BB0\u89C6\u56FE\u9876\u90E8\u5C55\u793A\u8FDE\u7EED\u5929\u6570\u3001\u5B57\u6570\u548C\u6709\u8BB0\u5F55\u7684\u5929\u6570",
+    storageUsage: "IndexedDB \u5B58\u50A8\u5360\u7528",
+    storageUsageCalculating: "\u8BA1\u7B97\u4E2D\u2026",
+    storageUsageError: "\u65E0\u6CD5\u83B7\u53D6",
+    storageUsageEntries: "\u6761\u76EE\u7F13\u5B58",
+    storageUsageThumbnails: "\u7F29\u7565\u56FE",
+    storageUsageTotal: "\u5408\u8BA1",
+    clearCache: "\u6E05\u9664\u7F13\u5B58",
+    clearCacheDesc: "\u6E05\u9664 IndexedDB \u7F13\u5B58\u3002\u82E5\u6761\u76EE\u663E\u793A\u5F02\u5E38\u6216\u9700\u91CA\u653E\u7A7A\u95F4\u53EF\u4F7F\u7528\u3002\u4E0B\u6B21\u6253\u5F00\u5C06\u91CD\u65B0\u6784\u5EFA\u7F13\u5B58\u3002",
+    clearCacheButton: "\u6E05\u9664"
   },
   editor: {
     deleteImage: "\u5220\u9664\u56FE\u7247"
+  }
+};
+
+// src/i18n/locales/zh_tw.ts
+var STRINGS_ZH_TW = {
+  common: {
+    loading: "\u8F09\u5165\u4E2D...",
+    error: "\u932F\u8AA4",
+    empty: "\u66AB\u7121\u5167\u5BB9",
+    cancel: "\u53D6\u6D88",
+    delete: "\u522A\u9664",
+    close: "\u95DC\u9589",
+    confirm: "\u78BA\u5B9A"
+  },
+  stats: {
+    consecutiveDays: "\u9023\u7E8C\u7D00\u9304\u5929\u6578",
+    totalWords: "\u5B57\u6578",
+    totalDays: "\u5BEB\u65E5\u8A18\u5929\u6578"
+  },
+  emptyState: {
+    welcomeTitle: "\u6B61\u8FCE\u4F7F\u7528\u65E5\u8A18\u8996\u5716",
+    noEntries: "\u5C1A\u672A\u627E\u5230\u4EFB\u4F55\u65E5\u8A18\u6A94\u6848",
+    startScan: "\u958B\u59CB\u6383\u63CF"
+  },
+  view: {
+    title: "\u65E5\u8A18",
+    viewName: "\u65E5\u8A18\u8996\u5716",
+    switchToCalendar: "\u5207\u63DB\u70BA\u6708\u66C6\u8996\u5716",
+    switchToList: "\u5207\u63DB\u70BA\u5217\u8868\u8996\u5716",
+    newNote: "\u65B0\u5EFA\u7B46\u8A18",
+    onThisDay: "\u90A3\u5E74\u4ECA\u65E5",
+    onThisDaySingle: "\u90A3\u5E74\u4ECA\u65E5\uFF1A\u6700\u8FD1\u4E00\u689D\uFF08\u9EDE\u64CA\u5207\u63DB\u70BA\u5C55\u793A\u5168\u90E8\uFF09",
+    onThisDayAll: "\u90A3\u5E74\u4ECA\u65E5\uFF1A\u5C55\u793A\u5168\u90E8\uFF08\u9EDE\u64CA\u5207\u63DB\u70BA\u96B1\u85CF\uFF09",
+    onThisDayHidden: "\u90A3\u5E74\u4ECA\u65E5\uFF1A\u5DF2\u96B1\u85CF\uFF08\u9EDE\u64CA\u5207\u63DB\u70BA\u5C55\u793A\uFF09"
+  },
+  dateGroups: {
+    today: "\u4ECA\u5929",
+    yesterday: "\u6628\u5929"
+  },
+  weekdays: ["\u661F\u671F\u65E5", "\u661F\u671F\u4E00", "\u661F\u671F\u4E8C", "\u661F\u671F\u4E09", "\u661F\u671F\u56DB", "\u661F\u671F\u4E94", "\u661F\u671F\u516D"],
+  formatDate: (date) => `${date.getFullYear()}\u5E74${date.getMonth() + 1}\u6708${date.getDate()}\u65E5 ${STRINGS_ZH_TW.weekdays[date.getDay()]}`,
+  monthNames: ["\u4E00\u6708", "\u4E8C\u6708", "\u4E09\u6708", "\u56DB\u6708", "\u4E94\u6708", "\u516D\u6708", "\u4E03\u6708", "\u516B\u6708", "\u4E5D\u6708", "\u5341\u6708", "\u5341\u4E00\u6708", "\u5341\u4E8C\u6708"],
+  formatMonthGroupKey: (year, month) => `${year}\u5E74${month + 1}\u6708`,
+  onThisDay: {
+    empty: "\u66AB\u7121\u90A3\u5E74\u4ECA\u65E5\u7684\u8A18\u9304",
+    emptyHint: "\u5728\u5F80\u5E74\u7684\u4ECA\u5929\u5BEB\u4E0B\u65E5\u8A18\uFF0C\u660E\u5E74\u4ECA\u65E5\u5373\u53EF\u5728\u6B64\u770B\u5230",
+    yearsAgo: (years) => years === 1 ? "1 \u5E74\u524D" : `${years} \u5E74\u524D`
+  },
+  calendar: {
+    prevMonth: "\u4E0A\u4E00\u6708",
+    nextMonth: "\u4E0B\u4E00\u6708",
+    goToToday: "\u56DE\u5230\u4ECA\u5929",
+    weekdayShort: ["\u65E5", "\u4E00", "\u4E8C", "\u4E09", "\u56DB", "\u4E94", "\u516D"]
+  },
+  card: {
+    deleteConfirm: (name) => `\u78BA\u5B9A\u8981\u522A\u9664\u300C${name}\u300D\u55CE\uFF1F
+
+\u6B64\u64CD\u4F5C\u7121\u6CD5\u5FA9\u539F\u3002`,
+    deleteFailed: "\u522A\u9664\u6A94\u6848\u5931\u6557\uFF0C\u8ACB\u91CD\u8A66\u3002"
+  },
+  commands: {
+    openJournal: "\u958B\u555F\u65E5\u8A18\u8996\u5716",
+    refreshJournal: "\u91CD\u65B0\u6574\u7406\u65E5\u8A18\u8996\u5716"
+  },
+  settings: {
+    title: "\u65E5\u8A18\u8996\u5716\u8A2D\u5B9A",
+    sectionBasics: "\u57FA\u790E\u8A2D\u5B9A",
+    sectionTemplate: "\u7BC4\u672C",
+    sectionDisplay: "\u8996\u5716\u8207\u986F\u793A",
+    sectionEditor: "\u7DE8\u8F2F\u5668",
+    sectionInteraction: "\u4E92\u52D5",
+    sectionMaintenance: "\u7DAD\u8B77",
+    dateField: "\u65E5\u671F\u6B04\u4F4D",
+    dateFieldDesc: "\u6307\u5B9A\u8A72\u8CC7\u6599\u593E\u4E0B\u6A94\u6848\u4F7F\u7528\u7684\u65E5\u671F\u6B04\u4F4D\uFF08frontmatter \u4E2D\u7684\u6B04\u4F4D\u540D\uFF09\u3002\u82E5\u6A94\u6848\u6C92\u6709\u8A72\u6B04\u4F4D\uFF0C\u5C07\u4F7F\u7528\u6A94\u6848\u5EFA\u7ACB\u6642\u9593\u3002\u9078\u64C7\u300C\u4F7F\u7528\u9810\u8A2D\u6B04\u4F4D\u300D\u5247\u4F7F\u7528 date, Date, created, created_time\u3002",
+    useDefaultFields: "\u4F7F\u7528\u9810\u8A2D\u6B04\u4F4D",
+    custom: "\u81EA\u8A02...",
+    customFieldPlaceholder: "\u8F38\u5165\u81EA\u8A02\u6B04\u4F4D\u540D\u7A31",
+    templateFolder: "\u7BC4\u672C\u8CC7\u6599\u593E",
+    templateFolderDesc: "\u9078\u64C7\u5B58\u653E\u7BC4\u672C\u7684\u8CC7\u6599\u593E\uFF0C\u901A\u5E38\u70BA Templates \u6216 \u7BC4\u672C\u3002",
+    templateNone: "\u7121",
+    templateFile: "\u7BC4\u672C\u6A94\u6848",
+    templateFileDesc: "\u5F9E\u4E0A\u8FF0\u8CC7\u6599\u593E\u4E2D\u9078\u64C7\u4E00\u500B .md \u6A94\u6848\u4F5C\u70BA\u65B0\u5EFA\u65E5\u8A18\u7684\u7BC4\u672C\u3002\u652F\u63F4\u8B8A\u6578\uFF1A{{date}}\u3001{{year}}\u3001{{month}}\u3001{{day}}\u3001{{title}}\u3001{{time}}\u3002",
+    templateFileNone: "\u7121\uFF08\u4F7F\u7528\u9810\u8A2D\u683C\u5F0F\uFF09",
+    editorImageLayout: "\u7DE8\u8F2F\u9801\u65E5\u8A18\u5F0F\u5716\u7247\u7248\u9762",
+    editorImageLayoutDesc: "\u5728 Live Preview \u6A21\u5F0F\u4E0B\uFF0C\u9810\u8A2D\u8CC7\u6599\u593E\u5167\u7684\u7B46\u8A18\u4E2D\u7684\u5716\u7247\u5C07\u6309\u9996\u9801\u65E5\u8A18\u5361\u7247\u7684\u7248\u9762\u5C55\u793A\uFF08\u65B0\u589E/\u522A\u9664\u5716\u7247\u5373\u6642\u66F4\u65B0\uFF09",
+    defaultFolder: "\u9810\u8A2D\u8CC7\u6599\u593E",
+    defaultFolderDesc: "\u9078\u64C7\u9810\u8A2D\u7684\u65E5\u8A18\u8CC7\u6599\u593E\u3002\u4F7F\u7528 Ctrl+P \u958B\u555F\u65E5\u8A18\u8996\u5716\u6642\u5C07\u81EA\u52D5\u958B\u555F\u6B64\u8CC7\u6599\u593E\u7684\u8996\u5716\u3002\u7DE8\u8F2F\u9801\u5716\u7247\u7248\u9762\u4E5F\u50C5\u5728\u6B64\u8CC7\u6599\u593E\u5167\u7684\u7B46\u8A18\u4E2D\u751F\u6548\u3002",
+    scanEntireVault: "\u6383\u63CF\u6574\u500B Vault",
+    imageDisplayLimit: "\u5716\u7247\u986F\u793A\u9650\u5236",
+    imageDisplayLimitDesc: "\u6BCF\u500B\u65E5\u8A18\u5361\u7247\u6700\u591A\u986F\u793A\u7684\u5716\u7247\u6578\u91CF",
+    imageGap: "\u5716\u7247\u9593\u8DDD",
+    imageGapDesc: "\u5716\u7247\u5BB9\u5668\u4E4B\u9593\u7684\u9593\u8DDD\uFF08\u50CF\u7D20\uFF09",
+    openNoteMode: "\u958B\u555F\u7B46\u8A18\u65B9\u5F0F",
+    openNoteModeDesc: "\u9078\u64C7\u5728\u65E5\u8A18\u8996\u5716\u4E2D\u9EDE\u64CA\u7B46\u8A18\u5361\u7247\u7684\u958B\u555F\u65B9\u5F0F\u3002",
+    openInNewTab: "\u65B0\u5206\u9801\u958B\u555F",
+    openInCurrentTab: "\u76EE\u524D\u5206\u9801\u958B\u555F",
+    tooltipNewTab: "\u76EE\u524D\uFF1A\u65B0\u5206\u9801\u958B\u555F",
+    tooltipCurrentTab: "\u76EE\u524D\uFF1A\u76EE\u524D\u5206\u9801\u958B\u555F",
+    tooltipOpenMode: "\u65B0\u5206\u9801\uFF1A\u5728\u65B0\u5206\u9801\u958B\u555F\u7B46\u8A18\uFF08\u9810\u8A2D\uFF09\n\u76EE\u524D\u5206\u9801\uFF1A\u5728\u76EE\u524D\u5206\u9801\u958B\u555F\u7B46\u8A18\uFF0C\u53EF\u4EE5\u4F7F\u7528\u8FD4\u56DE\u9375\u56DE\u5230\u539F\u8996\u5716",
+    showJournalStats: "\u986F\u793A\u7D71\u8A08\u5217",
+    showJournalStatsDesc: "\u5728\u65E5\u8A18\u8996\u5716\u9802\u90E8\u5C55\u793A\u9023\u7E8C\u5929\u6578\u3001\u5B57\u6578\u548C\u6709\u8A18\u9304\u7684\u5929\u6578",
+    storageUsage: "IndexedDB \u5132\u5B58\u7528\u91CF",
+    storageUsageCalculating: "\u8A08\u7B97\u4E2D\u2026",
+    storageUsageError: "\u7121\u6CD5\u53D6\u5F97",
+    storageUsageEntries: "\u689D\u76EE\u5FEB\u53D6",
+    storageUsageThumbnails: "\u7E2E\u5716",
+    storageUsageTotal: "\u5408\u8A08",
+    clearCache: "\u6E05\u9664\u5FEB\u53D6",
+    clearCacheDesc: "\u6E05\u9664 IndexedDB \u5FEB\u53D6\u3002\u82E5\u689D\u76EE\u986F\u793A\u7570\u5E38\u6216\u9700\u91CB\u653E\u7A7A\u9593\u53EF\u4F7F\u7528\u3002\u4E0B\u6B21\u958B\u555F\u5C07\u91CD\u65B0\u5EFA\u7F6E\u5FEB\u53D6\u3002",
+    clearCacheButton: "\u6E05\u9664"
+  },
+  editor: {
+    deleteImage: "\u522A\u9664\u5716\u7247"
+  }
+};
+
+// src/i18n/locales/ja.ts
+var STRINGS_JA = {
+  common: {
+    loading: "\u8AAD\u307F\u8FBC\u307F\u4E2D...",
+    error: "\u30A8\u30E9\u30FC",
+    empty: "\u5185\u5BB9\u304C\u3042\u308A\u307E\u305B\u3093",
+    cancel: "\u30AD\u30E3\u30F3\u30BB\u30EB",
+    delete: "\u524A\u9664",
+    close: "\u9589\u3058\u308B",
+    confirm: "\u78BA\u8A8D"
+  },
+  stats: {
+    consecutiveDays: "\u9023\u7D9A\u8A18\u9332\u65E5\u6570",
+    totalWords: "\u6587\u5B57\u6570",
+    totalDays: "\u8A18\u9332\u3057\u305F\u65E5\u6570"
+  },
+  emptyState: {
+    welcomeTitle: "\u30B8\u30E3\u30FC\u30CA\u30EB\u30D3\u30E5\u30FC\u3078\u3088\u3046\u3053\u305D",
+    noEntries: "\u30B8\u30E3\u30FC\u30CA\u30EB\u30A8\u30F3\u30C8\u30EA\u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093",
+    startScan: "\u30B9\u30AD\u30E3\u30F3\u958B\u59CB"
+  },
+  view: {
+    title: "\u30B8\u30E3\u30FC\u30CA\u30EB",
+    viewName: "\u30B8\u30E3\u30FC\u30CA\u30EB\u30D3\u30E5\u30FC",
+    switchToCalendar: "\u30AB\u30EC\u30F3\u30C0\u30FC\u8868\u793A\u306B\u5207\u308A\u66FF\u3048",
+    switchToList: "\u30EA\u30B9\u30C8\u8868\u793A\u306B\u5207\u308A\u66FF\u3048",
+    newNote: "\u65B0\u898F\u30CE\u30FC\u30C8",
+    onThisDay: "\u3053\u306E\u65E5\u306E\u51FA\u6765\u4E8B",
+    onThisDaySingle: "\u3053\u306E\u65E5\u306E\u51FA\u6765\u4E8B\uFF1A\u6700\u65B0\u3092\u8868\u793A\uFF08\u30AF\u30EA\u30C3\u30AF\u3067\u5168\u3066\u8868\u793A\uFF09",
+    onThisDayAll: "\u3053\u306E\u65E5\u306E\u51FA\u6765\u4E8B\uFF1A\u5168\u3066\u8868\u793A\uFF08\u30AF\u30EA\u30C3\u30AF\u3067\u975E\u8868\u793A\uFF09",
+    onThisDayHidden: "\u3053\u306E\u65E5\u306E\u51FA\u6765\u4E8B\uFF1A\u975E\u8868\u793A\uFF08\u30AF\u30EA\u30C3\u30AF\u3067\u8868\u793A\uFF09"
+  },
+  dateGroups: {
+    today: "\u4ECA\u65E5",
+    yesterday: "\u6628\u65E5"
+  },
+  weekdays: ["\u65E5\u66DC\u65E5", "\u6708\u66DC\u65E5", "\u706B\u66DC\u65E5", "\u6C34\u66DC\u65E5", "\u6728\u66DC\u65E5", "\u91D1\u66DC\u65E5", "\u571F\u66DC\u65E5"],
+  formatDate: (date) => `${date.getFullYear()}\u5E74${date.getMonth() + 1}\u6708${date.getDate()}\u65E5 ${STRINGS_JA.weekdays[date.getDay()]}`,
+  monthNames: ["1\u6708", "2\u6708", "3\u6708", "4\u6708", "5\u6708", "6\u6708", "7\u6708", "8\u6708", "9\u6708", "10\u6708", "11\u6708", "12\u6708"],
+  formatMonthGroupKey: (year, month) => `${year}\u5E74${month + 1}\u6708`,
+  onThisDay: {
+    empty: "\u3053\u306E\u65E5\u306E\u8A18\u9332\u306F\u3042\u308A\u307E\u305B\u3093",
+    emptyHint: "\u4ECA\u5F8C\u3001\u3053\u306E\u65E5\u306B\u30B8\u30E3\u30FC\u30CA\u30EB\u3092\u66F8\u304F\u3068\u3053\u3053\u306B\u8868\u793A\u3055\u308C\u307E\u3059",
+    yearsAgo: (years) => years === 1 ? "1\u5E74\u524D" : `${years}\u5E74\u524D`
+  },
+  calendar: {
+    prevMonth: "\u524D\u6708",
+    nextMonth: "\u7FCC\u6708",
+    goToToday: "\u4ECA\u65E5\u3078",
+    weekdayShort: ["\u65E5", "\u6708", "\u706B", "\u6C34", "\u6728", "\u91D1", "\u571F"]
+  },
+  card: {
+    deleteConfirm: (name) => `\u300C${name}\u300D\u3092\u524A\u9664\u3057\u307E\u3059\u304B\uFF1F
+
+\u3053\u306E\u64CD\u4F5C\u306F\u5143\u306B\u623B\u305B\u307E\u305B\u3093\u3002`,
+    deleteFailed: "\u30D5\u30A1\u30A4\u30EB\u306E\u524A\u9664\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\u3082\u3046\u4E00\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002"
+  },
+  commands: {
+    openJournal: "\u30B8\u30E3\u30FC\u30CA\u30EB\u30D3\u30E5\u30FC\u3092\u958B\u304F",
+    refreshJournal: "\u30B8\u30E3\u30FC\u30CA\u30EB\u30D3\u30E5\u30FC\u3092\u66F4\u65B0"
+  },
+  settings: {
+    title: "\u30B8\u30E3\u30FC\u30CA\u30EB\u30D3\u30E5\u30FC\u8A2D\u5B9A",
+    sectionBasics: "\u57FA\u672C\u8A2D\u5B9A",
+    sectionTemplate: "\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8",
+    sectionDisplay: "\u8868\u793A",
+    sectionEditor: "\u30A8\u30C7\u30A3\u30BF",
+    sectionInteraction: "\u64CD\u4F5C",
+    sectionMaintenance: "\u30E1\u30F3\u30C6\u30CA\u30F3\u30B9",
+    dateField: "\u65E5\u4ED8\u30D5\u30A3\u30FC\u30EB\u30C9",
+    dateFieldDesc: "frontmatter \u3067\u4F7F\u7528\u3059\u308B\u65E5\u4ED8\u30D5\u30A3\u30FC\u30EB\u30C9\u540D\u3002\u30D5\u30A3\u30FC\u30EB\u30C9\u304C\u306A\u3044\u5834\u5408\u306F\u30D5\u30A1\u30A4\u30EB\u4F5C\u6210\u65E5\u6642\u3092\u4F7F\u7528\u3002\u30C7\u30D5\u30A9\u30EB\u30C8\u306F date, Date, created, created_time\u3002",
+    useDefaultFields: "\u30C7\u30D5\u30A9\u30EB\u30C8\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u4F7F\u7528",
+    custom: "\u30AB\u30B9\u30BF\u30E0...",
+    customFieldPlaceholder: "\u30AB\u30B9\u30BF\u30E0\u30D5\u30A3\u30FC\u30EB\u30C9\u540D\u3092\u5165\u529B",
+    templateFolder: "\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u30D5\u30A9\u30EB\u30C0",
+    templateFolderDesc: "\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u30D5\u30A1\u30A4\u30EB\u3092\u683C\u7D0D\u3059\u308B\u30D5\u30A9\u30EB\u30C0\uFF08\u4F8B\uFF1ATemplates\uFF09\u3002",
+    templateNone: "\u306A\u3057",
+    templateFile: "\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u30D5\u30A1\u30A4\u30EB",
+    templateFileDesc: "\u65B0\u898F\u30B8\u30E3\u30FC\u30CA\u30EB\u7528\u306E .md \u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u3092\u9078\u629E\u3002\u5909\u6570\uFF1A{{date}}, {{year}}, {{month}}, {{day}}, {{title}}, {{time}}\u3002",
+    templateFileNone: "\u306A\u3057\uFF08\u30C7\u30D5\u30A9\u30EB\u30C8\u5F62\u5F0F\u3092\u4F7F\u7528\uFF09",
+    editorImageLayout: "\u30A8\u30C7\u30A3\u30BF\u306E\u30B8\u30E3\u30FC\u30CA\u30EB\u98A8\u753B\u50CF\u30EC\u30A4\u30A2\u30A6\u30C8",
+    editorImageLayoutDesc: "Live Preview \u3067\u3001\u30C7\u30D5\u30A9\u30EB\u30C8\u30D5\u30A9\u30EB\u30C0\u5185\u306E\u30CE\u30FC\u30C8\u306E\u753B\u50CF\u3092\u30B8\u30E3\u30FC\u30CA\u30EB\u30AB\u30FC\u30C9\u3068\u540C\u3058\u30EC\u30A4\u30A2\u30A6\u30C8\u3067\u8868\u793A\u3002",
+    defaultFolder: "\u30C7\u30D5\u30A9\u30EB\u30C8\u30D5\u30A9\u30EB\u30C0",
+    defaultFolderDesc: "\u30B8\u30E3\u30FC\u30CA\u30EB\u306E\u30C7\u30D5\u30A9\u30EB\u30C8\u30D5\u30A9\u30EB\u30C0\u3002Ctrl+P \u3067\u958B\u304F\u969B\u306B\u4F7F\u7528\u3002\u30A8\u30C7\u30A3\u30BF\u753B\u50CF\u30EC\u30A4\u30A2\u30A6\u30C8\u306F\u3053\u306E\u30D5\u30A9\u30EB\u30C0\u5185\u306E\u30CE\u30FC\u30C8\u306B\u306E\u307F\u9069\u7528\u3002",
+    scanEntireVault: "Vault \u5168\u4F53\u3092\u30B9\u30AD\u30E3\u30F3",
+    imageDisplayLimit: "\u30AB\u30FC\u30C9\u3042\u305F\u308A\u306E\u6700\u5927\u753B\u50CF\u6570",
+    imageDisplayLimitDesc: "\u30B8\u30E3\u30FC\u30CA\u30EB\u30AB\u30FC\u30C9\u306B\u8868\u793A\u3059\u308B\u753B\u50CF\u306E\u6700\u5927\u6570",
+    imageGap: "\u753B\u50CF\u306E\u9593\u9694",
+    imageGapDesc: "\u753B\u50CF\u30B3\u30F3\u30C6\u30CA\u9593\u306E\u9593\u9694\uFF08\u30D4\u30AF\u30BB\u30EB\uFF09",
+    openNoteMode: "\u30CE\u30FC\u30C8\u306E\u958B\u304D\u65B9",
+    openNoteModeDesc: "\u30B8\u30E3\u30FC\u30CA\u30EB\u30AB\u30FC\u30C9\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u305F\u3068\u304D\u306E\u52D5\u4F5C\u3002",
+    openInNewTab: "\u65B0\u3057\u3044\u30BF\u30D6\u3067\u958B\u304F",
+    openInCurrentTab: "\u73FE\u5728\u306E\u30BF\u30D6\u3067\u958B\u304F",
+    tooltipNewTab: "\u73FE\u5728\uFF1A\u65B0\u3057\u3044\u30BF\u30D6\u3067\u958B\u304F",
+    tooltipCurrentTab: "\u73FE\u5728\uFF1A\u73FE\u5728\u306E\u30BF\u30D6\u3067\u958B\u304F",
+    tooltipOpenMode: "\u65B0\u898F\u30BF\u30D6\uFF1A\u65B0\u3057\u3044\u30BF\u30D6\u3067\u958B\u304F\uFF08\u30C7\u30D5\u30A9\u30EB\u30C8\uFF09\n\u73FE\u5728\u306E\u30BF\u30D6\uFF1A\u73FE\u5728\u306E\u30BF\u30D6\u3067\u958B\u304F\u3001\u623B\u308B\u3067\u623B\u308C\u307E\u3059",
+    showJournalStats: "\u7D71\u8A08\u30D0\u30FC\u3092\u8868\u793A",
+    showJournalStatsDesc: "\u9023\u7D9A\u65E5\u6570\u30FB\u6587\u5B57\u6570\u30FB\u8A18\u9332\u65E5\u6570\u3092\u30B8\u30E3\u30FC\u30CA\u30EB\u30D3\u30E5\u30FC\u4E0A\u90E8\u306B\u8868\u793A",
+    storageUsage: "IndexedDB \u30B9\u30C8\u30EC\u30FC\u30B8\u4F7F\u7528\u91CF",
+    storageUsageCalculating: "\u8A08\u7B97\u4E2D\u2026",
+    storageUsageError: "\u53D6\u5F97\u3067\u304D\u307E\u305B\u3093",
+    storageUsageEntries: "\u30A8\u30F3\u30C8\u30EA\u30AD\u30E3\u30C3\u30B7\u30E5",
+    storageUsageThumbnails: "\u30B5\u30E0\u30CD\u30A4\u30EB",
+    storageUsageTotal: "\u5408\u8A08",
+    clearCache: "\u30AD\u30E3\u30C3\u30B7\u30E5\u3092\u30AF\u30EA\u30A2",
+    clearCacheDesc: "IndexedDB \u30AD\u30E3\u30C3\u30B7\u30E5\u3092\u30AF\u30EA\u30A2\u3002\u30C7\u30FC\u30BF\u304C\u53E4\u3044\u5834\u5408\u3084\u5BB9\u91CF\u3092\u7A7A\u3051\u305F\u3044\u5834\u5408\u306B\u4F7F\u7528\u3002\u6B21\u56DE\u8D77\u52D5\u6642\u306B\u518D\u69CB\u7BC9\u3055\u308C\u307E\u3059\u3002",
+    clearCacheButton: "\u30AF\u30EA\u30A2"
+  },
+  editor: {
+    deleteImage: "\u753B\u50CF\u3092\u524A\u9664"
   }
 };
 
@@ -23777,7 +24033,10 @@ var LANGUAGE_MAP = {
   en: STRINGS_EN,
   zh: STRINGS_ZH_CN,
   "zh-cn": STRINGS_ZH_CN,
-  zh_cn: STRINGS_ZH_CN
+  zh_cn: STRINGS_ZH_CN,
+  "zh-tw": STRINGS_ZH_TW,
+  zh_tw: STRINGS_ZH_TW,
+  ja: STRINGS_JA
 };
 function resolveLocale() {
   const raw = (0, import_obsidian.getLanguage)() || "en";
@@ -23790,7 +24049,7 @@ var strings = (_a = LANGUAGE_MAP[currentLocale]) != null ? _a : STRINGS_EN;
 
 // src/view/JournalView.tsx
 var import_client = __toESM(require_client());
-var import_react23 = __toESM(require_react());
+var import_react25 = __toESM(require_react());
 
 // src/context/JournalViewContext.tsx
 var import_react = __toESM(require_react());
@@ -23824,7 +24083,7 @@ var JournalViewProvider = ({
 };
 
 // src/components/JournalViewContainer.tsx
-var import_react22 = __toESM(require_react());
+var import_react24 = __toESM(require_react());
 
 // src/context/JournalDataContext.tsx
 var import_react2 = __toESM(require_react());
@@ -23863,7 +24122,7 @@ var JournalDataProvider = ({
 
 // src/hooks/useJournalEntries.ts
 var import_react3 = __toESM(require_react());
-var import_obsidian3 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 
 // src/utils/utils.ts
 var import_obsidian2 = require("obsidian");
@@ -23890,7 +24149,8 @@ function extractImagesFromContent(content, file, app) {
             name: imageName.trim(),
             path: imageFile.path,
             url: resourcePath,
-            position
+            position,
+            mtime: imageFile.stat.mtime
           });
         } catch (error) {
           console.warn(`Failed to get resource path for image ${imageFile.path}:`, error);
@@ -23928,7 +24188,8 @@ function extractImagesFromContent(content, file, app) {
             path: imageFile.path,
             url: resourcePath,
             altText: altText || void 0,
-            position
+            position,
+            mtime: imageFile.stat.mtime
           });
         } catch (error) {
           console.warn(`Failed to get resource path for image ${imageFile.path}:`, error);
@@ -24035,15 +24296,447 @@ var PAGINATION = {
 var CONTENT = {
   MAX_PREVIEW_LENGTH: 200,
   MAX_CONTENT_READ_LENGTH: 2e3,
-  // 元数据优先加载时读取的前N个字符
+  // N chars to read when metadata-first loading
   MAX_IMAGES_PER_CARD: 5
 };
+var LOGGING = {
+  ENABLED: true,
+  // Set true for debugging
+  PREFIX: "[JournalView]",
+  /** Log thumbnail cache hits/misses and generation (set true to debug IndexedDB) */
+  THUMBNAIL: true
+};
+
+// src/storage/constants.ts
+var DB_NAME_PREFIX = "journal-view-react";
+var STORE_NAME = "journal-entries";
+var THUMBNAIL_STORE_NAME = "journal-thumbnails";
+var DB_VERSION = 2;
+var THUMBNAIL = {
+  maxWidth: 1080,
+  maxHeight: 1080,
+  output: { mimeType: "image/webp", iosMimeType: "image/png", quality: 0.92 },
+  keyVersion: 6,
+  /** Max in-memory cached blobs (LRU) */
+  cacheMaxEntries: 200,
+  /** Throttle ms before retry regenerate (reference nn FEATURE_IMAGE_REGEN_THROTTLE) */
+  regenThrottleMs: 5e3,
+  /** Max concurrent thumbnail generation */
+  parallelLimit: 6,
+  /** Max keys to prewarm from IndexedDB on entries load */
+  prewarmMaxKeys: 150,
+  /** Max pixels decoded concurrently (reference nn imageDecodeBudgetPixels) - prevents decode storms during scroll */
+  imageDecodeBudgetPixels: {
+    mobile: 1e8,
+    desktop: Number.MAX_SAFE_INTEGER
+  }
+};
+
+// src/storage/JournalIndexedDBStorage.ts
+function idbRequestToPromise(request, fallback = "IDB request failed") {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error(fallback));
+  });
+}
+var JournalIndexedDBStorage = class {
+  constructor(appId) {
+    this.db = null;
+    this.initPromise = null;
+    this.isClosing = false;
+    this.dbName = `${DB_NAME_PREFIX}/cache/${appId}`;
+  }
+  async init() {
+    if (this.db)
+      return;
+    if (this.initPromise)
+      return this.initPromise;
+    if (this.isClosing)
+      return;
+    this.initPromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, DB_VERSION);
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        this.db = request.result;
+        resolve();
+      };
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME, { keyPath: "path" });
+        }
+        if (!db.objectStoreNames.contains(THUMBNAIL_STORE_NAME)) {
+          db.createObjectStore(THUMBNAIL_STORE_NAME);
+        }
+      };
+    });
+    return this.initPromise;
+  }
+  /**
+   * Batch get cached entries by paths
+   */
+  async getMany(paths) {
+    if (!this.db)
+      return /* @__PURE__ */ new Map();
+    const result = /* @__PURE__ */ new Map();
+    const store = this.db.transaction([STORE_NAME], "readonly").objectStore(STORE_NAME);
+    const batchSize = 100;
+    for (let i = 0; i < paths.length; i += batchSize) {
+      const batch = paths.slice(i, i + batchSize);
+      const entries = await Promise.all(
+        batch.map(
+          (path) => idbRequestToPromise(store.get(path), `get ${path}`).then(
+            (row) => row ? [path, row] : null
+          )
+        )
+      );
+      for (const item of entries) {
+        if (item)
+          result.set(item[0], item[1]);
+      }
+    }
+    return result;
+  }
+  async finishTransaction(tx) {
+    return new Promise((resolve, reject) => {
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error("Transaction aborted"));
+    });
+  }
+  /**
+   * Write single entry
+   */
+  async put(entry) {
+    if (!this.db)
+      return;
+    const tx = this.db.transaction([STORE_NAME], "readwrite");
+    tx.objectStore(STORE_NAME).put(entry);
+    await this.finishTransaction(tx);
+  }
+  /**
+   * Batch write
+   */
+  async batchPut(entries) {
+    if (!this.db || entries.length === 0)
+      return;
+    const tx = this.db.transaction([STORE_NAME], "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    for (const entry of entries) {
+      store.put(entry);
+    }
+    await this.finishTransaction(tx);
+  }
+  /**
+   * Delete single entry
+   */
+  async delete(path) {
+    if (!this.db)
+      return;
+    const tx = this.db.transaction([STORE_NAME], "readwrite");
+    tx.objectStore(STORE_NAME).delete(path);
+    await this.finishTransaction(tx);
+  }
+  /**
+   * Batch delete
+   */
+  async batchDelete(paths) {
+    if (!this.db || paths.length === 0)
+      return;
+    const tx = this.db.transaction([STORE_NAME], "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    for (const path of paths) {
+      store.delete(path);
+    }
+    await this.finishTransaction(tx);
+  }
+  /**
+   * Batch read all entries (for hydration or full scan)
+   */
+  async getAllKeys() {
+    if (!this.db)
+      return [];
+    const store = this.db.transaction([STORE_NAME], "readonly").objectStore(STORE_NAME);
+    const keys = await idbRequestToPromise(store.getAllKeys(), "getAllKeys failed");
+    return keys;
+  }
+  /**
+   * Batch read by paths (for current folder cache-first load)
+   * Uses getMany since we know paths.
+   */
+  async getByPaths(paths) {
+    return this.getMany(paths);
+  }
+  /**
+   * Clear entire store (for "clear cache" setting)
+   */
+  async clear() {
+    if (!this.db)
+      return;
+    const tx = this.db.transaction([STORE_NAME], "readwrite");
+    tx.objectStore(STORE_NAME).clear();
+    await this.finishTransaction(tx);
+  }
+  // ========== Thumbnail blob store ==========
+  /** Get thumbnail blob by key (path@mtime) */
+  async getThumbnailBlob(key) {
+    if (!this.db)
+      return null;
+    const tx = this.db.transaction([THUMBNAIL_STORE_NAME], "readonly");
+    const store = tx.objectStore(THUMBNAIL_STORE_NAME);
+    const record = await idbRequestToPromise(store.get(key), `getThumbnail ${key}`);
+    if ((record == null ? void 0 : record.blob) instanceof Blob && record.blob.size > 0)
+      return record.blob;
+    return null;
+  }
+  /** Batch get thumbnail blobs (single transaction, reference nn preload) */
+  async getThumbnailBlobs(keys) {
+    if (!this.db || keys.length === 0)
+      return /* @__PURE__ */ new Map();
+    const tx = this.db.transaction([THUMBNAIL_STORE_NAME], "readonly");
+    const store = tx.objectStore(THUMBNAIL_STORE_NAME);
+    const results = await Promise.all(
+      keys.map(
+        (key) => idbRequestToPromise(store.get(key), `getThumbnail ${key}`).then(
+          (record) => {
+            if ((record == null ? void 0 : record.blob) instanceof Blob && record.blob.size > 0)
+              return [key, record.blob];
+            return null;
+          }
+        )
+      )
+    );
+    const map = /* @__PURE__ */ new Map();
+    for (const r of results)
+      if (r)
+        map.set(r[0], r[1]);
+    return map;
+  }
+  /** Put thumbnail blob */
+  async putThumbnailBlob(key, blob) {
+    if (!this.db)
+      return;
+    const tx = this.db.transaction([THUMBNAIL_STORE_NAME], "readwrite");
+    tx.objectStore(THUMBNAIL_STORE_NAME).put({ blob }, key);
+    await this.finishTransaction(tx);
+  }
+  /** Delete thumbnail blob */
+  async deleteThumbnailBlob(key) {
+    if (!this.db)
+      return;
+    const tx = this.db.transaction([THUMBNAIL_STORE_NAME], "readwrite");
+    tx.objectStore(THUMBNAIL_STORE_NAME).delete(key);
+    await this.finishTransaction(tx);
+  }
+  /** P5: Move thumbnail blob on file rename (reference nn moveBlob) */
+  async moveThumbnailBlob(oldKey, newKey) {
+    if (!this.db)
+      return;
+    const tx = this.db.transaction([THUMBNAIL_STORE_NAME], "readwrite");
+    const store = tx.objectStore(THUMBNAIL_STORE_NAME);
+    const record = await idbRequestToPromise(store.get(oldKey), "get");
+    if ((record == null ? void 0 : record.blob) instanceof Blob && record.blob.size > 0) {
+      store.put({ blob: record.blob }, newKey);
+      store.delete(oldKey);
+    }
+    await this.finishTransaction(tx);
+  }
+  /**
+   * Estimate storage size in bytes by iterating both stores
+   */
+  async getStorageSizeEstimate() {
+    let entriesBytes = 0;
+    let thumbnailsBytes = 0;
+    if (!this.db)
+      return { entriesBytes: 0, thumbnailsBytes: 0, totalBytes: 0 };
+    const entriesStore = this.db.transaction([STORE_NAME], "readonly").objectStore(STORE_NAME);
+    const entriesRequest = entriesStore.openCursor();
+    await new Promise((resolve, reject) => {
+      entriesRequest.onsuccess = () => {
+        const cursor = entriesRequest.result;
+        if (cursor) {
+          entriesBytes += new TextEncoder().encode(JSON.stringify(cursor.value)).length;
+          cursor.continue();
+        } else {
+          resolve();
+        }
+      };
+      entriesRequest.onerror = () => reject(entriesRequest.error);
+    });
+    if (this.db.objectStoreNames.contains(THUMBNAIL_STORE_NAME)) {
+      const thumbsStore = this.db.transaction([THUMBNAIL_STORE_NAME], "readonly").objectStore(THUMBNAIL_STORE_NAME);
+      const thumbsRequest = thumbsStore.openCursor();
+      await new Promise((resolve, reject) => {
+        thumbsRequest.onsuccess = () => {
+          const cursor = thumbsRequest.result;
+          if (cursor) {
+            const record = cursor.value;
+            if ((record == null ? void 0 : record.blob) instanceof Blob)
+              thumbnailsBytes += record.blob.size;
+            cursor.continue();
+          } else {
+            resolve();
+          }
+        };
+        thumbsRequest.onerror = () => reject(thumbsRequest.error);
+      });
+    }
+    return {
+      entriesBytes,
+      thumbnailsBytes,
+      totalBytes: entriesBytes + thumbnailsBytes
+    };
+  }
+  /**
+   * Close connection, called on plugin unload
+   */
+  close() {
+    this.isClosing = true;
+    if (this.db) {
+      this.db.close();
+      this.db = null;
+    }
+    this.initPromise = null;
+  }
+};
+
+// src/storage/storageLifecycle.ts
+var storageInstance = null;
+var appIdUsed = null;
+function getAppId(app) {
+  var _a2, _b;
+  const extended = app;
+  if (extended.appId)
+    return extended.appId;
+  const name = ((_b = (_a2 = app.vault).getName) == null ? void 0 : _b.call(_a2)) || "default";
+  return name.replace(/[^a-zA-Z0-9-_]/g, "_");
+}
+async function initializeStorage(app) {
+  const appId = getAppId(app);
+  if (storageInstance && appIdUsed === appId) {
+    return storageInstance;
+  }
+  await shutdownStorage();
+  storageInstance = new JournalIndexedDBStorage(appId);
+  appIdUsed = appId;
+  await storageInstance.init();
+  return storageInstance;
+}
+function getStorage() {
+  return storageInstance;
+}
+function shutdownStorage() {
+  if (storageInstance) {
+    storageInstance.close();
+    storageInstance = null;
+    appIdUsed = null;
+  }
+}
+
+// src/storage/cacheAdapter.ts
+var import_obsidian3 = require("obsidian");
+function journalEntryToCached(entry) {
+  return {
+    path: entry.file.path,
+    mtime: entry.file.stat.mtime,
+    ctime: entry.file.stat.ctime,
+    dateIso: entry.date.toISOString(),
+    title: entry.title,
+    preview: entry.preview,
+    wordCount: entry.wordCount,
+    images: entry.images.map((img) => ({
+      name: img.name,
+      path: img.path,
+      url: img.url,
+      altText: img.altText,
+      position: img.position,
+      mtime: img.mtime
+    }))
+  };
+}
+function cachedToJournalEntry(cached, app) {
+  const file = app.vault.getAbstractFileByPath(cached.path);
+  if (!(file instanceof import_obsidian3.TFile))
+    return null;
+  const images = cached.images.map((img) => {
+    var _a2;
+    let url = "";
+    let mtime = (_a2 = img.mtime) != null ? _a2 : 0;
+    const imgFile = app.vault.getAbstractFileByPath(img.path);
+    if (imgFile && imgFile instanceof import_obsidian3.TFile) {
+      try {
+        url = app.vault.getResourcePath(imgFile);
+      } catch (e) {
+      }
+      if (mtime <= 0)
+        mtime = imgFile.stat.mtime;
+    }
+    return {
+      name: img.name,
+      path: img.path,
+      url,
+      altText: img.altText,
+      position: img.position,
+      mtime: mtime > 0 ? mtime : void 0
+    };
+  });
+  return {
+    file,
+    date: new Date(cached.dateIso),
+    title: cached.title,
+    content: "",
+    images,
+    preview: cached.preview,
+    wordCount: cached.wordCount
+  };
+}
+
+// src/utils/logger.ts
+var Logger = class {
+  constructor() {
+    this.enabled = LOGGING.ENABLED;
+    this.prefix = LOGGING.PREFIX;
+  }
+  formatMessage(level, message) {
+    return `${this.prefix} [${level}] ${message}`;
+  }
+  log(message, ...args) {
+    if (this.enabled) {
+      console.log(this.formatMessage("LOG", message), ...args);
+    }
+  }
+  error(message, ...args) {
+    console.error(this.formatMessage("ERROR", message), ...args);
+  }
+  warn(message, ...args) {
+    if (this.enabled) {
+      console.warn(this.formatMessage("WARN", message), ...args);
+    }
+  }
+  debug(message, ...args) {
+    if (this.enabled) {
+      console.log(this.formatMessage("DEBUG", message), ...args);
+    }
+  }
+};
+var logger = new Logger();
 
 // src/hooks/useJournalEntries.ts
+function sortEntries(entries) {
+  return [...entries].sort((a, b) => {
+    const dateDiff = b.date.getTime() - a.date.getTime();
+    if (dateDiff !== 0)
+      return dateDiff;
+    const ctimeDiff = b.file.stat.ctime - a.file.stat.ctime;
+    if (ctimeDiff !== 0)
+      return ctimeDiff;
+    return b.file.path.localeCompare(a.file.path);
+  });
+}
 var useJournalEntries = () => {
   const { app, targetFolderPath, plugin } = useJournalView();
   const [entries, setEntries] = (0, import_react3.useState)([]);
-  const [isLoading, setIsLoading] = (0, import_react3.useState)(false);
+  const [isLoading, setIsLoading] = (0, import_react3.useState)(true);
   const [error, setError] = (0, import_react3.useState)(null);
   const entriesMapRef = (0, import_react3.useRef)(/* @__PURE__ */ new Map());
   const loadEntryMetadata = async (file) => {
@@ -24082,9 +24775,9 @@ var useJournalEntries = () => {
     const files = [];
     const processFolder = (f) => {
       for (const child of f.children) {
-        if (child instanceof import_obsidian3.TFile && child.extension === "md") {
+        if (child instanceof import_obsidian4.TFile && child.extension === "md") {
           files.push(child);
-        } else if (child instanceof import_obsidian3.TFolder) {
+        } else if (child instanceof import_obsidian4.TFolder) {
           processFolder(child);
         }
       }
@@ -24099,7 +24792,7 @@ var useJournalEntries = () => {
       let files = [];
       if (targetFolderPath) {
         const targetFolder = app.vault.getAbstractFileByPath(targetFolderPath);
-        if (targetFolder instanceof import_obsidian3.TFolder) {
+        if (targetFolder instanceof import_obsidian4.TFolder) {
           files = getMarkdownFilesInFolder(targetFolder);
         } else {
           files = app.vault.getMarkdownFiles();
@@ -24110,112 +24803,120 @@ var useJournalEntries = () => {
       const currentFilePaths = new Set(files.map((f) => f.path));
       const toRemove = [];
       for (const [path] of entriesMapRef.current) {
-        if (!currentFilePaths.has(path)) {
+        if (!currentFilePaths.has(path))
           toRemove.push(path);
-        }
-      }
-      const toProcess = [];
-      for (const file of files) {
-        const cached = entriesMapRef.current.get(file.path);
-        if (!cached || cached.file.stat.mtime !== file.stat.mtime) {
-          toProcess.push(file);
-        }
       }
       for (const path of toRemove) {
         entriesMapRef.current.delete(path);
       }
-      if (toProcess.length > 0) {
+      const storage = getStorage();
+      let cachedMap = /* @__PURE__ */ new Map();
+      if (storage) {
+        try {
+          const paths = files.map((f) => f.path);
+          cachedMap = await storage.getMany(paths);
+        } catch (e) {
+          logger.warn("IndexedDB read failed", e);
+        }
+      }
+      const toProcess = [];
+      for (const file of files) {
+        const cached = cachedMap.get(file.path);
+        if (cached && cached.mtime === file.stat.mtime) {
+          const entry = cachedToJournalEntry(cached, app);
+          if (entry)
+            entriesMapRef.current.set(file.path, entry);
+        } else {
+          toProcess.push(file);
+        }
+      }
+      const buildAndSetResults = () => {
+        const results = sortEntries(Array.from(entriesMapRef.current.values()));
+        setEntries((prev) => {
+          if (prev.length !== results.length)
+            return results;
+          const prevMap = new Map(prev.map((e) => [e.file.path, e]));
+          const hasChange = results.some(
+            (e) => {
+              var _a2;
+              return ((_a2 = prevMap.get(e.file.path)) == null ? void 0 : _a2.file.stat.mtime) !== e.file.stat.mtime;
+            }
+          );
+          return hasChange ? results : prev;
+        });
+      };
+      buildAndSetResults();
+      if (toProcess.length > 0 && storage) {
         const batchSize = PAGINATION.BATCH_SIZE;
         for (let i = 0; i < toProcess.length; i += batchSize) {
           const batch = toProcess.slice(i, i + batchSize);
           const batchResults = await Promise.all(
             batch.map(
-              (file) => loadEntryMetadata(file).catch((error2) => {
-                console.error(`Error processing file ${file.path}:`, error2);
+              (file) => loadEntryMetadata(file).catch((e) => {
+                console.error(`Error processing file ${file.path}:`, e);
+                return null;
+              })
+            )
+          );
+          const toPersist = [];
+          for (const entry of batchResults) {
+            if (entry) {
+              entriesMapRef.current.set(entry.file.path, entry);
+              toPersist.push(journalEntryToCached(entry));
+            }
+          }
+          if (toPersist.length > 0) {
+            storage.batchPut(toPersist).catch((e) => logger.warn("IndexedDB write failed", e));
+          }
+          buildAndSetResults();
+        }
+      } else if (toProcess.length > 0) {
+        const batchSize = PAGINATION.BATCH_SIZE;
+        for (let i = 0; i < toProcess.length; i += batchSize) {
+          const batch = toProcess.slice(i, i + batchSize);
+          const batchResults = await Promise.all(
+            batch.map(
+              (file) => loadEntryMetadata(file).catch((e) => {
+                console.error(`Error processing file ${file.path}:`, e);
                 return null;
               })
             )
           );
           for (const entry of batchResults) {
-            if (entry) {
+            if (entry)
               entriesMapRef.current.set(entry.file.path, entry);
-            }
           }
+          buildAndSetResults();
         }
       }
-      const results = Array.from(entriesMapRef.current.values());
-      results.sort((a, b) => {
-        const dateDiff = b.date.getTime() - a.date.getTime();
-        if (dateDiff !== 0) {
-          return dateDiff;
-        }
-        const ctimeDiff = b.file.stat.ctime - a.file.stat.ctime;
-        if (ctimeDiff !== 0) {
-          return ctimeDiff;
-        }
-        return b.file.path.localeCompare(a.file.path);
-      });
-      setEntries((prevEntries) => {
-        if (prevEntries.length !== results.length) {
-          return results;
-        }
-        const prevMap = new Map(prevEntries.map((e) => [e.file.path, e]));
-        let hasChange = false;
-        for (const entry of results) {
-          const prev = prevMap.get(entry.file.path);
-          if (!prev || prev.file.stat.mtime !== entry.file.stat.mtime) {
-            hasChange = true;
-            break;
-          }
-        }
-        return hasChange ? results : prevEntries;
-      });
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Unknown error"));
     } finally {
       setIsLoading(false);
     }
-  }, [app, targetFolderPath]);
+  }, [app, targetFolderPath, plugin]);
   const updateSingleEntry = (0, import_react3.useCallback)(async (file) => {
+    var _a2, _b;
     const entry = await loadEntryMetadata(file);
     if (!entry) {
       entriesMapRef.current.delete(file.path);
+      (_a2 = getStorage()) == null ? void 0 : _a2.delete(file.path).catch((e) => logger.warn("IndexedDB delete failed", e));
     } else {
       entriesMapRef.current.set(file.path, entry);
+      (_b = getStorage()) == null ? void 0 : _b.put(journalEntryToCached(entry)).catch((e) => logger.warn("IndexedDB put failed", e));
     }
-    const results = Array.from(entriesMapRef.current.values());
-    results.sort((a, b) => {
-      const dateDiff = b.date.getTime() - a.date.getTime();
-      if (dateDiff !== 0) {
-        return dateDiff;
-      }
-      const ctimeDiff = b.file.stat.ctime - a.file.stat.ctime;
-      if (ctimeDiff !== 0) {
-        return ctimeDiff;
-      }
-      return b.file.path.localeCompare(a.file.path);
-    });
-    setEntries(results);
+    setEntries(sortEntries(Array.from(entriesMapRef.current.values())));
   }, []);
   const updateEntryAfterRename = (0, import_react3.useCallback)(async (file, oldPath) => {
+    var _a2, _b;
     entriesMapRef.current.delete(oldPath);
+    (_a2 = getStorage()) == null ? void 0 : _a2.delete(oldPath).catch((e) => logger.warn("IndexedDB delete failed", e));
     const entry = await loadEntryMetadata(file);
     if (entry) {
       entriesMapRef.current.set(file.path, entry);
+      (_b = getStorage()) == null ? void 0 : _b.put(journalEntryToCached(entry)).catch((e) => logger.warn("IndexedDB put failed", e));
     }
-    const results = Array.from(entriesMapRef.current.values());
-    results.sort((a, b) => {
-      const dateDiff = b.date.getTime() - a.date.getTime();
-      if (dateDiff !== 0) {
-        return dateDiff;
-      }
-      const ctimeDiff = b.file.stat.ctime - a.file.stat.ctime;
-      if (ctimeDiff !== 0) {
-        return ctimeDiff;
-      }
-      return b.file.path.localeCompare(a.file.path);
-    });
-    setEntries(results);
+    setEntries(sortEntries(Array.from(entriesMapRef.current.values())));
   }, [app, targetFolderPath, plugin]);
   (0, import_react3.useEffect)(() => {
     loadEntries();
@@ -24230,16 +24931,269 @@ var useJournalEntries = () => {
   };
 };
 
-// src/hooks/useFileSystemWatchers.ts
+// src/hooks/useThumbnailPrewarm.ts
 var import_react4 = __toESM(require_react());
-var import_obsidian4 = require("obsidian");
+
+// src/utils/thumbnailGenerator.ts
+var import_obsidian6 = require("obsidian");
+
+// src/utils/thumbnailConcurrency.ts
+var available = THUMBNAIL.parallelLimit;
+async function acquireThumbnailSlot() {
+  while (available <= 0) {
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  available -= 1;
+  return () => {
+    available += 1;
+  };
+}
+
+// src/utils/thumbnailCache.ts
+var MAX = THUMBNAIL.cacheMaxEntries;
+var ThumbnailBlobCache = class {
+  constructor() {
+    this.entries = /* @__PURE__ */ new Map();
+  }
+  get(key) {
+    const blob = this.entries.get(key);
+    if (!blob)
+      return null;
+    this.entries.delete(key);
+    this.entries.set(key, blob);
+    return blob;
+  }
+  set(key, blob) {
+    if (this.entries.has(key))
+      this.entries.delete(key);
+    this.entries.set(key, blob);
+    this.evict();
+  }
+  evict() {
+    while (this.entries.size > MAX) {
+      const first = this.entries.keys().next().value;
+      if (first)
+        this.entries.delete(first);
+    }
+  }
+  remove(key) {
+    this.entries.delete(key);
+  }
+};
+var thumbnailBlobCache = new ThumbnailBlobCache();
+
+// src/utils/decodeBudgetLimiter.ts
+var import_obsidian5 = require("obsidian");
+var MAX_BUDGET = import_obsidian5.Platform.isMobile ? THUMBNAIL.imageDecodeBudgetPixels.mobile : THUMBNAIL.imageDecodeBudgetPixels.desktop;
+var activeWeight = 0;
+var waiters = [];
+function tryFulfillWaiters() {
+  while (waiters.length > 0 && activeWeight + waiters[0].weight <= MAX_BUDGET) {
+    const next = waiters.shift();
+    activeWeight += next.weight;
+    const release = () => {
+      activeWeight = Math.max(0, activeWeight - next.weight);
+      tryFulfillWaiters();
+    };
+    next.resolve(release);
+  }
+}
+async function acquireDecodeBudget(pixels) {
+  const weight = Math.min(Math.max(1, Math.floor(pixels)), MAX_BUDGET);
+  if (activeWeight + weight <= MAX_BUDGET) {
+    activeWeight += weight;
+    return () => {
+      activeWeight = Math.max(0, activeWeight - weight);
+      tryFulfillWaiters();
+    };
+  }
+  return new Promise((resolve) => {
+    waiters.push({ weight, resolve });
+    tryFulfillWaiters();
+  });
+}
+
+// src/utils/thumbnailGenerator.ts
+var MAX_W = THUMBNAIL.maxWidth;
+var MAX_H = THUMBNAIL.maxHeight;
+var MIME = THUMBNAIL.output.mimeType;
+var IOS_MIME = THUMBNAIL.output.iosMimeType;
+var QUALITY = THUMBNAIL.output.quality;
+var SUPPORTED_EXTENSIONS = /* @__PURE__ */ new Set(["png", "jpg", "jpeg", "gif", "webp", "bmp", "avif"]);
+var MIME_BY_EXT = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+  bmp: "image/bmp",
+  avif: "image/avif"
+};
+function getThumbnailKey(imagePath, mtime) {
+  return `${imagePath}@${mtime}@v${THUMBNAIL.keyVersion}`;
+}
+function canGenerateThumbnail(path) {
+  var _a2;
+  const ext = (_a2 = path.split(".").pop()) == null ? void 0 : _a2.toLowerCase();
+  return ext ? SUPPORTED_EXTENSIONS.has(ext) : false;
+}
+async function generateAndStoreThumbnail(app, imagePath, mtime) {
+  var _a2;
+  if (!canGenerateThumbnail(imagePath))
+    return null;
+  const storage = getStorage();
+  if (!storage)
+    return null;
+  const key = getThumbnailKey(imagePath, mtime);
+  const release = await acquireThumbnailSlot();
+  try {
+    const buffer = await app.vault.adapter.readBinary(imagePath);
+    if (!buffer || buffer.byteLength > 5e7)
+      return null;
+    const ext = (_a2 = imagePath.split(".").pop()) == null ? void 0 : _a2.toLowerCase();
+    const mime = ext && MIME_BY_EXT[ext] || "image/png";
+    const blob = new Blob([buffer], { type: mime });
+    const result = await resizeToThumbnail(blob);
+    if (result) {
+      await storage.putThumbnailBlob(key, result);
+      thumbnailBlobCache.set(key, result);
+      if (LOGGING.THUMBNAIL)
+        console.log(`${LOGGING.PREFIX} [\u7F29\u7565\u56FE] \u751F\u6210\u5E76\u5199\u5165 IndexedDB: ${imagePath}`);
+      return result;
+    }
+  } catch (e) {
+    if (LOGGING.THUMBNAIL)
+      console.warn(`${LOGGING.PREFIX} [\u7F29\u7565\u56FE] \u751F\u6210\u5931\u8D25: ${imagePath}`, e);
+  } finally {
+    release();
+  }
+  return null;
+}
+async function resizeToThumbnail(sourceBlob) {
+  var _a2, _b;
+  const decodePixels = typeof createImageBitmap !== "undefined" ? MAX_W * MAX_H : 5e7;
+  const releaseBudget = await acquireDecodeBudget(decodePixels);
+  try {
+    let drawable = null;
+    if (typeof createImageBitmap !== "undefined") {
+      const bitmap = await createImageBitmap(sourceBlob, {
+        maxWidth: MAX_W,
+        maxHeight: MAX_H
+      });
+      drawable = { width: bitmap.width, height: bitmap.height, drawable: bitmap, close: () => bitmap.close() };
+    } else {
+      const img = await loadBitmapFallback(sourceBlob);
+      if (!img)
+        return null;
+      drawable = {
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+        drawable: img
+      };
+    }
+    const { w, h } = clampDimensions(drawable.width, drawable.height);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      (_a2 = drawable.close) == null ? void 0 : _a2.call(drawable);
+      if ("src" in drawable.drawable && drawable.drawable instanceof HTMLImageElement) {
+        URL.revokeObjectURL(drawable.drawable.src);
+      }
+      return null;
+    }
+    ctx.drawImage(drawable.drawable, 0, 0, w, h);
+    (_b = drawable.close) == null ? void 0 : _b.call(drawable);
+    if ("src" in drawable.drawable && drawable.drawable instanceof HTMLImageElement) {
+      URL.revokeObjectURL(drawable.drawable.src);
+    }
+    const outputMime = import_obsidian6.Platform.isIosApp ? IOS_MIME : MIME;
+    return new Promise((resolve) => {
+      canvas.toBlob((b) => resolve(b != null ? b : null), outputMime, QUALITY);
+    });
+  } catch (e) {
+    return null;
+  } finally {
+    releaseBudget();
+  }
+}
+function clampDimensions(w, h) {
+  if (w <= MAX_W && h <= MAX_H)
+    return { w, h };
+  const ratio = Math.min(MAX_W / w, MAX_H / h);
+  return {
+    w: Math.max(1, Math.round(w * ratio)),
+    h: Math.max(1, Math.round(h * ratio))
+  };
+}
+async function loadBitmapFallback(blob) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => {
+      URL.revokeObjectURL(img.src);
+      resolve(null);
+    };
+    img.src = URL.createObjectURL(blob);
+  });
+}
+
+// src/hooks/useThumbnailPrewarm.ts
+var PREWARM_MAX_KEYS = THUMBNAIL.prewarmMaxKeys;
+function collectPrewarmKeys(entries) {
+  var _a2;
+  const seen = /* @__PURE__ */ new Set();
+  const keys = [];
+  for (const entry of entries) {
+    if (keys.length >= PREWARM_MAX_KEYS)
+      break;
+    for (const img of entry.images) {
+      if (!img.path || !canGenerateThumbnail(img.path))
+        continue;
+      const mtime = (_a2 = img.mtime) != null ? _a2 : 0;
+      const key = getThumbnailKey(img.path, mtime);
+      if (seen.has(key))
+        continue;
+      seen.add(key);
+      keys.push(key);
+      if (keys.length >= PREWARM_MAX_KEYS)
+        break;
+    }
+  }
+  return keys;
+}
+function useThumbnailPrewarm(entries) {
+  (0, import_react4.useEffect)(() => {
+    if (!entries.length)
+      return;
+    const keys = collectPrewarmKeys(entries);
+    const toFetch = keys.filter((k) => !thumbnailBlobCache.get(k));
+    if (!toFetch.length)
+      return;
+    const storage = getStorage();
+    if (!storage)
+      return;
+    storage.getThumbnailBlobs(toFetch).then((map) => {
+      for (const [key, blob] of map)
+        thumbnailBlobCache.set(key, blob);
+      if (LOGGING.THUMBNAIL && map.size > 0) {
+        console.log(`${LOGGING.PREFIX} [\u7F29\u7565\u56FE] \u9884\u53D6: \u8BF7\u6C42 ${toFetch.length} \u4E2A\uFF0CIndexedDB \u547D\u4E2D ${map.size} \u4E2A`);
+      }
+    });
+  }, [entries]);
+}
+
+// src/hooks/useFileSystemWatchers.ts
+var import_react5 = __toESM(require_react());
+var import_obsidian7 = require("obsidian");
 var useFileSystemWatchers = () => {
   const { app, targetFolderPath } = useJournalView();
   const { refresh, updateSingleEntry, updateEntryAfterRename } = useJournalData();
-  const refreshTimerRef = (0, import_react4.useRef)(null);
-  const eventRefsRef = (0, import_react4.useRef)([]);
-  const shouldRefreshForFile = (0, import_react4.useCallback)((file) => {
-    if (!(file instanceof import_obsidian4.TFile)) {
+  const refreshTimerRef = (0, import_react5.useRef)(null);
+  const eventRefsRef = (0, import_react5.useRef)([]);
+  const shouldRefreshForFile = (0, import_react5.useCallback)((file) => {
+    if (!(file instanceof import_obsidian7.TFile)) {
       return false;
     }
     if (file.extension !== "md") {
@@ -24250,7 +25204,7 @@ var useFileSystemWatchers = () => {
     }
     return true;
   }, [targetFolderPath]);
-  const debouncedRefresh = (0, import_react4.useCallback)(() => {
+  const debouncedRefresh = (0, import_react5.useCallback)(() => {
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current);
     }
@@ -24259,38 +25213,51 @@ var useFileSystemWatchers = () => {
       refreshTimerRef.current = null;
     }, 500);
   }, [refresh]);
-  (0, import_react4.useEffect)(() => {
+  (0, import_react5.useEffect)(() => {
     const handleFileCreate = (file) => {
       if (shouldRefreshForFile(file)) {
         debouncedRefresh();
       }
     };
     const handleFileDelete = (file) => {
+      var _a2;
+      if (file && "path" in file) {
+        (_a2 = getStorage()) == null ? void 0 : _a2.delete(file.path).catch((e) => console.warn("Journal View: IndexedDB delete failed", e));
+      }
       if (shouldRefreshForFile(file)) {
         debouncedRefresh();
       }
     };
     const handleFileModify = (file) => {
-      if (shouldRefreshForFile(file) && file instanceof import_obsidian4.TFile) {
+      if (shouldRefreshForFile(file) && file instanceof import_obsidian7.TFile) {
         updateSingleEntry(file);
       }
     };
     const handleFileRename = (file, oldPath) => {
+      var _a2;
       const oldPathInTarget = targetFolderPath ? oldPath.startsWith(targetFolderPath) : true;
       const newPathInTarget = shouldRefreshForFile(file);
       if (oldPathInTarget || newPathInTarget) {
-        if (newPathInTarget && file instanceof import_obsidian4.TFile) {
+        if (newPathInTarget && file instanceof import_obsidian7.TFile) {
           updateEntryAfterRename(file, oldPath);
         } else {
           debouncedRefresh();
         }
+      }
+      if (file instanceof import_obsidian7.TFile && canGenerateThumbnail(file.path)) {
+        const mtime = file.stat.mtime;
+        const oldKey = getThumbnailKey(oldPath, mtime);
+        const newKey = getThumbnailKey(file.path, mtime);
+        thumbnailBlobCache.remove(oldKey);
+        (_a2 = getStorage()) == null ? void 0 : _a2.moveThumbnailBlob(oldKey, newKey).catch(() => {
+        });
       }
     };
     const handleMetadataChange = (file) => {
       if (!file) {
         return;
       }
-      if (shouldRefreshForFile(file) && file instanceof import_obsidian4.TFile) {
+      if (shouldRefreshForFile(file) && file instanceof import_obsidian7.TFile) {
         updateSingleEntry(file);
       }
     };
@@ -24317,10 +25284,10 @@ var useFileSystemWatchers = () => {
 };
 
 // src/hooks/useScrollbarWidth.ts
-var import_react5 = __toESM(require_react());
+var import_react6 = __toESM(require_react());
 var useScrollbarWidth = () => {
-  const [scrollbarWidth, setScrollbarWidth] = (0, import_react5.useState)(0);
-  (0, import_react5.useEffect)(() => {
+  const [scrollbarWidth, setScrollbarWidth] = (0, import_react6.useState)(0);
+  (0, import_react6.useEffect)(() => {
     const measure = () => {
       const outer = document.createElement("div");
       outer.style.cssText = "visibility:hidden;overflow:scroll;width:100px;height:100px;position:absolute;top:-9999px;";
@@ -24347,21 +25314,21 @@ var useScrollbarWidth = () => {
 };
 
 // src/context/JournalViewModeContext.tsx
-var import_react6 = __toESM(require_react());
-var JournalViewModeContext = (0, import_react6.createContext)(null);
+var import_react7 = __toESM(require_react());
+var JournalViewModeContext = (0, import_react7.createContext)(null);
 var useJournalViewMode = () => {
-  const context = (0, import_react6.useContext)(JournalViewModeContext);
+  const context = (0, import_react7.useContext)(JournalViewModeContext);
   if (!context) {
     throw new Error("useJournalViewMode must be used within JournalViewModeProvider");
   }
   return context;
 };
 var JournalViewModeProvider = ({ children }) => {
-  const [viewMode, setViewMode] = (0, import_react6.useState)("list");
+  const [viewMode, setViewMode] = (0, import_react7.useState)("list");
   const cycleViewMode = () => {
     setViewMode((prev) => prev === "list" ? "calendar" : "list");
   };
-  return /* @__PURE__ */ import_react6.default.createElement(
+  return /* @__PURE__ */ import_react7.default.createElement(
     JournalViewModeContext.Provider,
     {
       value: {
@@ -24375,8 +25342,8 @@ var JournalViewModeProvider = ({ children }) => {
 };
 
 // src/components/JournalHeader.tsx
-var import_react7 = __toESM(require_react());
-var import_obsidian5 = require("obsidian");
+var import_react8 = __toESM(require_react());
+var import_obsidian8 = require("obsidian");
 var JournalHeader = () => {
   const { app, plugin, targetFolderPath } = useJournalView();
   const { refresh } = useJournalData();
@@ -24387,7 +25354,7 @@ var JournalHeader = () => {
       let targetFolder = null;
       if (targetFolderPath) {
         const folder = app.vault.getAbstractFileByPath(targetFolderPath);
-        if (folder instanceof import_obsidian5.TFolder) {
+        if (folder instanceof import_obsidian8.TFolder) {
           targetFolder = folder;
         }
       }
@@ -24398,7 +25365,7 @@ var JournalHeader = () => {
         }
       }
       if (!targetFolder) {
-        console.error("\u65E0\u6CD5\u786E\u5B9A\u76EE\u6807\u6587\u4EF6\u5939");
+        console.error("Cannot determine target folder");
         return;
       }
       let fileContent = "";
@@ -24411,7 +25378,7 @@ var JournalHeader = () => {
         const titleStr = `${year}\u5E74${month}\u6708${day}\u65E5`;
         const timeStr = `${String(today.getHours()).padStart(2, "0")}-${String(today.getMinutes()).padStart(2, "0")}`;
         const templateFile = app.vault.getAbstractFileByPath(templatePath);
-        if (templateFile instanceof import_obsidian5.TFile) {
+        if (templateFile instanceof import_obsidian8.TFile) {
           try {
             const raw = await app.vault.read(templateFile);
             fileContent = raw.replace(/\{\{date\}\}/g, `${year}-${month}-${day}`).replace(/\{\{year\}\}/g, String(year)).replace(/\{\{month\}\}/g, month).replace(/\{\{day\}\}/g, day).replace(/\{\{title\}\}/g, titleStr).replace(/\{\{time\}\}/g, timeStr);
@@ -24438,8 +25405,8 @@ var JournalHeader = () => {
       }
       setTimeout(async () => {
         const file = app.vault.getAbstractFileByPath(finalPath);
-        if (file instanceof import_obsidian5.TFile) {
-          console.debug("\u51C6\u5907\u5237\u65B0\uFF0C\u65B0\u6587\u4EF6\u4FE1\u606F:", {
+        if (file instanceof import_obsidian8.TFile) {
+          console.debug("Refreshing, new file info:", {
             path: file.path,
             ctime: new Date(file.stat.ctime).toISOString(),
             ctimeMs: file.stat.ctime
@@ -24448,38 +25415,36 @@ var JournalHeader = () => {
         await refresh();
       }, 500);
     } catch (error) {
-      console.error("\u521B\u5EFA\u7B14\u8BB0\u5931\u8D25:", error);
+      console.error("Failed to create note:", error);
     }
   };
-  return /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-header" }, /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-title-container" }, /* @__PURE__ */ import_react7.default.createElement("h1", { className: "journal-title-header" }, strings.view.title), /* @__PURE__ */ import_react7.default.createElement("div", { className: "journal-header-buttons" }, /* @__PURE__ */ import_react7.default.createElement(
+  return /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-header" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-title-container" }, /* @__PURE__ */ import_react8.default.createElement("h1", { className: "journal-title-header" }, strings.view.title), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-header-buttons" }, /* @__PURE__ */ import_react8.default.createElement(
     "button",
     {
-      className: `journal-header-button journal-header-button-view-mode ${viewMode === "calendar" ? "journal-header-button-view-mode-active" : ""}`,
+      className: `clickable-icon nav-action-button journal-view-mode-toggle ${viewMode === "calendar" ? "journal-header-button-view-mode-active" : ""}`,
       onClick: cycleViewMode,
-      title: viewMode === "list" ? strings.view.switchToCalendar : strings.view.switchToList,
       "aria-label": viewMode === "list" ? strings.view.switchToCalendar : strings.view.switchToList
     },
-    viewMode === "list" ? /* @__PURE__ */ import_react7.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react7.default.createElement("rect", { x: "3", y: "4", width: "18", height: "18", rx: "2", ry: "2" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "16", y1: "2", x2: "16", y2: "6" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "8", y1: "2", x2: "8", y2: "6" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "3", y1: "10", x2: "21", y2: "10" })) : /* @__PURE__ */ import_react7.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react7.default.createElement("line", { x1: "8", y1: "6", x2: "21", y2: "6" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "8", y1: "12", x2: "21", y2: "12" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "8", y1: "18", x2: "21", y2: "18" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "3", y1: "6", x2: "3.01", y2: "6" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "3", y1: "12", x2: "3.01", y2: "12" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "3", y1: "18", x2: "3.01", y2: "18" }))
-  ), /* @__PURE__ */ import_react7.default.createElement(
+    viewMode === "list" ? /* @__PURE__ */ import_react8.default.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", className: "svg-icon lucide-calendar" }, /* @__PURE__ */ import_react8.default.createElement("rect", { x: "3", y: "4", width: "18", height: "18", rx: "2", ry: "2" }), /* @__PURE__ */ import_react8.default.createElement("line", { x1: "16", y1: "2", x2: "16", y2: "6" }), /* @__PURE__ */ import_react8.default.createElement("line", { x1: "8", y1: "2", x2: "8", y2: "6" }), /* @__PURE__ */ import_react8.default.createElement("line", { x1: "3", y1: "10", x2: "21", y2: "10" })) : /* @__PURE__ */ import_react8.default.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", className: "svg-icon lucide-list" }, /* @__PURE__ */ import_react8.default.createElement("line", { x1: "8", y1: "6", x2: "21", y2: "6" }), /* @__PURE__ */ import_react8.default.createElement("line", { x1: "8", y1: "12", x2: "21", y2: "12" }), /* @__PURE__ */ import_react8.default.createElement("line", { x1: "8", y1: "18", x2: "21", y2: "18" }), /* @__PURE__ */ import_react8.default.createElement("line", { x1: "3", y1: "6", x2: "3.01", y2: "6" }), /* @__PURE__ */ import_react8.default.createElement("line", { x1: "3", y1: "12", x2: "3.01", y2: "12" }), /* @__PURE__ */ import_react8.default.createElement("line", { x1: "3", y1: "18", x2: "3.01", y2: "18" }))
+  ), /* @__PURE__ */ import_react8.default.createElement(
     "button",
     {
-      className: "journal-header-button journal-header-button-primary",
+      className: "clickable-icon nav-action-button",
       onClick: handleCreateNote,
-      title: strings.view.newNote,
       "aria-label": strings.view.newNote
     },
-    /* @__PURE__ */ import_react7.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react7.default.createElement("line", { x1: "12", y1: "5", x2: "12", y2: "19" }), /* @__PURE__ */ import_react7.default.createElement("line", { x1: "5", y1: "12", x2: "19", y2: "12" }))
+    /* @__PURE__ */ import_react8.default.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", className: "svg-icon lucide-edit" }, /* @__PURE__ */ import_react8.default.createElement("path", { d: "M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" }), /* @__PURE__ */ import_react8.default.createElement("path", { d: "M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" }))
   ))));
 };
 
 // src/components/JournalStats.tsx
-var import_react8 = __toESM(require_react());
+var import_react9 = __toESM(require_react());
 
 // src/utils/StatisticsCalculator.ts
 var StatisticsCalculator = class {
   /**
-   * 计算连续记录天数
-   * 从今天开始往前计算连续有记录的日期
+   * Calculate consecutive days with entries
+   * From today backward
    */
   static calculateConsecutiveDays(entries) {
     if (entries.length === 0)
@@ -24510,13 +25475,13 @@ var StatisticsCalculator = class {
     return consecutive;
   }
   /**
-   * 计算总字数
+   * Calculate total word count
    */
   static calculateTotalWords(entries) {
     return entries.reduce((sum, e) => sum + e.wordCount, 0);
   }
   /**
-   * 计算写手记天数（去重后的日期数）
+   * Calculate days with entries (unique dates)
    */
   static calculateTotalDays(entries) {
     if (entries.length === 0)
@@ -24531,7 +25496,7 @@ var StatisticsCalculator = class {
     return uniqueDates.size;
   }
   /**
-   * 计算总图片数
+   * Calculate total image count
    */
   static calculateTotalImages(entries) {
     return entries.reduce((sum, e) => sum + e.images.length, 0);
@@ -24571,14 +25536,14 @@ var JournalStats = () => {
   const consecutiveDays = StatisticsCalculator.calculateConsecutiveDays(entries);
   const totalWords = StatisticsCalculator.calculateTotalWords(entries);
   const totalDays = StatisticsCalculator.calculateTotalDays(entries);
-  return /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stats" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-flame", dangerouslySetInnerHTML: { __html: createSVGIcon("flame", 20, "#ef4444") } }), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-value" }, formatNumber(consecutiveDays))), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-label" }, strings.stats.consecutiveDays)), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-message", dangerouslySetInnerHTML: { __html: createSVGIcon("message", 20, "#ef4444") } }), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-value" }, formatNumber(totalWords))), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-label" }, strings.stats.totalWords)), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-calendar", dangerouslySetInnerHTML: { __html: createSVGIcon("calendar", 20, "#3b82f6") } }), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-value" }, formatNumber(totalDays))), /* @__PURE__ */ import_react8.default.createElement("div", { className: "journal-stat-label" }, strings.stats.totalDays)));
+  return /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stats" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-flame", dangerouslySetInnerHTML: { __html: createSVGIcon("flame", 20, "#ef4444") } }), /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-value" }, formatNumber(consecutiveDays))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-label" }, strings.stats.consecutiveDays)), /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-message", dangerouslySetInnerHTML: { __html: createSVGIcon("message", 20, "#ef4444") } }), /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-value" }, formatNumber(totalWords))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-label" }, strings.stats.totalWords)), /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-item" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-content" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-icon journal-stat-icon-calendar", dangerouslySetInnerHTML: { __html: createSVGIcon("calendar", 20, "#3b82f6") } }), /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-value" }, formatNumber(totalDays))), /* @__PURE__ */ import_react9.default.createElement("div", { className: "journal-stat-label" }, strings.stats.totalDays)));
 };
 
 // src/components/OnThisDaySection.tsx
-var import_react10 = __toESM(require_react());
+var import_react11 = __toESM(require_react());
 
 // src/components/OnThisDayTile.tsx
-var import_react9 = __toESM(require_react());
+var import_react10 = __toESM(require_react());
 
 // src/utils/onThisDay.ts
 function isOnThisDay(entry) {
@@ -24595,10 +25560,7 @@ function formatYearsAgo(entry) {
 }
 
 // src/components/OnThisDayTile.tsx
-var TILE_CONTENT_PX = 176;
-var EXCERPT_FONT_PX = 12;
-var EXCERPT_MAX_LINES = 3;
-var PREVIEW_CHARS = Math.floor(TILE_CONTENT_PX / EXCERPT_FONT_PX * EXCERPT_MAX_LINES * 0.85);
+var EXCERPT_PREVIEW_LIMIT = 1e3;
 var TITLE_MAX_CHARS = 12;
 function truncateTitle(title, maxLen) {
   if (!title)
@@ -24608,10 +25570,10 @@ function truncateTitle(title, maxLen) {
     return stripped;
   return stripped.slice(0, maxLen) + "\u2026";
 }
-var OnThisDayTile = (0, import_react9.memo)(
+var OnThisDayTile = (0, import_react10.memo)(
   ({ entry, yearsAgo }) => {
     const { app, plugin } = useJournalView();
-    const excerpt = generatePreview(entry.content, PREVIEW_CHARS);
+    const excerpt = generatePreview(entry.content || entry.preview || "", EXCERPT_PREVIEW_LIMIT);
     const rawTitle = entry.title || entry.file.basename;
     const title = truncateTitle(rawTitle, TITLE_MAX_CHARS);
     const hasImage = entry.images.length > 0;
@@ -24632,21 +25594,21 @@ var OnThisDayTile = (0, import_react9.memo)(
       }
     };
     const label = yearsAgo != null ? yearsAgo : formatYearsAgo(entry);
-    return /* @__PURE__ */ import_react9.default.createElement(
+    return /* @__PURE__ */ import_react10.default.createElement(
       "button",
       {
         type: "button",
         className: `on-this-day-tile ${hasImage ? "" : "on-this-day-tile-no-image"}`,
         onClick: handleClick
       },
-      /* @__PURE__ */ import_react9.default.createElement("div", { className: "on-this-day-tile-inner" }, hasImage && firstImage ? /* @__PURE__ */ import_react9.default.createElement(import_react9.default.Fragment, null, /* @__PURE__ */ import_react9.default.createElement(
+      /* @__PURE__ */ import_react10.default.createElement("div", { className: "on-this-day-tile-inner" }, hasImage && firstImage ? /* @__PURE__ */ import_react10.default.createElement(import_react10.default.Fragment, null, /* @__PURE__ */ import_react10.default.createElement(
         "div",
         {
           className: "on-this-day-tile-bg",
           style: { backgroundImage: `url(${firstImage.url})` },
           "aria-hidden": true
         }
-      ), /* @__PURE__ */ import_react9.default.createElement("div", { className: "on-this-day-tile-overlay", "aria-hidden": true })) : null, /* @__PURE__ */ import_react9.default.createElement("div", { className: "on-this-day-tile-content" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "on-this-day-tile-title" }, title), /* @__PURE__ */ import_react9.default.createElement("div", { className: "on-this-day-tile-excerpt" }, /* @__PURE__ */ import_react9.default.createElement("div", { className: "on-this-day-tile-excerpt-inner" }, excerpt)), /* @__PURE__ */ import_react9.default.createElement("span", { className: "on-this-day-tile-label" }, label)))
+      ), /* @__PURE__ */ import_react10.default.createElement("div", { className: "on-this-day-tile-overlay", "aria-hidden": true })) : null, /* @__PURE__ */ import_react10.default.createElement("div", { className: "on-this-day-tile-content" }, /* @__PURE__ */ import_react10.default.createElement("div", { className: "on-this-day-tile-title" }, title), /* @__PURE__ */ import_react10.default.createElement("div", { className: "on-this-day-tile-excerpt" }, /* @__PURE__ */ import_react10.default.createElement("div", { className: "on-this-day-tile-excerpt-inner" }, excerpt)), /* @__PURE__ */ import_react10.default.createElement("span", { className: "on-this-day-tile-label" }, label)))
     );
   },
   (prev, next) => prev.entry.file.path === next.entry.file.path
@@ -24658,14 +25620,14 @@ var OnThisDaySection = () => {
   const onThisDayEntries = getOnThisDayEntries(entries);
   if (onThisDayEntries.length === 0)
     return null;
-  return /* @__PURE__ */ import_react10.default.createElement("div", { className: "on-this-day-section on-this-day-section-v2" }, /* @__PURE__ */ import_react10.default.createElement("div", { className: "on-this-day-tiles" }, onThisDayEntries.map((entry) => /* @__PURE__ */ import_react10.default.createElement(OnThisDayTile, { key: entry.file.path, entry, yearsAgo: formatYearsAgo(entry) }))));
+  return /* @__PURE__ */ import_react11.default.createElement("div", { className: "on-this-day-section on-this-day-section-v2" }, /* @__PURE__ */ import_react11.default.createElement("div", { className: "on-this-day-tiles" }, onThisDayEntries.map((entry) => /* @__PURE__ */ import_react11.default.createElement(OnThisDayTile, { key: entry.file.path, entry, yearsAgo: formatYearsAgo(entry) }))));
 };
 
 // src/components/JournalList.tsx
-var import_react15 = __toESM(require_react());
+var import_react17 = __toESM(require_react());
 
 // src/hooks/useJournalScroll.ts
-var import_react11 = __toESM(require_react());
+var import_react12 = __toESM(require_react());
 
 // node_modules/@tanstack/react-virtual/dist/esm/index.js
 var React8 = __toESM(require_react(), 1);
@@ -25607,8 +26569,8 @@ function useVirtualizer(options) {
 // src/hooks/useJournalScroll.ts
 var sizeCache = /* @__PURE__ */ new Map();
 var useJournalScroll = (entries) => {
-  const parentRef = (0, import_react11.useRef)(null);
-  const listItems = (0, import_react11.useMemo)(() => {
+  const parentRef = (0, import_react12.useRef)(null);
+  const listItems = (0, import_react12.useMemo)(() => {
     const items = [];
     const grouped = groupByMonth(entries);
     const sortedGroups = Object.keys(grouped).sort((a, b) => {
@@ -25655,7 +26617,7 @@ var useJournalScroll = (entries) => {
     }
     return items;
   }, [entries]);
-  const estimateSize = (0, import_react11.useCallback)((index) => {
+  const estimateSize = (0, import_react12.useCallback)((index) => {
     if (sizeCache.has(index)) {
       return sizeCache.get(index);
     }
@@ -25688,8 +26650,9 @@ var useJournalScroll = (entries) => {
       return null;
     },
     estimateSize,
-    overscan: 8,
-    // 启用动态高度测量
+    overscan: 20,
+    // Increased from 8: avoid white gap when fast scroll or switching back
+    // Enable dynamic height measurement
     measureElement: (element) => {
       if (!element) {
         return 0;
@@ -25697,6 +26660,27 @@ var useJournalScroll = (entries) => {
       return element.getBoundingClientRect().height;
     }
   });
+  (0, import_react12.useEffect)(() => {
+    var _a2;
+    const scrollEl = (_a2 = parentRef.current) == null ? void 0 : _a2.closest(".journal-view-container");
+    if (!scrollEl)
+      return;
+    const runMeasureIfReady = () => {
+      requestAnimationFrame(() => {
+        var _a3;
+        const el = (_a3 = parentRef.current) == null ? void 0 : _a3.closest(".journal-view-container");
+        if (!el)
+          return;
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          virtualizer.measure();
+        }
+      });
+    };
+    const ro = new ResizeObserver(runMeasureIfReady);
+    ro.observe(scrollEl);
+    return () => ro.disconnect();
+  }, [virtualizer]);
   return {
     parentRef,
     virtualizer,
@@ -25705,15 +26689,124 @@ var useJournalScroll = (entries) => {
 };
 
 // src/components/JournalCard.tsx
-var import_react14 = __toESM(require_react());
+var import_react16 = __toESM(require_react());
 
 // src/components/JournalImageContainer.tsx
-var import_react12 = __toESM(require_react());
+var import_react14 = __toESM(require_react());
+
+// src/hooks/useThumbnailUrl.ts
+var import_react13 = __toESM(require_react());
+var import_obsidian9 = require("obsidian");
+var REGEN_THROTTLE_MS = THUMBNAIL.regenThrottleMs;
+var lastRegenByKey = /* @__PURE__ */ new Map();
+function shouldThrottleRegen(key) {
+  const last = lastRegenByKey.get(key);
+  if (!last)
+    return false;
+  return Date.now() - last < REGEN_THROTTLE_MS;
+}
+function useThumbnailUrl(image, app) {
+  const [thumbUrl, setThumbUrl] = (0, import_react13.useState)(null);
+  const objectUrlRef = (0, import_react13.useRef)(null);
+  (0, import_react13.useEffect)(() => {
+    var _a2;
+    if (!app || !image.path)
+      return;
+    let mtime = (_a2 = image.mtime) != null ? _a2 : 0;
+    if (mtime <= 0) {
+      const imgFile = app.vault.getAbstractFileByPath(image.path);
+      if (imgFile && imgFile instanceof import_obsidian9.TFile) {
+        mtime = imgFile.stat.mtime;
+      }
+    }
+    const key = getThumbnailKey(image.path, mtime);
+    const cleanup = () => {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    };
+    const cachedBlob = thumbnailBlobCache.get(key);
+    if (cachedBlob) {
+      if (LOGGING.THUMBNAIL)
+        console.log(`${LOGGING.PREFIX} [\u7F29\u7565\u56FE] \u5185\u5B58\u547D\u4E2D: ${image.path}`);
+      const url = URL.createObjectURL(cachedBlob);
+      objectUrlRef.current = url;
+      setThumbUrl(url);
+      return cleanup;
+    }
+    let cancelled = false;
+    const storage = getStorage();
+    const tryThumbnail = async () => {
+      if (!storage || !canGenerateThumbnail(image.path))
+        return null;
+      const blob = await storage.getThumbnailBlob(key);
+      if (cancelled || !blob)
+        return null;
+      if (LOGGING.THUMBNAIL)
+        console.log(`${LOGGING.PREFIX} [\u7F29\u7565\u56FE] IndexedDB \u547D\u4E2D: ${image.path}`);
+      thumbnailBlobCache.set(key, blob);
+      return blob;
+    };
+    tryThumbnail().then((blob) => {
+      if (cancelled)
+        return cleanup;
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        objectUrlRef.current = url;
+        setThumbUrl(url);
+      }
+    });
+    return cleanup;
+  }, [image.path, image.mtime, app]);
+  (0, import_react13.useEffect)(() => {
+    var _a2;
+    if (!app || !image.path)
+      return;
+    if (!canGenerateThumbnail(image.path))
+      return;
+    let mtime = (_a2 = image.mtime) != null ? _a2 : 0;
+    if (mtime <= 0) {
+      const imgFile = app.vault.getAbstractFileByPath(image.path);
+      if (imgFile && imgFile instanceof import_obsidian9.TFile) {
+        mtime = imgFile.stat.mtime;
+      }
+    }
+    if (mtime <= 0)
+      return;
+    const key = getThumbnailKey(image.path, mtime);
+    const storage = getStorage();
+    if (!storage)
+      return;
+    if (shouldThrottleRegen(key))
+      return;
+    storage.getThumbnailBlob(key).then((blob) => {
+      if (!blob) {
+        if (LOGGING.THUMBNAIL)
+          console.log(`${LOGGING.PREFIX} [\u7F29\u7565\u56FE] \u672A\u547D\u4E2D\uFF0C\u89E6\u53D1\u751F\u6210: ${image.path}`);
+        lastRegenByKey.set(key, Date.now());
+        generateAndStoreThumbnail(app, image.path, mtime).catch(() => {
+        });
+      }
+    });
+  }, [app, image.path, image.mtime]);
+  if (thumbUrl)
+    return thumbUrl;
+  if (LOGGING.THUMBNAIL && canGenerateThumbnail(image.path)) {
+    console.log(`${LOGGING.PREFIX} [\u7F29\u7565\u56FE] \u4F7F\u7528\u539F\u56FE\uFF08\u7B49\u5F85\u4E2D\uFF09: ${image.path}`);
+  }
+  return image.url;
+}
+
+// src/components/JournalImageContainer.tsx
 var ImageItem = ({ image, index, className, showMoreCount, skipLazyLoad }) => {
-  const [isLoaded, setIsLoaded] = (0, import_react12.useState)(skipLazyLoad);
-  const containerRef = (0, import_react12.useRef)(null);
-  const imgRef = (0, import_react12.useRef)(null);
-  (0, import_react12.useEffect)(() => {
+  const { app } = useJournalView();
+  const displayUrl = useThumbnailUrl(image, app);
+  const [isLoaded, setIsLoaded] = (0, import_react14.useState)(skipLazyLoad);
+  const [hasError, setHasError] = (0, import_react14.useState)(false);
+  const containerRef = (0, import_react14.useRef)(null);
+  const imgRef = (0, import_react14.useRef)(null);
+  (0, import_react14.useEffect)(() => {
     if (skipLazyLoad)
       return;
     if (!containerRef.current)
@@ -25742,23 +26835,26 @@ var ImageItem = ({ image, index, className, showMoreCount, skipLazyLoad }) => {
     e.stopPropagation();
     console.log("Open image viewer", image);
   };
-  const handleImageError = (e) => {
-    console.error("Failed to load image:", image.url);
+  const handleImageError = () => {
+    setHasError(true);
     setIsLoaded(true);
   };
   const shouldShowImg = skipLazyLoad || isLoaded;
-  return /* @__PURE__ */ import_react12.default.createElement(
+  if (hasError) {
+    return /* @__PURE__ */ import_react14.default.createElement("div", { className: `journal-image-container journal-image-container--error ${className || ""}` }, /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-image-placeholder" }));
+  }
+  return /* @__PURE__ */ import_react14.default.createElement(
     "div",
     {
       ref: containerRef,
       className: `journal-image-container ${className || ""}`,
       onClick: handleClick
     },
-    shouldShowImg ? /* @__PURE__ */ import_react12.default.createElement(
+    shouldShowImg ? /* @__PURE__ */ import_react14.default.createElement(
       "img",
       {
         ref: imgRef,
-        src: image.url,
+        src: displayUrl,
         alt: image.altText || image.name,
         className: "journal-image",
         loading: "lazy",
@@ -25768,11 +26864,11 @@ var ImageItem = ({ image, index, className, showMoreCount, skipLazyLoad }) => {
         draggable: false,
         onDragStart: (e) => e.preventDefault()
       }
-    ) : /* @__PURE__ */ import_react12.default.createElement("div", { className: "journal-image-placeholder" }),
-    showMoreCount !== void 0 && showMoreCount > 0 && /* @__PURE__ */ import_react12.default.createElement("div", { className: "journal-image-more" }, "+", showMoreCount)
+    ) : /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-image-placeholder" }),
+    showMoreCount !== void 0 && showMoreCount > 0 && /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-image-more" }, "+", showMoreCount)
   );
 };
-var JournalImageContainer = (0, import_react12.memo)(({
+var JournalImageContainer = (0, import_react14.memo)(({
   images,
   totalImages,
   allImages,
@@ -25782,18 +26878,18 @@ var JournalImageContainer = (0, import_react12.memo)(({
   const containerClass = `journal-images journal-images-${imageCount === 1 ? "single" : imageCount === 2 ? "double" : imageCount === 3 ? "triple" : imageCount === 4 ? "quad" : "multiple"}`;
   const moreCount = totalImages > images.length ? totalImages - images.length : void 0;
   if (imageCount === 1) {
-    return /* @__PURE__ */ import_react12.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react12.default.createElement(ImageItem, { image: images[0], index: 0, showMoreCount: moreCount, skipLazyLoad }));
+    return /* @__PURE__ */ import_react14.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react14.default.createElement(ImageItem, { image: images[0], index: 0, showMoreCount: moreCount, skipLazyLoad }));
   }
   if (imageCount === 2) {
-    return /* @__PURE__ */ import_react12.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react12.default.createElement(ImageItem, { image: images[0], index: 0, skipLazyLoad }), /* @__PURE__ */ import_react12.default.createElement(ImageItem, { image: images[1], index: 1, showMoreCount: moreCount, skipLazyLoad }));
+    return /* @__PURE__ */ import_react14.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react14.default.createElement(ImageItem, { image: images[0], index: 0, skipLazyLoad }), /* @__PURE__ */ import_react14.default.createElement(ImageItem, { image: images[1], index: 1, showMoreCount: moreCount, skipLazyLoad }));
   }
   if (imageCount === 3) {
-    return /* @__PURE__ */ import_react12.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react12.default.createElement(ImageItem, { image: images[0], index: 0, className: "journal-image-container-large", skipLazyLoad }), /* @__PURE__ */ import_react12.default.createElement(ImageItem, { image: images[1], index: 1, className: "journal-image-container-small", skipLazyLoad }), /* @__PURE__ */ import_react12.default.createElement(ImageItem, { image: images[2], index: 2, className: "journal-image-container-small", showMoreCount: moreCount, skipLazyLoad }));
+    return /* @__PURE__ */ import_react14.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react14.default.createElement(ImageItem, { image: images[0], index: 0, className: "journal-image-container-large", skipLazyLoad }), /* @__PURE__ */ import_react14.default.createElement(ImageItem, { image: images[1], index: 1, className: "journal-image-container-small", skipLazyLoad }), /* @__PURE__ */ import_react14.default.createElement(ImageItem, { image: images[2], index: 2, className: "journal-image-container-small", showMoreCount: moreCount, skipLazyLoad }));
   }
   if (imageCount === 4) {
-    return /* @__PURE__ */ import_react12.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react12.default.createElement(ImageItem, { image: images[0], index: 0, className: "journal-image-container-quad-left", skipLazyLoad }), /* @__PURE__ */ import_react12.default.createElement(ImageItem, { image: images[1], index: 1, className: "journal-image-container-quad-right-top", skipLazyLoad }), /* @__PURE__ */ import_react12.default.createElement("div", { className: "journal-images-quad-right-bottom" }, /* @__PURE__ */ import_react12.default.createElement(ImageItem, { image: images[2], index: 2, className: "journal-image-container-quad-right-bottom-left", skipLazyLoad }), /* @__PURE__ */ import_react12.default.createElement(ImageItem, { image: images[3], index: 3, className: "journal-image-container-quad-right-bottom-right", showMoreCount: moreCount, skipLazyLoad })));
+    return /* @__PURE__ */ import_react14.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react14.default.createElement(ImageItem, { image: images[0], index: 0, className: "journal-image-container-quad-left", skipLazyLoad }), /* @__PURE__ */ import_react14.default.createElement(ImageItem, { image: images[1], index: 1, className: "journal-image-container-quad-right-top", skipLazyLoad }), /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-images-quad-right-bottom" }, /* @__PURE__ */ import_react14.default.createElement(ImageItem, { image: images[2], index: 2, className: "journal-image-container-quad-right-bottom-left", skipLazyLoad }), /* @__PURE__ */ import_react14.default.createElement(ImageItem, { image: images[3], index: 3, className: "journal-image-container-quad-right-bottom-right", showMoreCount: moreCount, skipLazyLoad })));
   }
-  return /* @__PURE__ */ import_react12.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react12.default.createElement(ImageItem, { image: images[0], index: 0, className: "journal-image-container-large", skipLazyLoad }), /* @__PURE__ */ import_react12.default.createElement("div", { className: "journal-images-multiple-right-grid" }, images.slice(1, 5).map((image, index) => /* @__PURE__ */ import_react12.default.createElement(
+  return /* @__PURE__ */ import_react14.default.createElement("div", { className: containerClass }, /* @__PURE__ */ import_react14.default.createElement(ImageItem, { image: images[0], index: 0, className: "journal-image-container-large", skipLazyLoad }), /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-images-multiple-right-grid" }, images.slice(1, 5).map((image, index) => /* @__PURE__ */ import_react14.default.createElement(
     ImageItem,
     {
       key: index + 1,
@@ -25806,17 +26902,17 @@ var JournalImageContainer = (0, import_react12.memo)(({
   ))));
 }, (prevProps, nextProps) => {
   return prevProps.images.length === nextProps.images.length && prevProps.totalImages === nextProps.totalImages && prevProps.skipLazyLoad === nextProps.skipLazyLoad && prevProps.images.every((img, index) => {
-    var _a2;
-    return img.path === ((_a2 = nextProps.images[index]) == null ? void 0 : _a2.path);
+    const next = nextProps.images[index];
+    return next && img.path === next.path && img.mtime === next.mtime;
   });
 });
 
 // src/components/JournalCardMenu.tsx
-var import_react13 = __toESM(require_react());
+var import_react15 = __toESM(require_react());
 
 // src/utils/DeleteConfirmModal.ts
-var import_obsidian6 = require("obsidian");
-var DeleteConfirmModal = class extends import_obsidian6.Modal {
+var import_obsidian10 = require("obsidian");
+var DeleteConfirmModal = class extends import_obsidian10.Modal {
   constructor(app, options) {
     super(app);
     this.options = options;
@@ -25842,13 +26938,13 @@ var DeleteConfirmModal = class extends import_obsidian6.Modal {
 };
 
 // src/components/JournalCardMenu.tsx
-var MenuContext = (0, import_react13.createContext)(null);
+var MenuContext = (0, import_react15.createContext)(null);
 var MenuProvider = ({ children }) => {
-  const [openMenuId, setOpenMenuId] = (0, import_react13.useState)(null);
-  return /* @__PURE__ */ import_react13.default.createElement(MenuContext.Provider, { value: { openMenuId, setOpenMenuId } }, children);
+  const [openMenuId, setOpenMenuId] = (0, import_react15.useState)(null);
+  return /* @__PURE__ */ import_react15.default.createElement(MenuContext.Provider, { value: { openMenuId, setOpenMenuId } }, children);
 };
 var useMenuContext = () => {
-  const context = (0, import_react13.useContext)(MenuContext);
+  const context = (0, import_react15.useContext)(MenuContext);
   if (!context) {
     throw new Error("useMenuContext must be used within MenuProvider");
   }
@@ -25858,9 +26954,9 @@ var JournalCardMenu = ({ app, entry, onDelete }) => {
   const { openMenuId, setOpenMenuId } = useMenuContext();
   const menuId = entry.file.path;
   const isOpen = openMenuId === menuId;
-  const menuRef = (0, import_react13.useRef)(null);
-  const buttonRef = (0, import_react13.useRef)(null);
-  (0, import_react13.useEffect)(() => {
+  const menuRef = (0, import_react15.useRef)(null);
+  const buttonRef = (0, import_react15.useRef)(null);
+  (0, import_react15.useEffect)(() => {
     if (!isOpen)
       return;
     const handleClickOutside = (e) => {
@@ -25893,8 +26989,8 @@ var JournalCardMenu = ({ app, entry, onDelete }) => {
       onConfirm: onDelete
     }).open();
   };
-  const [menuStyle, setMenuStyle] = (0, import_react13.useState)({});
-  (0, import_react13.useEffect)(() => {
+  const [menuStyle, setMenuStyle] = (0, import_react15.useState)({});
+  (0, import_react15.useEffect)(() => {
     if (!isOpen || !buttonRef.current || !menuRef.current) {
       return;
     }
@@ -25917,7 +27013,7 @@ var JournalCardMenu = ({ app, entry, onDelete }) => {
     };
     setTimeout(updateMenuPosition, 0);
   }, [isOpen]);
-  return /* @__PURE__ */ import_react13.default.createElement(import_react13.default.Fragment, null, /* @__PURE__ */ import_react13.default.createElement(
+  return /* @__PURE__ */ import_react15.default.createElement(import_react15.default.Fragment, null, /* @__PURE__ */ import_react15.default.createElement(
     "div",
     {
       ref: buttonRef,
@@ -25925,8 +27021,8 @@ var JournalCardMenu = ({ app, entry, onDelete }) => {
       onClick: handleButtonClick,
       "aria-label": "\u66F4\u591A\u9009\u9879"
     },
-    /* @__PURE__ */ import_react13.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react13.default.createElement("circle", { cx: "12", cy: "12", r: "1" }), /* @__PURE__ */ import_react13.default.createElement("circle", { cx: "5", cy: "12", r: "1" }), /* @__PURE__ */ import_react13.default.createElement("circle", { cx: "19", cy: "12", r: "1" }))
-  ), isOpen && /* @__PURE__ */ import_react13.default.createElement(
+    /* @__PURE__ */ import_react15.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react15.default.createElement("circle", { cx: "12", cy: "12", r: "1" }), /* @__PURE__ */ import_react15.default.createElement("circle", { cx: "5", cy: "12", r: "1" }), /* @__PURE__ */ import_react15.default.createElement("circle", { cx: "19", cy: "12", r: "1" }))
+  ), isOpen && /* @__PURE__ */ import_react15.default.createElement(
     "div",
     {
       ref: menuRef,
@@ -25934,18 +27030,18 @@ var JournalCardMenu = ({ app, entry, onDelete }) => {
       style: menuStyle,
       onClick: (e) => e.stopPropagation()
     },
-    /* @__PURE__ */ import_react13.default.createElement("div", { className: "journal-card-menu-item", onClick: handleDeleteClick }, /* @__PURE__ */ import_react13.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react13.default.createElement("polyline", { points: "3 6 5 6 21 6" }), /* @__PURE__ */ import_react13.default.createElement("path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" })), /* @__PURE__ */ import_react13.default.createElement("span", null, strings.common.delete))
+    /* @__PURE__ */ import_react15.default.createElement("div", { className: "journal-card-menu-item", onClick: handleDeleteClick }, /* @__PURE__ */ import_react15.default.createElement("svg", { width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react15.default.createElement("polyline", { points: "3 6 5 6 21 6" }), /* @__PURE__ */ import_react15.default.createElement("path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" })), /* @__PURE__ */ import_react15.default.createElement("span", null, strings.common.delete))
   ));
 };
 
 // src/components/JournalCard.tsx
-var JournalCard = (0, import_react14.memo)(({ entry, skipLazyLoad = false }) => {
+var JournalCard = (0, import_react16.memo)(({ entry, skipLazyLoad = false }) => {
   const { app, plugin } = useJournalView();
-  const cardRef = (0, import_react14.useRef)(null);
-  const scrollContainerRef = (0, import_react14.useRef)(null);
-  const lastScrollTopRef = (0, import_react14.useRef)(0);
-  import_react14.default.useEffect(() => {
-    const scrollContainer = document.querySelector(".journal-list-container");
+  const cardRef = (0, import_react16.useRef)(null);
+  const scrollContainerRef = (0, import_react16.useRef)(null);
+  const lastScrollTopRef = (0, import_react16.useRef)(0);
+  import_react16.default.useEffect(() => {
+    const scrollContainer = document.querySelector(".journal-view-container");
     if (scrollContainer) {
       scrollContainerRef.current = scrollContainer;
       lastScrollTopRef.current = scrollContainer.scrollTop;
@@ -25993,7 +27089,7 @@ var JournalCard = (0, import_react14.memo)(({ entry, skipLazyLoad = false }) => 
       console.error("Failed to open file:", entry.file.path, error);
     }
   };
-  return /* @__PURE__ */ import_react14.default.createElement("div", { ref: cardRef, className: "journal-card", onClick: handleCardClick }, entry.images.length > 0 && /* @__PURE__ */ import_react14.default.createElement(
+  return /* @__PURE__ */ import_react16.default.createElement("div", { ref: cardRef, className: "journal-card", onClick: handleCardClick }, entry.images.length > 0 && /* @__PURE__ */ import_react16.default.createElement(
     JournalImageContainer,
     {
       images: entry.images.slice(0, CONTENT.MAX_IMAGES_PER_CARD),
@@ -26001,7 +27097,7 @@ var JournalCard = (0, import_react14.memo)(({ entry, skipLazyLoad = false }) => 
       allImages: entry.images,
       skipLazyLoad
     }
-  ), entry.title && /* @__PURE__ */ import_react14.default.createElement("h3", { className: "journal-title" }, entry.title), /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-content" }, /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-preview" }, entry.preview)), /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-date-container" }, /* @__PURE__ */ import_react14.default.createElement("div", { className: "journal-date" }, formatDate(entry.date)), /* @__PURE__ */ import_react14.default.createElement(
+  ), entry.title && /* @__PURE__ */ import_react16.default.createElement("h3", { className: "journal-title" }, entry.title), /* @__PURE__ */ import_react16.default.createElement("div", { className: "journal-content" }, /* @__PURE__ */ import_react16.default.createElement("div", { className: "journal-preview" }, entry.preview)), /* @__PURE__ */ import_react16.default.createElement("div", { className: "journal-date-container" }, /* @__PURE__ */ import_react16.default.createElement("div", { className: "journal-date" }, formatDate(entry.date)), /* @__PURE__ */ import_react16.default.createElement(
     JournalCardMenu,
     {
       app,
@@ -26021,43 +27117,65 @@ var JournalCard = (0, import_react14.memo)(({ entry, skipLazyLoad = false }) => 
 });
 
 // src/components/JournalList.tsx
+function getScrollContainer(parent) {
+  return parent == null ? void 0 : parent.closest(".journal-view-container");
+}
 var JournalList = () => {
   const { entries } = useJournalData();
   const { parentRef, virtualizer, listItems } = useJournalScroll(entries);
-  const itemRefs = (0, import_react15.useRef)(/* @__PURE__ */ new Map());
-  const scrollPositionRef = (0, import_react15.useRef)(0);
-  (0, import_react15.useEffect)(() => {
-    const scrollElement = parentRef.current;
-    if (!scrollElement)
+  const itemRefs = (0, import_react17.useRef)(/* @__PURE__ */ new Map());
+  const scrollPositionRef = (0, import_react17.useRef)(0);
+  (0, import_react17.useEffect)(() => {
+    const scrollEl = getScrollContainer(parentRef.current);
+    if (!scrollEl)
       return;
     const handleScroll = () => {
-      scrollPositionRef.current = scrollElement.scrollTop;
+      scrollPositionRef.current = scrollEl.scrollTop;
     };
-    scrollElement.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      scrollElement.removeEventListener("scroll", handleScroll);
-    };
+    scrollEl.addEventListener("scroll", handleScroll, { passive: true });
+    return () => scrollEl.removeEventListener("scroll", handleScroll);
   }, [parentRef]);
-  (0, import_react15.useEffect)(() => {
-    const scrollElement = parentRef.current;
-    if (!scrollElement || scrollPositionRef.current === 0)
+  (0, import_react17.useEffect)(() => {
+    const scrollEl = getScrollContainer(parentRef.current);
+    if (!scrollEl || scrollPositionRef.current === 0)
       return;
     requestAnimationFrame(() => {
-      if (scrollElement) {
-        scrollElement.scrollTop = scrollPositionRef.current;
-      }
+      const el = getScrollContainer(parentRef.current);
+      if (el)
+        el.scrollTop = scrollPositionRef.current;
     });
   }, [entries.length, parentRef]);
-  (0, import_react15.useEffect)(() => {
-    virtualizer.measure();
+  (0, import_react17.useEffect)(() => {
+    const scrollEl = getScrollContainer(parentRef.current);
+    if (scrollEl) {
+      const rect = scrollEl.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        virtualizer.measure();
+      }
+    }
   }, [entries.length, virtualizer]);
-  return /* @__PURE__ */ import_react15.default.createElement(
+  (0, import_react17.useEffect)(() => {
+    const handler = () => {
+      requestAnimationFrame(() => {
+        const scrollEl = getScrollContainer(parentRef.current);
+        if (scrollEl) {
+          const rect = scrollEl.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            virtualizer.measure();
+          }
+        }
+      });
+    };
+    document.addEventListener(JOURNAL_VIEW_ACTIVE_EVENT, handler);
+    return () => document.removeEventListener(JOURNAL_VIEW_ACTIVE_EVENT, handler);
+  }, [virtualizer]);
+  return /* @__PURE__ */ import_react17.default.createElement(
     "div",
     {
       ref: parentRef,
       className: "journal-list-container"
     },
-    /* @__PURE__ */ import_react15.default.createElement(
+    /* @__PURE__ */ import_react17.default.createElement(
       "div",
       {
         style: {
@@ -26080,11 +27198,12 @@ var JournalList = () => {
           }
         };
         if (item.type === "month-header") {
-          return /* @__PURE__ */ import_react15.default.createElement(
+          return /* @__PURE__ */ import_react17.default.createElement(
             "div",
             {
               key: `month-${item.monthKey}`,
               ref: setRef,
+              className: "journal-virtual-item",
               "data-index": virtualItem.index,
               style: {
                 position: "absolute",
@@ -26094,15 +27213,16 @@ var JournalList = () => {
                 transform: `translateY(${virtualItem.start}px)`
               }
             },
-            /* @__PURE__ */ import_react15.default.createElement("h2", { className: "journal-month-title" }, item.monthKey)
+            /* @__PURE__ */ import_react17.default.createElement("h2", { className: "journal-month-title" }, item.monthKey)
           );
         }
         if (item.type === "card" && item.entry) {
-          return /* @__PURE__ */ import_react15.default.createElement(
+          return /* @__PURE__ */ import_react17.default.createElement(
             "div",
             {
               key: item.entry.file.path,
               ref: setRef,
+              className: "journal-virtual-item",
               "data-index": virtualItem.index,
               style: {
                 position: "absolute",
@@ -26112,7 +27232,7 @@ var JournalList = () => {
                 transform: `translateY(${virtualItem.start}px)`
               }
             },
-            /* @__PURE__ */ import_react15.default.createElement(JournalCard, { entry: item.entry, skipLazyLoad: true })
+            /* @__PURE__ */ import_react17.default.createElement(JournalCard, { entry: item.entry, skipLazyLoad: true })
           );
         }
         return null;
@@ -26122,10 +27242,10 @@ var JournalList = () => {
 };
 
 // src/components/JournalCalendar.tsx
-var import_react20 = __toESM(require_react());
+var import_react22 = __toESM(require_react());
 
 // src/hooks/useCalendarMonth.ts
-var import_react16 = __toESM(require_react());
+var import_react18 = __toESM(require_react());
 
 // src/utils/calendarUtils.ts
 function dateToIso(date) {
@@ -26186,30 +27306,30 @@ function getMonthGrid(cursorMonth) {
 
 // src/hooks/useCalendarMonth.ts
 function useCalendarMonth(entries) {
-  const [cursorMonth, setCursorMonth] = (0, import_react16.useState)(() => {
+  const [cursorMonth, setCursorMonth] = (0, import_react18.useState)(() => {
     const d = new Date();
     d.setDate(1);
     return d;
   });
-  const [selectedIso, setSelectedIso] = (0, import_react16.useState)(null);
-  const prevMonth = (0, import_react16.useCallback)(() => {
+  const [selectedIso, setSelectedIso] = (0, import_react18.useState)(null);
+  const prevMonth = (0, import_react18.useCallback)(() => {
     setCursorMonth((prev) => {
       const d = new Date(prev.getFullYear(), prev.getMonth() - 1, 1);
       return d;
     });
   }, []);
-  const nextMonth = (0, import_react16.useCallback)(() => {
+  const nextMonth = (0, import_react18.useCallback)(() => {
     setCursorMonth((prev) => {
       const d = new Date(prev.getFullYear(), prev.getMonth() + 1, 1);
       return d;
     });
   }, []);
-  const goToToday = (0, import_react16.useCallback)(() => {
+  const goToToday = (0, import_react18.useCallback)(() => {
     const d = new Date();
     d.setDate(1);
     setCursorMonth(d);
   }, []);
-  const { days, entriesByIso, firstImageUrlByIso } = (0, import_react16.useMemo)(() => {
+  const { days, entriesByIso, firstImageUrlByIso } = (0, import_react18.useMemo)(() => {
     const days2 = getMonthGrid(cursorMonth);
     const entriesByIso2 = /* @__PURE__ */ new Map();
     const firstImageUrlByIso2 = /* @__PURE__ */ new Map();
@@ -26239,9 +27359,9 @@ function useCalendarMonth(entries) {
 }
 
 // src/components/CalendarHeader.tsx
-var import_react17 = __toESM(require_react());
-var ChevronLeftIcon = () => /* @__PURE__ */ import_react17.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react17.default.createElement("polyline", { points: "15 18 9 12 15 6" }));
-var ChevronRightIcon = () => /* @__PURE__ */ import_react17.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react17.default.createElement("polyline", { points: "9 18 15 12 9 6" }));
+var import_react19 = __toESM(require_react());
+var ChevronLeftIcon = () => /* @__PURE__ */ import_react19.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react19.default.createElement("polyline", { points: "15 18 9 12 15 6" }));
+var ChevronRightIcon = () => /* @__PURE__ */ import_react19.default.createElement("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ import_react19.default.createElement("polyline", { points: "9 18 15 12 9 6" }));
 var CalendarHeader = ({
   cursorMonth,
   onPrevMonth,
@@ -26251,7 +27371,7 @@ var CalendarHeader = ({
   const year = cursorMonth.getFullYear();
   const month = cursorMonth.getMonth() + 1;
   const monthLabel = `${year}.${String(month).padStart(2, "0")}`;
-  return /* @__PURE__ */ import_react17.default.createElement("div", { className: "journal-calendar-header" }, /* @__PURE__ */ import_react17.default.createElement(
+  return /* @__PURE__ */ import_react19.default.createElement("div", { className: "journal-calendar-header" }, /* @__PURE__ */ import_react19.default.createElement(
     "button",
     {
       type: "button",
@@ -26260,8 +27380,8 @@ var CalendarHeader = ({
       title: strings.calendar.prevMonth,
       "aria-label": strings.calendar.prevMonth
     },
-    /* @__PURE__ */ import_react17.default.createElement(ChevronLeftIcon, null)
-  ), /* @__PURE__ */ import_react17.default.createElement(
+    /* @__PURE__ */ import_react19.default.createElement(ChevronLeftIcon, null)
+  ), /* @__PURE__ */ import_react19.default.createElement(
     "button",
     {
       type: "button",
@@ -26270,7 +27390,7 @@ var CalendarHeader = ({
       title: strings.calendar.goToToday
     },
     monthLabel
-  ), /* @__PURE__ */ import_react17.default.createElement(
+  ), /* @__PURE__ */ import_react19.default.createElement(
     "button",
     {
       type: "button",
@@ -26279,16 +27399,16 @@ var CalendarHeader = ({
       title: strings.calendar.nextMonth,
       "aria-label": strings.calendar.nextMonth
     },
-    /* @__PURE__ */ import_react17.default.createElement(ChevronRightIcon, null)
+    /* @__PURE__ */ import_react19.default.createElement(ChevronRightIcon, null)
   ));
 };
 
 // src/components/CalendarGrid.tsx
-var import_react19 = __toESM(require_react());
+var import_react21 = __toESM(require_react());
 
 // src/components/CalendarDayCell.tsx
-var import_react18 = __toESM(require_react());
-var CalendarDayCell = (0, import_react18.memo)(function CalendarDayCell2({
+var import_react20 = __toESM(require_react());
+var CalendarDayCell = (0, import_react20.memo)(function CalendarDayCell2({
   day,
   entry,
   imageUrl,
@@ -26302,7 +27422,7 @@ var CalendarDayCell = (0, import_react18.memo)(function CalendarDayCell2({
     onClick(entry, day.iso);
   };
   const dayNum = day.date.getDate();
-  return /* @__PURE__ */ import_react18.default.createElement(
+  return /* @__PURE__ */ import_react20.default.createElement(
     "button",
     {
       type: "button",
@@ -26310,7 +27430,7 @@ var CalendarDayCell = (0, import_react18.memo)(function CalendarDayCell2({
       onClick: handleClick,
       title: hasEntry ? (_a2 = entry == null ? void 0 : entry.title) != null ? _a2 : day.iso : day.iso
     },
-    /* @__PURE__ */ import_react18.default.createElement("span", { className: "journal-calendar-day-cell-inner" }, imageUrl ? /* @__PURE__ */ import_react18.default.createElement(
+    /* @__PURE__ */ import_react20.default.createElement("span", { className: "journal-calendar-day-cell-inner" }, imageUrl ? /* @__PURE__ */ import_react20.default.createElement(
       "img",
       {
         src: imageUrl,
@@ -26318,7 +27438,7 @@ var CalendarDayCell = (0, import_react18.memo)(function CalendarDayCell2({
         className: "journal-calendar-day-image",
         loading: "lazy"
       }
-    ) : /* @__PURE__ */ import_react18.default.createElement("span", { className: "journal-calendar-day-placeholder" }), /* @__PURE__ */ import_react18.default.createElement("span", { className: "journal-calendar-day-number" }, dayNum))
+    ) : /* @__PURE__ */ import_react20.default.createElement("span", { className: "journal-calendar-day-placeholder" }), /* @__PURE__ */ import_react20.default.createElement("span", { className: "journal-calendar-day-number" }, dayNum))
   );
 });
 
@@ -26338,7 +27458,7 @@ var CalendarGrid = ({
       app.workspace.openLinkText(entry.file.path, "", true);
     }
   };
-  return /* @__PURE__ */ import_react19.default.createElement("div", { className: "journal-calendar-grid" }, /* @__PURE__ */ import_react19.default.createElement("div", { className: "journal-calendar-weekdays" }, WEEKDAY_LABELS.map((label, index) => /* @__PURE__ */ import_react19.default.createElement("span", { key: `weekday-${index}`, className: "journal-calendar-weekday" }, label))), /* @__PURE__ */ import_react19.default.createElement("div", { className: "journal-calendar-days" }, days.map((day) => /* @__PURE__ */ import_react19.default.createElement(
+  return /* @__PURE__ */ import_react21.default.createElement("div", { className: "journal-calendar-grid" }, /* @__PURE__ */ import_react21.default.createElement("div", { className: "journal-calendar-weekdays" }, WEEKDAY_LABELS.map((label, index) => /* @__PURE__ */ import_react21.default.createElement("span", { key: `weekday-${index}`, className: "journal-calendar-weekday" }, label))), /* @__PURE__ */ import_react21.default.createElement("div", { className: "journal-calendar-days" }, days.map((day) => /* @__PURE__ */ import_react21.default.createElement(
     CalendarDayCell,
     {
       key: day.iso + day.type,
@@ -26365,7 +27485,7 @@ var JournalCalendar = () => {
     entriesByIso,
     firstImageUrlByIso
   } = useCalendarMonth(entries);
-  return /* @__PURE__ */ import_react20.default.createElement("div", { className: "journal-calendar-section" }, /* @__PURE__ */ import_react20.default.createElement(
+  return /* @__PURE__ */ import_react22.default.createElement("div", { className: "journal-calendar-section" }, /* @__PURE__ */ import_react22.default.createElement(
     CalendarHeader,
     {
       cursorMonth,
@@ -26373,7 +27493,7 @@ var JournalCalendar = () => {
       onNextMonth: nextMonth,
       onGoToToday: goToToday
     }
-  ), /* @__PURE__ */ import_react20.default.createElement(
+  ), /* @__PURE__ */ import_react22.default.createElement(
     CalendarGrid,
     {
       days,
@@ -26386,13 +27506,13 @@ var JournalCalendar = () => {
 };
 
 // src/components/JournalEmptyState.tsx
-var import_react21 = __toESM(require_react());
+var import_react23 = __toESM(require_react());
 var JournalEmptyState = () => {
   const { app } = useJournalView();
   const handleScan = async () => {
     console.log("Scan files");
   };
-  return /* @__PURE__ */ import_react21.default.createElement("div", { className: "journal-welcome" }, /* @__PURE__ */ import_react21.default.createElement("div", { className: "journal-welcome-card" }, /* @__PURE__ */ import_react21.default.createElement("h2", null, strings.emptyState.welcomeTitle), /* @__PURE__ */ import_react21.default.createElement("p", null, strings.emptyState.noEntries), /* @__PURE__ */ import_react21.default.createElement("button", { className: "journal-welcome-button", onClick: handleScan }, strings.emptyState.startScan)));
+  return /* @__PURE__ */ import_react23.default.createElement("div", { className: "journal-welcome" }, /* @__PURE__ */ import_react23.default.createElement("div", { className: "journal-welcome-card" }, /* @__PURE__ */ import_react23.default.createElement("h2", null, strings.emptyState.welcomeTitle), /* @__PURE__ */ import_react23.default.createElement("p", null, strings.emptyState.noEntries), /* @__PURE__ */ import_react23.default.createElement("button", { className: "journal-welcome-button", onClick: handleScan }, strings.emptyState.startScan)));
 };
 
 // src/components/JournalViewContainer.tsx
@@ -26401,28 +27521,56 @@ var JournalViewWithWatchers = () => {
   useFileSystemWatchers();
   const { plugin } = useJournalView();
   const showStats = ((_a2 = plugin == null ? void 0 : plugin.settings) == null ? void 0 : _a2.showJournalStats) === true;
-  return /* @__PURE__ */ import_react22.default.createElement(JournalViewModeProvider, null, /* @__PURE__ */ import_react22.default.createElement("div", { className: "journal-content-wrapper" }, /* @__PURE__ */ import_react22.default.createElement(JournalHeader, null), showStats && /* @__PURE__ */ import_react22.default.createElement(JournalStats, null), /* @__PURE__ */ import_react22.default.createElement(JournalViewContentArea, null)));
+  return /* @__PURE__ */ import_react24.default.createElement(JournalViewModeProvider, null, /* @__PURE__ */ import_react24.default.createElement("div", { className: "journal-content-wrapper" }, /* @__PURE__ */ import_react24.default.createElement(JournalHeader, null), showStats && /* @__PURE__ */ import_react24.default.createElement(JournalStats, null), /* @__PURE__ */ import_react24.default.createElement(JournalViewContentArea, null)));
 };
 var JournalViewContentArea = () => {
   const { viewMode } = useJournalViewMode();
   if (viewMode === "calendar") {
-    return /* @__PURE__ */ import_react22.default.createElement("div", { className: "journal-calendar-with-list" }, /* @__PURE__ */ import_react22.default.createElement(JournalCalendar, null), /* @__PURE__ */ import_react22.default.createElement(OnThisDaySection, null), /* @__PURE__ */ import_react22.default.createElement(JournalList, null));
+    return /* @__PURE__ */ import_react24.default.createElement("div", { className: "journal-calendar-with-list" }, /* @__PURE__ */ import_react24.default.createElement(JournalCalendar, null), /* @__PURE__ */ import_react24.default.createElement(OnThisDaySection, null), /* @__PURE__ */ import_react24.default.createElement(JournalList, null));
   }
-  return /* @__PURE__ */ import_react22.default.createElement(import_react22.default.Fragment, null, /* @__PURE__ */ import_react22.default.createElement(OnThisDaySection, null), /* @__PURE__ */ import_react22.default.createElement(JournalList, null));
+  return /* @__PURE__ */ import_react24.default.createElement(import_react24.default.Fragment, null, /* @__PURE__ */ import_react24.default.createElement(OnThisDaySection, null), /* @__PURE__ */ import_react24.default.createElement(JournalList, null));
 };
+var LOADING_DELAY_MS = 200;
 var JournalViewContent = () => {
   const { entries, isLoading, error, refresh, updateSingleEntry, updateEntryAfterRename } = useJournalEntries();
+  const [showLoadingUI, setShowLoadingUI] = import_react24.default.useState(false);
+  useThumbnailPrewarm(entries);
+  import_react24.default.useEffect(() => {
+    if (!isLoading) {
+      setShowLoadingUI(false);
+      return;
+    }
+    const t = setTimeout(() => setShowLoadingUI(true), LOADING_DELAY_MS);
+    return () => clearTimeout(t);
+  }, [isLoading]);
+  if (isLoading && entries.length > 0) {
+    return /* @__PURE__ */ import_react24.default.createElement(MenuProvider, null, /* @__PURE__ */ import_react24.default.createElement(
+      JournalDataProvider,
+      {
+        entries,
+        isLoading,
+        error,
+        refresh,
+        updateSingleEntry,
+        updateEntryAfterRename
+      },
+      /* @__PURE__ */ import_react24.default.createElement(JournalViewWithWatchers, null)
+    ));
+  }
   if (isLoading) {
-    return /* @__PURE__ */ import_react22.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react22.default.createElement("div", null, strings.common.loading));
+    if (showLoadingUI) {
+      return /* @__PURE__ */ import_react24.default.createElement("div", { className: "journal-loading" }, strings.common.loading);
+    }
+    return /* @__PURE__ */ import_react24.default.createElement("div", { className: "journal-loading journal-empty", style: { minHeight: 120 } });
   }
   if (error !== null && error !== void 0) {
     const errorMessage = error.message || String(error);
-    return /* @__PURE__ */ import_react22.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react22.default.createElement("div", null, strings.common.error, ": ", errorMessage));
+    return /* @__PURE__ */ import_react24.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react24.default.createElement("div", null, strings.common.error, ": ", errorMessage));
   }
   if (entries.length === 0) {
-    return /* @__PURE__ */ import_react22.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react22.default.createElement(JournalEmptyState, null));
+    return /* @__PURE__ */ import_react24.default.createElement("div", { className: "journal-view-container" }, /* @__PURE__ */ import_react24.default.createElement(JournalEmptyState, null));
   }
-  return /* @__PURE__ */ import_react22.default.createElement(MenuProvider, null, /* @__PURE__ */ import_react22.default.createElement(
+  return /* @__PURE__ */ import_react24.default.createElement(MenuProvider, null, /* @__PURE__ */ import_react24.default.createElement(
     JournalDataProvider,
     {
       entries,
@@ -26432,14 +27580,14 @@ var JournalViewContent = () => {
       updateSingleEntry,
       updateEntryAfterRename
     },
-    /* @__PURE__ */ import_react22.default.createElement(JournalViewWithWatchers, null)
+    /* @__PURE__ */ import_react24.default.createElement(JournalViewWithWatchers, null)
   ));
 };
 var JournalViewContainer = () => {
-  const containerRef = (0, import_react22.useRef)(null);
+  const containerRef = (0, import_react24.useRef)(null);
   const scrollbarWidth = useScrollbarWidth();
-  const [hasOverflow, setHasOverflow] = import_react22.default.useState(false);
-  (0, import_react22.useEffect)(() => {
+  const [hasOverflow, setHasOverflow] = import_react24.default.useState(false);
+  (0, import_react24.useEffect)(() => {
     const el = containerRef.current;
     if (!el)
       return;
@@ -26459,23 +27607,25 @@ var JournalViewContainer = () => {
       mutationObserver.disconnect();
     };
   }, []);
-  (0, import_react22.useEffect)(() => {
+  (0, import_react24.useEffect)(() => {
     if (!containerRef.current)
       return;
     const compensation = hasOverflow ? scrollbarWidth : 0;
     containerRef.current.style.setProperty("--scrollbar-width", `${compensation}px`);
   }, [scrollbarWidth, hasOverflow]);
-  return /* @__PURE__ */ import_react22.default.createElement("div", { ref: containerRef, className: "journal-view-container" }, /* @__PURE__ */ import_react22.default.createElement(JournalViewContent, null));
+  return /* @__PURE__ */ import_react24.default.createElement("div", { ref: containerRef, className: "journal-view-container" }, /* @__PURE__ */ import_react24.default.createElement(JournalViewContent, null));
 };
 
 // src/view/JournalView.tsx
 var JOURNAL_VIEW_TYPE = "journal-view-react";
-var JournalView = class extends import_obsidian7.ItemView {
+var JOURNAL_VIEW_ACTIVE_EVENT = "journal-view-react:active";
+var JournalView = class extends import_obsidian11.ItemView {
   constructor(leaf, app, plugin) {
     super(leaf);
     this.root = null;
     this.plugin = null;
     this.targetFolderPath = null;
+    this.activeLeafEventRef = null;
     this.plugin = plugin || null;
   }
   async refresh() {
@@ -26517,6 +27667,15 @@ var JournalView = class extends import_obsidian7.ItemView {
     if (!container) {
       return;
     }
+    this.activeLeafEventRef = this.app.workspace.on("active-leaf-change", () => {
+      var _a2;
+      if (((_a2 = this.app.workspace.activeLeaf) == null ? void 0 : _a2.view) === this && this.contentEl) {
+        this.contentEl.dispatchEvent(new CustomEvent(JOURNAL_VIEW_ACTIVE_EVENT));
+      }
+    });
+    if (this.plugin) {
+      this.plugin.registerEvent(this.activeLeafEventRef);
+    }
     if (this.targetFolderPath === null && this.plugin) {
       const pluginSettings = this.plugin.settings;
       if (pluginSettings == null ? void 0 : pluginSettings.defaultFolderPath) {
@@ -26535,6 +27694,10 @@ var JournalView = class extends import_obsidian7.ItemView {
     this.renderReact();
   }
   async onClose() {
+    if (this.activeLeafEventRef) {
+      this.app.workspace.offref(this.activeLeafEventRef);
+      this.activeLeafEventRef = null;
+    }
     if (this.root) {
       this.root.unmount();
       this.root = null;
@@ -26551,7 +27714,7 @@ var JournalView = class extends import_obsidian7.ItemView {
       }
     }
     this.root.render(
-      /* @__PURE__ */ import_react23.default.createElement(import_react23.default.StrictMode, null, /* @__PURE__ */ import_react23.default.createElement(
+      /* @__PURE__ */ import_react25.default.createElement(import_react25.default.StrictMode, null, /* @__PURE__ */ import_react25.default.createElement(
         JournalViewProvider,
         {
           app: this.app,
@@ -26562,7 +27725,7 @@ var JournalView = class extends import_obsidian7.ItemView {
             this.renderReact();
           }
         },
-        /* @__PURE__ */ import_react23.default.createElement(JournalViewContainer, null)
+        /* @__PURE__ */ import_react25.default.createElement(JournalViewContainer, null)
       ))
     );
   }
@@ -26584,22 +27747,28 @@ var DEFAULT_SETTINGS = {
 };
 
 // src/settings/JournalSettingTab.ts
-var import_obsidian8 = require("obsidian");
-var JournalSettingTab = class extends import_obsidian8.PluginSettingTab {
+var import_obsidian12 = require("obsidian");
+var JournalSettingTab = class extends import_obsidian12.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
   }
   display() {
+    var _a2, _b;
     const { containerEl } = this;
     containerEl.empty();
     containerEl.createEl("h2", { text: strings.settings.title });
+    const createSection = (parent, title) => {
+      const section = parent.createDiv({ cls: "journal-settings-section" });
+      section.createEl("h3", { text: title, cls: "journal-settings-section-title" });
+      return section;
+    };
     const getAllFolders = () => {
       const folders = [];
       const processFolder = (folder) => {
         folders.push(folder);
         for (const child of folder.children) {
-          if (child instanceof import_obsidian8.TFolder) {
+          if (child instanceof import_obsidian12.TFolder) {
             processFolder(child);
           }
         }
@@ -26615,14 +27784,14 @@ var JournalSettingTab = class extends import_obsidian8.PluginSettingTab {
       if (!folderPath)
         return fields;
       const folder = this.app.vault.getAbstractFileByPath(folderPath);
-      if (!(folder instanceof import_obsidian8.TFolder))
+      if (!(folder instanceof import_obsidian12.TFolder))
         return fields;
       const getMarkdownFiles = (f) => {
         const files2 = [];
         for (const child of f.children) {
-          if (child instanceof import_obsidian8.TFile && child.extension === "md") {
+          if (child instanceof import_obsidian12.TFile && child.extension === "md") {
             files2.push(child);
-          } else if (child instanceof import_obsidian8.TFolder) {
+          } else if (child instanceof import_obsidian12.TFolder) {
             files2.push(...getMarkdownFiles(child));
           }
         }
@@ -26641,7 +27810,44 @@ var JournalSettingTab = class extends import_obsidian8.PluginSettingTab {
       }
       return fields;
     };
-    const dateFieldSetting = new import_obsidian8.Setting(containerEl).setName(strings.settings.dateField).setDesc(strings.settings.dateFieldDesc).addDropdown((dropdown) => {
+    const getMarkdownFilesInFolder = (folderPath) => {
+      if (!folderPath)
+        return [];
+      const folder = this.app.vault.getAbstractFileByPath(folderPath);
+      if (!(folder instanceof import_obsidian12.TFolder))
+        return [];
+      return (folder.children || []).filter((c) => c instanceof import_obsidian12.TFile && c.extension === "md").sort((a, b) => a.path.localeCompare(b.path));
+    };
+    const sectionBasics = createSection(containerEl, strings.settings.sectionBasics);
+    let dateFieldSetting;
+    new import_obsidian12.Setting(sectionBasics).setName(strings.settings.defaultFolder).setDesc(strings.settings.defaultFolderDesc).addDropdown((dropdown) => {
+      dropdown.addOption("", strings.settings.scanEntireVault);
+      const folders = getAllFolders();
+      for (const folder of folders) {
+        dropdown.addOption(folder.path, folder.path);
+      }
+      const currentPath = this.plugin.settings.defaultFolderPath || this.plugin.settings.folderPath || "";
+      dropdown.setValue(currentPath);
+      dropdown.onChange(async (value) => {
+        this.plugin.settings.defaultFolderPath = value || null;
+        this.plugin.settings.folderPath = value;
+        await this.plugin.saveSettings();
+        const dateFieldDropdown = dateFieldSetting.settingEl.querySelector("select");
+        if (dateFieldDropdown)
+          updateDropdownOptions(dateFieldDropdown, value || null);
+        updateDateFieldVisibility();
+        if (this.plugin.view) {
+          if (value) {
+            const folder = this.app.vault.getAbstractFileByPath(value);
+            this.plugin.view.targetFolderPath = folder instanceof import_obsidian12.TFolder ? folder.path : null;
+          } else {
+            this.plugin.view.targetFolderPath = null;
+          }
+          await this.plugin.view.refresh();
+        }
+      });
+    });
+    dateFieldSetting = new import_obsidian12.Setting(sectionBasics).setName(strings.settings.dateField).setDesc(strings.settings.dateFieldDesc).addDropdown((dropdown) => {
       dropdown.addOption("", strings.settings.useDefaultFields);
       dropdown.addOption("date", "date");
       dropdown.addOption("Date", "Date");
@@ -26837,15 +28043,8 @@ var JournalSettingTab = class extends import_obsidian8.PluginSettingTab {
         dateFieldSetting.settingEl.style.display = "none";
       }
     };
-    const getMarkdownFilesInFolder = (folderPath) => {
-      if (!folderPath)
-        return [];
-      const folder = this.app.vault.getAbstractFileByPath(folderPath);
-      if (!(folder instanceof import_obsidian8.TFolder))
-        return [];
-      return (folder.children || []).filter((c) => c instanceof import_obsidian8.TFile && c.extension === "md").sort((a, b) => a.path.localeCompare(b.path));
-    };
-    const templateFolderSetting = new import_obsidian8.Setting(containerEl).setName(strings.settings.templateFolder).setDesc(strings.settings.templateFolderDesc).addDropdown((dropdown) => {
+    const sectionTemplate = createSection(containerEl, strings.settings.sectionTemplate);
+    const templateFolderSetting = new import_obsidian12.Setting(sectionTemplate).setName(strings.settings.templateFolder).setDesc(strings.settings.templateFolderDesc).addDropdown((dropdown) => {
       dropdown.addOption("", strings.settings.templateNone);
       for (const folder of getAllFolders()) {
         dropdown.addOption(folder.path, folder.path);
@@ -26858,7 +28057,7 @@ var JournalSettingTab = class extends import_obsidian8.PluginSettingTab {
         await updateTemplateFileDropdown();
       });
     });
-    const templateFileSetting = new import_obsidian8.Setting(containerEl).setName(strings.settings.templateFile).setDesc(strings.settings.templateFileDesc).addDropdown((dropdown) => {
+    const templateFileSetting = new import_obsidian12.Setting(sectionTemplate).setName(strings.settings.templateFile).setDesc(strings.settings.templateFileDesc).addDropdown((dropdown) => {
       dropdown.addOption("", strings.settings.templateFileNone);
       const files = getMarkdownFilesInFolder(this.plugin.settings.templateFolderPath);
       for (const file of files) {
@@ -26890,7 +28089,8 @@ var JournalSettingTab = class extends import_obsidian8.PluginSettingTab {
       }
     };
     updateTemplateFileDropdown();
-    new import_obsidian8.Setting(containerEl).setName(strings.settings.showJournalStats).setDesc(strings.settings.showJournalStatsDesc).addToggle((toggle) => {
+    const sectionDisplay = createSection(containerEl, strings.settings.sectionDisplay);
+    new import_obsidian12.Setting(sectionDisplay).setName(strings.settings.showJournalStats).setDesc(strings.settings.showJournalStatsDesc).addToggle((toggle) => {
       toggle.setValue(this.plugin.settings.showJournalStats === true).onChange(async (value) => {
         this.plugin.settings.showJournalStats = value;
         await this.plugin.saveSettings();
@@ -26899,46 +28099,15 @@ var JournalSettingTab = class extends import_obsidian8.PluginSettingTab {
         }
       });
     });
-    new import_obsidian8.Setting(containerEl).setName(strings.settings.editorImageLayout).setDesc(strings.settings.editorImageLayoutDesc).addToggle((toggle) => {
+    const sectionEditor = createSection(containerEl, strings.settings.sectionEditor);
+    new import_obsidian12.Setting(sectionEditor).setName(strings.settings.editorImageLayout).setDesc(strings.settings.editorImageLayoutDesc).addToggle((toggle) => {
       toggle.setValue(this.plugin.settings.enableEditorImageLayout !== false).onChange(async (value) => {
         this.plugin.settings.enableEditorImageLayout = value;
         await this.plugin.saveSettings();
       });
     });
-    new import_obsidian8.Setting(containerEl).setName(strings.settings.defaultFolder).setDesc(strings.settings.defaultFolderDesc).addDropdown((dropdown) => {
-      dropdown.addOption("", strings.settings.scanEntireVault);
-      const folders = getAllFolders();
-      for (const folder of folders) {
-        dropdown.addOption(folder.path, folder.path);
-      }
-      const currentPath = this.plugin.settings.defaultFolderPath || this.plugin.settings.folderPath || "";
-      dropdown.setValue(currentPath);
-      dropdown.onChange(async (value) => {
-        this.plugin.settings.defaultFolderPath = value || null;
-        this.plugin.settings.folderPath = value;
-        await this.plugin.saveSettings();
-        const dateFieldDropdown = dateFieldSetting.settingEl.querySelector("select");
-        if (dateFieldDropdown) {
-          updateDropdownOptions(dateFieldDropdown, value || null);
-        }
-        updateDateFieldVisibility();
-        if (this.plugin.view) {
-          if (value) {
-            const folder = this.app.vault.getAbstractFileByPath(value);
-            if (folder instanceof import_obsidian8.TFolder) {
-              this.plugin.view.targetFolderPath = folder.path;
-            } else {
-              this.plugin.view.targetFolderPath = null;
-            }
-          } else {
-            this.plugin.view.targetFolderPath = null;
-          }
-          await this.plugin.view.refresh();
-        }
-      });
-    });
     updateDateFieldVisibility();
-    new import_obsidian8.Setting(containerEl).setName(strings.settings.imageDisplayLimit).setDesc(strings.settings.imageDisplayLimitDesc).addSlider(
+    new import_obsidian12.Setting(sectionDisplay).setName(strings.settings.imageDisplayLimit).setDesc(strings.settings.imageDisplayLimitDesc).addSlider(
       (slider) => slider.setLimits(1, 10, 1).setValue(this.plugin.settings.imageLimit).setDynamicTooltip().onChange(async (value) => {
         this.plugin.settings.imageLimit = value;
         await this.plugin.saveSettings();
@@ -26947,7 +28116,7 @@ var JournalSettingTab = class extends import_obsidian8.PluginSettingTab {
         }
       })
     );
-    new import_obsidian8.Setting(containerEl).setName(strings.settings.imageGap).setDesc(strings.settings.imageGapDesc).addSlider(
+    new import_obsidian12.Setting(sectionDisplay).setName(strings.settings.imageGap).setDesc(strings.settings.imageGapDesc).addSlider(
       (slider) => slider.setLimits(0, 30, 1).setValue(this.plugin.settings.imageGap).setDynamicTooltip().onChange(async (value) => {
         this.plugin.settings.imageGap = value;
         await this.plugin.saveSettings();
@@ -26957,7 +28126,8 @@ var JournalSettingTab = class extends import_obsidian8.PluginSettingTab {
         }
       })
     );
-    new import_obsidian8.Setting(containerEl).setName(strings.settings.openNoteMode).setDesc(strings.settings.openNoteModeDesc).addToggle((toggle) => {
+    const sectionInteraction = createSection(containerEl, strings.settings.sectionInteraction);
+    new import_obsidian12.Setting(sectionInteraction).setName(strings.settings.openNoteMode).setDesc(strings.settings.openNoteModeDesc).addToggle((toggle) => {
       toggle.setValue(this.plugin.settings.openInNewTab).setTooltip(this.plugin.settings.openInNewTab ? strings.settings.tooltipNewTab : strings.settings.tooltipCurrentTab).onChange(async (value) => {
         this.plugin.settings.openInNewTab = value;
         await this.plugin.saveSettings();
@@ -26967,11 +28137,53 @@ var JournalSettingTab = class extends import_obsidian8.PluginSettingTab {
       button.setIcon("info").setTooltip(strings.settings.tooltipOpenMode).onClick(() => {
       });
     });
+    const sectionMaintenance = createSection(containerEl, strings.settings.sectionMaintenance);
+    const formatBytes = (bytes) => {
+      if (bytes < 1024)
+        return `${bytes} B`;
+      if (bytes < 1024 * 1024)
+        return `${(bytes / 1024).toFixed(2)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    };
+    const storageSetting = new import_obsidian12.Setting(sectionMaintenance).setName(strings.settings.storageUsage).setDesc(strings.settings.storageUsageCalculating);
+    (_b = (_a2 = getStorage()) == null ? void 0 : _a2.getStorageSizeEstimate) == null ? void 0 : _b.call(_a2).then((size) => {
+      if (size) {
+        const entries = formatBytes(size.entriesBytes);
+        const thumbnails = formatBytes(size.thumbnailsBytes);
+        const total = formatBytes(size.totalBytes);
+        storageSetting.setDesc(
+          `${strings.settings.storageUsageEntries}: ${entries}, ${strings.settings.storageUsageThumbnails}: ${thumbnails}, ${strings.settings.storageUsageTotal}: ${total}`
+        );
+      }
+    }).catch(() => {
+      storageSetting.setDesc(strings.settings.storageUsageError);
+    });
+    new import_obsidian12.Setting(sectionMaintenance).setName(strings.settings.clearCache).setDesc(strings.settings.clearCacheDesc).addButton((button) => {
+      button.setButtonText(strings.settings.clearCacheButton).onClick(async () => {
+        const storage = getStorage();
+        if (storage) {
+          await storage.clear();
+          if (this.plugin.view)
+            await this.plugin.view.refresh();
+          new (await import("obsidian")).Notice("Journal cache cleared");
+          storage.getStorageSizeEstimate().then((size) => {
+            const entries = formatBytes(size.entriesBytes);
+            const thumbnails = formatBytes(size.thumbnailsBytes);
+            const total = formatBytes(size.totalBytes);
+            storageSetting.setDesc(
+              `${strings.settings.storageUsageEntries}: ${entries}, ${strings.settings.storageUsageThumbnails}: ${thumbnails}, ${strings.settings.storageUsageTotal}: ${total}`
+            );
+          });
+        } else {
+          new (await import("obsidian")).Notice("Cache not initialized");
+        }
+      });
+    });
   }
 };
 
 // src/editor/EditorImageLayout.ts
-var import_obsidian9 = require("obsidian");
+var import_obsidian13 = require("obsidian");
 var MAX_IMAGES_PER_GALLERY = 5;
 var EditorImageLayout = class {
   constructor(app, plugin) {
@@ -26985,7 +28197,7 @@ var EditorImageLayout = class {
     this.app = app;
     this.plugin = plugin;
   }
-  /** 多次延迟执行，应对 Obsidian 的异步渲染 */
+  /** Schedule retries with multiple delays to handle Obsidian's async rendering */
   scheduleProcessWithRetries() {
     this.cancelScheduledProcess();
     const delays = [30, 100, 250, 500, 900];
@@ -27061,7 +28273,7 @@ var EditorImageLayout = class {
       });
       if (fromJournalView)
         return;
-      const view = this.app.workspace.getActiveViewOfType(import_obsidian9.MarkdownView);
+      const view = this.app.workspace.getActiveViewOfType(import_obsidian13.MarkdownView);
       if (!(view == null ? void 0 : view.file) || view.getMode() !== "source" || !this.shouldProcessFile(view.file.path))
         return;
       if (debounceId)
@@ -27073,9 +28285,9 @@ var EditorImageLayout = class {
     });
     bodyObserver.observe(document.body, { childList: true, subtree: true });
   }
-  /** 直接观察当前编辑器的 contentEl，DOM 变动时立即处理（仅编辑模式） */
+  /** Observe current editor contentEl, process immediately on DOM change (edit mode only) */
   attachEditorObserver() {
-    const view = this.app.workspace.getActiveViewOfType(import_obsidian9.MarkdownView);
+    const view = this.app.workspace.getActiveViewOfType(import_obsidian13.MarkdownView);
     if (!(view == null ? void 0 : view.file)) {
       this.stopObservingEditor();
       return;
@@ -27108,13 +28320,13 @@ var EditorImageLayout = class {
       this.observedEditorEl = null;
     }
   }
-  /** 轮询：仅处理编辑模式（Live Preview），阅读模式不应用 gallery */
+  /** Poll: only process edit mode (Live Preview), reading mode does not use gallery */
   processAllRelevantViews() {
     if (this.isProcessing)
       return;
     this.app.workspace.iterateAllLeaves((leaf) => {
       const view = leaf.view;
-      if (!(view instanceof import_obsidian9.MarkdownView) || !view.file)
+      if (!(view instanceof import_obsidian13.MarkdownView) || !view.file)
         return;
       if (view.getMode() !== "source")
         return;
@@ -27126,14 +28338,14 @@ var EditorImageLayout = class {
       this.processElement(sourceEl);
     });
   }
-  /** 获取 markdown-source-view 容器，避免处理到阅读模式中注入的图片（journal-preview-image）导致重复 */
+  /** Get markdown-source-view container, avoid processing reading-mode images (journal-preview-image) which would cause duplicates */
   getSourceViewContainer(contentEl) {
     if (!contentEl)
       return null;
     const source = contentEl.querySelector(".markdown-source-view");
     return source != null ? source : contentEl;
   }
-  /** 处理单个容器内的图片 */
+  /** Process images within a single container */
   processElement(containerEl) {
     if (this.isProcessing)
       return;
@@ -27156,7 +28368,7 @@ var EditorImageLayout = class {
     }
   }
   processActiveEditor() {
-    const view = this.app.workspace.getActiveViewOfType(import_obsidian9.MarkdownView);
+    const view = this.app.workspace.getActiveViewOfType(import_obsidian13.MarkdownView);
     if (!(view == null ? void 0 : view.file) || !this.shouldProcessFile(view.file.path))
       return;
     if (view.getMode() !== "source")
@@ -27179,7 +28391,7 @@ var EditorImageLayout = class {
       }
     });
   }
-  /** 合并相邻的 journal-images（如两个 single 合并为一个 double）；合并后超过 5 张则跳过，避免 merge→split 死循环 */
+  /** Merge adjacent journal-images (e.g. two singles → one double); skip if merged count > 5 to avoid merge→split loop */
   mergeAdjacentGalleries(scope) {
     const galleries = Array.from(scope.querySelectorAll(".journal-images"));
     if (galleries.length < 2)
@@ -27208,7 +28420,7 @@ var EditorImageLayout = class {
       i--;
     }
   }
-  /** 两个 gallery 是否相邻（中间无实质内容） */
+  /** Whether two galleries are adjacent (no substantial content between them) */
   areGalleriesAdjacent(g1, g2) {
     const p1 = g1.closest(".internal-embed, .cm-line, p");
     const p2 = g2.closest(".internal-embed, .cm-line, p");
@@ -27226,7 +28438,7 @@ var EditorImageLayout = class {
     }
     return false;
   }
-  /** 查找与给定图片相邻的现有 gallery（新图可合并到该 gallery） */
+  /** Find existing gallery adjacent to given image (new images can merge into it) */
   findAdjacentGallery(img, scope) {
     let el = img.parentElement;
     while (el && scope.contains(el)) {
@@ -27247,7 +28459,7 @@ var EditorImageLayout = class {
     }
     return null;
   }
-  /** 将新图片合并到已有 gallery 并重建布局；超过 5 张时拆成多个画廊 */
+  /** Merge new images into existing gallery and rebuild layout; split into multiple galleries when > 5 */
   addImagesToExistingGallery(newImages, gallery) {
     const existingImgs = Array.from(gallery.querySelectorAll("img.journal-editor-processed"));
     const allImages = [...existingImgs, ...newImages];
@@ -27328,7 +28540,7 @@ var EditorImageLayout = class {
     }
     return false;
   }
-  /** 元素是否仅为图片/embed，无实质性文本 */
+  /** Whether element is image/embed only with no substantial text */
   isImageOnlyBlock(el) {
     if (!el)
       return true;
@@ -27350,8 +28562,8 @@ var EditorImageLayout = class {
     this.fixEmptyImageSpansInPreview(element, context);
   }
   /**
-   * 阅读模式下，Obsidian 可能渲染出空的 image-embed span，缺少 img 子元素。
-   * 通过解析 src/alt、解析 vault 路径、创建 img 来修复显示。
+   * In reading mode, Obsidian may render empty image-embed span without img child.
+   * Fix display by parsing src/alt, resolving vault path, and creating img.
    */
   fixEmptyImageSpansInPreview(element, context) {
     const spans = element.querySelectorAll(
@@ -27367,7 +28579,7 @@ var EditorImageLayout = class {
         src,
         context.sourcePath
       );
-      if (!(imageFile instanceof import_obsidian9.TFile))
+      if (!(imageFile instanceof import_obsidian13.TFile))
         continue;
       const imageExtensions = ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "ico"];
       if (!imageExtensions.includes(imageFile.extension.toLowerCase()))
@@ -27418,7 +28630,7 @@ var EditorImageLayout = class {
       this.organizeImagesInContainer(chunk, container);
     }
   }
-  /** 将图片数组按每批 maxPer 张切分 */
+  /** Split image array into chunks of maxPer each */
   chunkImages(images, maxPer) {
     const chunks = [];
     for (let i = 0; i < images.length; i += maxPer) {
@@ -27438,8 +28650,8 @@ var EditorImageLayout = class {
     return "journal-images-multiple";
   }
   /**
-   * 按首页 JournalImageContainer 的结构组织图片
-   * 调用方保证 images 最多 5 张（拆成多画廊后每批最多 5 张）
+   * Organize images by JournalImageContainer layout
+   * Caller ensures max 5 images per batch (when split into multiple galleries)
    */
   organizeImagesInContainer(images, container) {
     const count = Math.min(images.length, MAX_IMAGES_PER_GALLERY);
@@ -27508,10 +28720,10 @@ var EditorImageLayout = class {
     }
     container.appendChild(rightGrid);
   }
-  /** 从 Markdown 源码中删除对应图片的引用行，并立即更新 DOM */
+  /** Remove the image reference from Markdown source and update DOM immediately */
   deleteImageFromSource(img) {
     var _a2;
-    const view = this.app.workspace.getActiveViewOfType(import_obsidian9.MarkdownView);
+    const view = this.app.workspace.getActiveViewOfType(import_obsidian13.MarkdownView);
     if (!(view == null ? void 0 : view.editor) || !((_a2 = view.contentEl) == null ? void 0 : _a2.contains(img)))
       return;
     const editor = view.editor;
@@ -27530,14 +28742,19 @@ var EditorImageLayout = class {
       new RegExp(`!?\\[\\[${escapedName}\\]\\]`)
     ];
     let lineIndex = -1;
+    let matchingPattern = null;
     for (let i = 0; i < lines.length; i++) {
-      if (patterns.some((p) => p.test(lines[i]))) {
+      const p = patterns.find((pat) => pat.test(lines[i]));
+      if (p) {
         lineIndex = i;
+        matchingPattern = p;
         break;
       }
     }
-    if (lineIndex < 0)
+    if (lineIndex < 0 || !matchingPattern)
       return;
+    const lineContent = lines[lineIndex];
+    const newLineContent = lineContent.replace(matchingPattern, "").replace(/\s+/g, " ").trim();
     const gallery = img.closest(".journal-images");
     const remainingImgs = gallery ? Array.from(gallery.querySelectorAll("img.journal-editor-processed")).filter(
       (el) => el !== img
@@ -27557,14 +28774,19 @@ var EditorImageLayout = class {
         domUpdatedByMove = true;
       }
     }
-    const newContent = lines.filter((_, idx) => idx !== lineIndex).join("\n");
-    editor.setValue(newContent);
+    const newLines = [...lines];
+    if (newLineContent === "") {
+      newLines.splice(lineIndex, 1);
+    } else {
+      newLines[lineIndex] = newLineContent;
+    }
+    editor.setValue(newLines.join("\n"));
     if (!domUpdatedByMove) {
       this.removeImageAndRebuildGallery(img, view.contentEl);
     }
     this.scheduleProcessWithRetries();
   }
-  /** 查找与给定 embed 相邻的下一个 internal-embed（用于迁移 gallery） */
+  /** Find next sibling internal-embed adjacent to given embed (for gallery migration) */
   findNextSiblingEmbed(embed) {
     const block = embed.closest("p, .cm-line, .cm-block") || embed;
     let cur = block.nextElementSibling;
@@ -27578,7 +28800,7 @@ var EditorImageLayout = class {
     }
     return null;
   }
-  /** 从 gallery 中移除指定图片并立即重建布局 */
+  /** Remove specified image from gallery and rebuild layout immediately */
   removeImageAndRebuildGallery(img, scope) {
     var _a2;
     const gallery = img.closest(".journal-images");
@@ -27609,7 +28831,7 @@ var EditorImageLayout = class {
 };
 
 // src/main.ts
-var JournalViewPlugin = class extends import_obsidian10.Plugin {
+var JournalViewPlugin = class extends import_obsidian14.Plugin {
   constructor() {
     super(...arguments);
     this.view = null;
@@ -27618,6 +28840,9 @@ var JournalViewPlugin = class extends import_obsidian10.Plugin {
   async onload() {
     await this.loadSettings();
     document.documentElement.style.setProperty("--journal-image-gap", `${this.settings.imageGap}px`);
+    await initializeStorage(this.app).catch((e) => {
+      console.warn("Journal View: IndexedDB init failed", e);
+    });
     this.editorImageLayout = new EditorImageLayout(this.app, this);
     this.editorImageLayout.initialize();
     this.registerView(JOURNAL_VIEW_TYPE, (leaf) => {
@@ -27659,6 +28884,7 @@ var JournalViewPlugin = class extends import_obsidian10.Plugin {
   async onunload() {
     var _a2;
     (_a2 = this.editorImageLayout) == null ? void 0 : _a2.destroy();
+    shutdownStorage();
     console.log("Journal View Plugin (React) unloaded");
   }
   async activateView() {
@@ -27675,12 +28901,12 @@ var JournalViewPlugin = class extends import_obsidian10.Plugin {
       let targetPath = null;
       if (this.settings.defaultFolderPath) {
         const defaultFolder = this.app.vault.getAbstractFileByPath(this.settings.defaultFolderPath);
-        if (defaultFolder instanceof import_obsidian10.TFolder) {
+        if (defaultFolder instanceof import_obsidian14.TFolder) {
           targetPath = defaultFolder.path;
         }
       } else if (this.settings.folderPath) {
         const folder = this.app.vault.getAbstractFileByPath(this.settings.folderPath);
-        if (folder instanceof import_obsidian10.TFolder) {
+        if (folder instanceof import_obsidian14.TFolder) {
           targetPath = folder.path;
         }
       }

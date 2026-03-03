@@ -8,7 +8,7 @@ import { useJournalView } from '../context/JournalViewContext';
 
 interface JournalCardProps {
 	entry: JournalEntry;
-	/** 虚拟化列表中设为 true，图片直接渲染避免闪烁 */
+	/** When true in virtualized list, images render directly to avoid flicker */
 	skipLazyLoad?: boolean;
 }
 
@@ -18,9 +18,9 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry, skipLazyLo
 	const scrollContainerRef = useRef<HTMLElement | null>(null);
 	const lastScrollTopRef = useRef<number>(0);
 
-	// 获取滚动容器引用
+	// Get scroll container ref (scroll happens on journal-view-container, not journal-list-container)
 	React.useEffect(() => {
-		const scrollContainer = document.querySelector('.journal-list-container') as HTMLElement;
+		const scrollContainer = document.querySelector('.journal-view-container') as HTMLElement;
 		if (scrollContainer) {
 			scrollContainerRef.current = scrollContainer;
 			lastScrollTopRef.current = scrollContainer.scrollTop;
@@ -28,35 +28,35 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry, skipLazyLo
 	}, []);
 
 	const handleCardClick = async (e: React.MouseEvent) => {
-		// 检查点击目标是否是卡片本身或其子元素（排除图片点击和菜单按钮）
+		// Check if click target is card or its child (exclude image click and menu button)
 		const target = e.target as HTMLElement;
 
-		// 如果点击的是图片容器，不处理（图片有自己的点击事件）
+		// If image container clicked, skip (images have their own click handler)
 		if (target.closest('.journal-image-container')) {
 			return;
 		}
 
-		// 如果点击的是菜单按钮或菜单，不处理
+		// If menu button or menu clicked, skip
 		if (target.closest('.journal-card-menu-button') || target.closest('.journal-card-menu')) {
 			return;
 		}
 
-		// 检查是否在滚动（参考原始实现）
+		// Check if scrolling (per original impl)
 		if (scrollContainerRef.current) {
 			const currentScrollTop = scrollContainerRef.current.scrollTop;
 			const isScrolling = currentScrollTop !== lastScrollTopRef.current;
 			lastScrollTopRef.current = currentScrollTop;
 
-			// 如果刚刚滚动过，不打开文件
+			// If just scrolled, don't open file
 			if (isScrolling) {
 				return;
 			}
 		}
 
-		// 打开文件
+		// Open file
 		try {
-			// 获取打开方式设置
-			let openInNewTab = true; // 默认在新标签页打开
+			// Get open mode setting
+			let openInNewTab = true; // Default: open in new tab
 			if (plugin) {
 				const pluginSettings = (plugin as any).settings;
 				if (pluginSettings?.openInNewTab !== undefined) {
@@ -65,21 +65,21 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry, skipLazyLo
 			}
 
 			if (openInNewTab) {
-				// 在新标签页打开
+				// Open in new tab
 				app.workspace.openLinkText(entry.file.path, '', true);
 			} else {
-				// 在当前标签页打开
-				// 获取当前活动的 leaf，如果它是手记视图，直接使用它；否则获取一个可用的 leaf
+				// Open in current tab
+				// Get active leaf; if it's journal view, use it; otherwise get a usable leaf
 				const activeLeaf = app.workspace.activeLeaf;
 				let targetLeaf = activeLeaf;
 
-				// 如果当前活动的 leaf 是手记视图，直接使用它
-				// 否则获取一个可用的 leaf（getLeaf(false) 会返回可导航的 leaf 或创建新的）
+				// If active leaf is journal view, use it directly
+				// Otherwise getLeaf(false) returns navigable leaf or creates new one
 				if (activeLeaf && activeLeaf.getViewState().type === 'journal-view-react') {
-					// 当前是手记视图，直接使用它来打开文件（会替换视图）
+					// Current leaf is journal view, use it to open file (will replace view)
 					targetLeaf = activeLeaf;
 				} else {
-					// 当前不是手记视图，获取一个可用的 leaf
+					// Current leaf is not journal view, get usable leaf
 					targetLeaf = app.workspace.getLeaf(false);
 				}
 
@@ -94,7 +94,7 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry, skipLazyLo
 
 	return (
 		<div ref={cardRef} className="journal-card" onClick={handleCardClick}>
-			{/* 图片 */}
+			{/* Images */}
 			{entry.images.length > 0 && (
 				<JournalImageContainer
 					images={entry.images.slice(0, CONTENT.MAX_IMAGES_PER_CARD)}
@@ -104,17 +104,17 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry, skipLazyLo
 				/>
 			)}
 
-			{/* 标题 */}
+			{/* Title */}
 			{entry.title && (
 				<h3 className="journal-title">{entry.title}</h3>
 			)}
 
-			{/* 内容预览 */}
+			{/* Content preview */}
 			<div className="journal-content">
 				<div className="journal-preview">{entry.preview}</div>
 			</div>
 
-			{/* 日期和菜单按钮容器 */}
+			{/* Date and menu button container */}
 			<div className="journal-date-container">
 				<div className="journal-date">{formatDate(entry.date)}</div>
 				<JournalCardMenu
@@ -123,7 +123,7 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry, skipLazyLo
 					onDelete={async () => {
 						try {
 							await app.vault.delete(entry.file);
-							// 文件删除后，实时更新会自动处理
+							// After delete, real-time update will handle it
 						} catch (error) {
 							console.error('删除文件失败:', error);
 							alert(strings.card.deleteFailed);
@@ -134,7 +134,7 @@ export const JournalCard: React.FC<JournalCardProps> = memo(({ entry, skipLazyLo
 		</div>
 	);
 }, (prevProps, nextProps) => {
-	// 自定义比较函数：只有当关键属性变化时才重新渲染
+	// Custom compare: re-render only when key props change
 	return (
 		prevProps.entry.file.path === nextProps.entry.file.path &&
 		prevProps.entry.file.stat.mtime === nextProps.entry.file.stat.mtime &&

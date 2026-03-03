@@ -177,6 +177,132 @@ thumbnails: {
 
 ---
 
+## 四（续）、IndexedDB 缩略图实现对比（详细）
+
+引入 IndexedDB 缩略图后，与 notebook-navigator 的详细对比如下。
+
+### 4.1 缩略图尺寸与格式
+
+| 项目 | notebook-navigator | 手记视图 | 说明 |
+|------|--------------------|----------|------|
+| **最大尺寸** | 256×144 | 256×144 | 一致 |
+| **输出格式** | `image/webp`（默认） | `image/webp` | 一致 |
+| **质量** | 0.75 | 0.75 | 一致 |
+| **iOS 回退** | `iosMimeType: 'image/png'`，Safari WebP 编码有问题时用 PNG | 未实现 | nn 针对 iOS 做了格式回退 |
+| **尺寸约束** | `createImageBitmap` 的 `maxWidth`/`maxHeight` 即可缩放 | 同左 | 一致 |
+
+**差异**：手记视图在 iOS 上若 WebP 有问题，可能需增加 `Platform.isIOS` 时改用 PNG。
+
+---
+
+### 4.2 缓存 key 设计
+
+| 项目 | notebook-navigator | 手记视图 | 说明 |
+|------|--------------------|----------|------|
+| **key 格式** | `featureImageKey`，本地为 `f:${file.path}@${mtime}` | `path@mtime` | nn 多一个 `f:` 前缀 |
+| **索引维度** | 以**文件 path** 为主键，blob 中存 `{ featureImageKey, blob }` | 以 `path@mtime` 为 IndexedDB 主键 | 手记视图 key 即主键 |
+| **key 校验** | get 时校验 `record.featureImageKey === expectedKey`，否则视为过期 | 主键已含 mtime，无需再校验 | nn 多一层防过期 |
+| **引用类型** | 支持 local / external / youtube / excalidraw / pdf，key 格式不同 | 仅 local 图片，`path@mtime` 一种 | nn 多类型、多 key 逻辑 |
+
+**差异**：nn 的 key 与主键分离，便于同一 path 多种图片来源；手记视图逻辑简单，仅本地图片。
+
+---
+
+### 4.3 内存缓存
+
+| 项目 | notebook-navigator | 手记视图 | 说明 |
+|------|--------------------|----------|------|
+| **缓存内容** | **Blob**（`FeatureImageBlobCache`） | **blob URL**（`URL.createObjectURL` 结果） | nn 存 blob，手记存 url |
+| **key 结构** | `path` → `{ featureImageKey, blob }` | `path@mtime` → `string` | 不同 |
+| **驱逐策略** | 标准 LRU：`get` 时重插到末尾，满时删首项 | FIFO：满时删首个 key，并 `revokeObjectURL` | nn 是 LRU，手记是 FIFO |
+| **容量** | `featureImageCacheMaxEntriesDefault: 1000` | `CACHE_MAX: 200` | nn 容量更大 |
+| **key 变更** | key 变化时 `delete` 旧项，防止过期 blob | key 含 mtime，path 不变、mtime 变则新 key，旧 key 自然失效 | 行为等价，实现不同 |
+
+**差异**：nn 的 LRU 更利于热点访问；手记的 blob URL 缓存可减少重复 `createObjectURL`，但驱逐为 FIFO，热点可能被挤出。
+
+---
+
+### 4.4 IndexedDB 存储结构
+
+| 项目 | notebook-navigator | 手记视图 | 说明 |
+|------|--------------------|----------|------|
+| **主 store** | `featureImageBlobs`，key = file path | `journal-thumbnails`，key = `path@mtime` | nn 按文件，手记按图片 |
+| **value 结构** | `{ featureImageKey, blob }` | `{ blob }` | nn 多 key 字段 |
+| **主数据关联** | 主 store（fileData）存 `featureImageKey`、`featureImageStatus` | 无主数据，完全由 `path@mtime` 决定 | nn 与文件元数据强耦合 |
+
+**差异**：nn 是完整文件元数据系统的一部分；手记视图是独立的图片缩略图缓存。
+
+---
+
+### 4.5 图片来源与数量
+
+| 项目 | notebook-navigator | 手记视图 | 说明 |
+|------|--------------------|----------|------|
+| **每条目图片数** | 1 张（feature image） | 最多 5 张 | 手记多图展示 |
+| **图片来源** | md 正文首图 / 外部 URL / YouTube / PDF 封面 / Excalidraw | 仅 vault 本地图片（wiki、md） | nn 来源更多 |
+| **外部图片** | `requestUrl` + 超时与并发控制 | 不支持 | nn 支持外链缩略图 |
+
+---
+
+### 4.6 生成与触发
+
+| 项目 | notebook-navigator | 手记视图 | 说明 |
+|------|--------------------|----------|------|
+| **触发** | Content Provider 队列，vault 扫描时批量生成 | 组件 mount 后，`getThumbnailBlob` 未命中时 fire-and-forget | nn 有队列，手记无队列 |
+| **并发** | `thumbnailCanvasParallelLimit: 6`，`imageDecodeBudgetPixels` 限制 | 无显式限制 | nn 控制并发和像素预算 |
+| **大图** | `maxImageBytes` 50MB（本地） | 50MB 硬编码 | 逻辑类似 |
+| **regenerate** | blob 缺失时 `regenerateFeatureImageForFile`，带 throttle | 首次未命中即生成，无 throttle | nn 有防抖和重试控制 |
+
+---
+
+### 4.7 渲染与回退
+
+| 项目 | notebook-navigator | 手记视图 | 说明 |
+|------|--------------------|----------|------|
+| **首选** | IndexedDB blob → `URL.createObjectURL` | 同左 | 一致 |
+| **回退** | blob 缺失：图片文件用 `getResourcePath`；非图片文件可能无回退 | 始终用 `image.url`（`getResourcePath`） | 手记视图总有原图回退 |
+| **blob 更新** | key 变化会删旧 blob，避免脏缓存 | mtime 变化产生新 key，旧 key 不再使用 | 都能正确失效 |
+| **object URL 释放** | 组件 unmount 时 `revokeObjectURL` | 仅缓存驱逐时 revoke，组件 unmount 不 revoke | nn 更稳妥，避免泄漏 |
+
+---
+
+### 4.8 文件重命名 / 移动
+
+| 项目 | notebook-navigator | 手记视图 | 说明 |
+|------|--------------------|----------|------|
+| **处理** | `FeatureImageBlobStore.moveBlob(oldPath, newPath)`，同步更新内存缓存 | **未实现**，重命名后 `path@mtime` 变化，会重新生成 | nn 保留旧缩略图，手记会重建 |
+
+**差异**：nn 迁移 blob 可减少重复生成；手记视图依赖重新生成，有一定额外开销。
+
+---
+
+### 4.9 平台适配与限制
+
+| 项目 | notebook-navigator | 手记视图 | 说明 |
+|------|--------------------|----------|------|
+| **移动端** | `imageDecodeBudgetPixels.mobile: 100M`，更严格 | 无区分 | nn 对移动端更保守 |
+| **createImageBitmap** | 支持，且处理 `imageOrientation` | 支持，但不处理 `imageOrientation` | nn 对 EXIF 方向更完善 |
+| **SVG** | 未在 SUPPORTED_EXTENSIONS 中 | 未支持 | 两者都不处理 SVG |
+
+---
+
+### 4.10 汇总表
+
+| 维度 | notebook-navigator | 手记视图 |
+|------|--------------------|----------|
+| 缩略图尺寸 | 256×144 | 256×144 |
+| 格式 | WebP / PNG(iOS) | WebP |
+| 缓存 key | `featureImageKey`（含多种类型） | `path@mtime` |
+| 内存缓存 | Blob LRU，1000 条 | blob URL FIFO，200 条 |
+| 每卡片图片 | 1 张 | 最多 5 张 |
+| 外部图片 | 支持 | 不支持 |
+| 生成队列 | Content Provider 队列 | 无队列，按需生成 |
+| 并发控制 | 有（canvas、decode、external） | 无 |
+| 文件重命名 | 迁移 blob | 重新生成 |
+| object URL 释放 | unmount 时 revoke | 仅驱逐时 revoke |
+
+---
+
 ## 五、建议实施顺序
 
 1. **立刻**：占位符样式、防拖拽、加载失败 UI
@@ -185,11 +311,26 @@ thumbnails: {
 
 ---
 
-## 六、相关文件
+## 六、缩略图预取（Prewarm）
+
+为减少「加载感」，参考 nn 的 storage sync + Content Provider 预生成：
+
+- **useThumbnailPrewarm**：entries 加载时，从 IndexedDB 批量拉取前 150 个缩略图 key 的 blob，填满 `thumbnailBlobCache`
+- **getThumbnailBlobs**：storage 提供批量读接口，单事务减少 IDB 往返
+- **触发时机**：`JournalViewContent` 在拥有 entries 时立即触发，先于/并行于首帧 ImageItem 渲染
+
+详见 `docs/THUMBNAIL_LOADING_COMPARISON.md`。
+
+---
+
+## 七、相关文件
 
 | 模块 | 路径 |
 |------|------|
 | 图片容器 | `src/components/JournalImageContainer.tsx` |
+| 缩略图 URL | `src/hooks/useThumbnailUrl.ts` |
+| 缩略图预取 | `src/hooks/useThumbnailPrewarm.ts` |
 | 图片样式 | `styles.css`（journal-image*） |
-| 常量 | `src/constants.ts` |
+| 常量 | `src/storage/constants.ts` |
+| 加载对比分析 | `docs/THUMBNAIL_LOADING_COMPARISON.md` |
 | 日历实现说明 | `docs/CALENDAR_VIEW_IMPLEMENTATION_PLAN.md` |

@@ -2,6 +2,7 @@ import { PluginSettingTab, Setting, App, TFolder, TFile } from 'obsidian';
 import { JournalViewPlugin } from '../main';
 import { JournalPluginSettings } from '../settings';
 import { strings } from '../i18n';
+import { getStorage } from '../storage/storageLifecycle';
 
 export class JournalSettingTab extends PluginSettingTab {
 	plugin: JournalViewPlugin;
@@ -17,7 +18,14 @@ export class JournalSettingTab extends PluginSettingTab {
 
 		containerEl.createEl('h2', { text: strings.settings.title });
 
-		// 获取所有文件夹列表（递归获取所有子文件夹）
+		// Create section container
+		const createSection = (parent: HTMLElement, title: string) => {
+			const section = parent.createDiv({ cls: 'journal-settings-section' });
+			section.createEl('h3', { text: title, cls: 'journal-settings-section-title' });
+			return section;
+		};
+
+		// Get all folders recursively
 		const getAllFolders = (): TFolder[] => {
 			const folders: TFolder[] = [];
 			const processFolder = (folder: TFolder) => {
@@ -28,16 +36,16 @@ export class JournalSettingTab extends PluginSettingTab {
 					}
 				}
 			};
-			// 从根目录开始，递归处理所有文件夹
+			// Start from root, process all folders recursively
 			const rootFolders = this.app.vault.getAllFolders();
 			for (const folder of rootFolders) {
 				processFolder(folder);
 			}
-			// 按路径排序
+			// Sort by path
 			return folders.sort((a, b) => a.path.localeCompare(b.path));
 		};
 
-		// 从文件夹中提取所有 frontmatter 字段
+		// Extract all frontmatter fields from folder
 		const extractFrontmatterFields = (folderPath: string | null): Set<string> => {
 			const fields = new Set<string>();
 			if (!folderPath) return fields;
@@ -45,7 +53,7 @@ export class JournalSettingTab extends PluginSettingTab {
 			const folder = this.app.vault.getAbstractFileByPath(folderPath);
 			if (!(folder instanceof TFolder)) return fields;
 
-			// 递归获取文件夹下的所有 Markdown 文件
+			// Recursively get all Markdown files in folder
 			const getMarkdownFiles = (f: TFolder): TFile[] => {
 				const files: TFile[] = [];
 				for (const child of f.children) {
@@ -62,7 +70,7 @@ export class JournalSettingTab extends PluginSettingTab {
 			for (const file of files) {
 				const metadata = this.app.metadataCache.getFileCache(file);
 				if (metadata?.frontmatter) {
-					// 提取所有 frontmatter 字段名
+					// Extract all frontmatter field names
 					for (const key in metadata.frontmatter) {
 						if (metadata.frontmatter.hasOwnProperty(key)) {
 							fields.add(key);
@@ -73,8 +81,52 @@ export class JournalSettingTab extends PluginSettingTab {
 			return fields;
 		};
 
-		// 日期字段配置（仅在选择了文件夹时显示）
-		const dateFieldSetting = new Setting(containerEl)
+		// Get all .md files in folder (no subfolders)
+		const getMarkdownFilesInFolder = (folderPath: string | null): TFile[] => {
+			if (!folderPath) return [];
+			const folder = this.app.vault.getAbstractFileByPath(folderPath);
+			if (!(folder instanceof TFolder)) return [];
+			return (folder.children || [])
+				.filter((c): c is TFile => c instanceof TFile && c.extension === 'md')
+				.sort((a, b) => a.path.localeCompare(b.path));
+		};
+
+		// ========== Basics ==========
+		const sectionBasics = createSection(containerEl, strings.settings.sectionBasics);
+		let dateFieldSetting: Setting;
+
+		new Setting(sectionBasics)
+			.setName(strings.settings.defaultFolder)
+			.setDesc(strings.settings.defaultFolderDesc)
+			.addDropdown((dropdown) => {
+				dropdown.addOption('', strings.settings.scanEntireVault);
+				const folders = getAllFolders();
+				for (const folder of folders) {
+					dropdown.addOption(folder.path, folder.path);
+				}
+				const currentPath = this.plugin.settings.defaultFolderPath || this.plugin.settings.folderPath || '';
+				dropdown.setValue(currentPath);
+				dropdown.onChange(async (value) => {
+					this.plugin.settings.defaultFolderPath = value || null;
+					this.plugin.settings.folderPath = value;
+					await this.plugin.saveSettings();
+					const dateFieldDropdown = dateFieldSetting.settingEl.querySelector('select') as HTMLSelectElement;
+					if (dateFieldDropdown) updateDropdownOptions(dateFieldDropdown, value || null);
+					updateDateFieldVisibility();
+					if (this.plugin.view) {
+						if (value) {
+							const folder = this.app.vault.getAbstractFileByPath(value);
+							this.plugin.view.targetFolderPath = folder instanceof TFolder ? folder.path : null;
+						} else {
+							this.plugin.view.targetFolderPath = null;
+						}
+						await this.plugin.view.refresh();
+					}
+				});
+			});
+
+		// Date field config (shown only when folder is selected)
+		dateFieldSetting = new Setting(sectionBasics)
 			.setName(strings.settings.dateField)
 			.setDesc(strings.settings.dateFieldDesc)
 			.addDropdown((dropdown) => {
@@ -87,21 +139,21 @@ export class JournalSettingTab extends PluginSettingTab {
 				dropdown.addOption('publish_date', 'publish_date');
 				dropdown.addOption('publishDate', 'publishDate');
 
-				// 从文件夹中提取所有 frontmatter 字段并添加到下拉列表
+				// Extract frontmatter fields from folder and add to dropdown
 				let currentPath = this.plugin.settings.defaultFolderPath || this.plugin.settings.folderPath || '';
 				if (currentPath) {
 					const folderFields = extractFrontmatterFields(currentPath);
 					const commonFields = new Set(['', 'date', 'Date', 'created', 'created_time', 'created_at', 'publish_date', 'publishDate']);
 
-					// 添加文件夹中实际使用的字段（排除已添加的常用字段）
+					// Add fields actually used in folder (exclude common ones already added)
 					const sortedFields = Array.from(folderFields)
 						.filter(field => !commonFields.has(field))
 						.sort();
 
 					if (sortedFields.length > 0) {
-						// 添加分隔线（使用特殊值）
+						// Add separator (special value)
 						dropdown.addOption('---separator---', '──────────');
-						// 添加文件夹中的字段
+						// Add folder fields
 						for (const field of sortedFields) {
 							dropdown.addOption(field, field);
 						}
@@ -110,13 +162,13 @@ export class JournalSettingTab extends PluginSettingTab {
 
 				dropdown.addOption('custom', strings.settings.custom);
 
-				// 设置当前值
+				// Set current value
 				currentPath = this.plugin.settings.defaultFolderPath || this.plugin.settings.folderPath || '';
 				const currentDateField = currentPath ? (this.plugin.settings.folderDateFields[currentPath] || '') : '';
 
-				// 如果当前值在下拉选项中存在，直接设置；否则设置为"custom"
+				// If current value exists in options, set it; else set "custom"
 				if (currentDateField) {
-					// 检查选项是否存在
+					// Check if option exists
 					const optionExists = Array.from(dropdown.selectEl.options).some(opt => opt.value === currentDateField);
 					if (optionExists && currentDateField !== '---separator---') {
 						dropdown.setValue(currentDateField);
@@ -128,7 +180,7 @@ export class JournalSettingTab extends PluginSettingTab {
 				}
 
 				dropdown.onChange(async (value) => {
-					// 忽略分隔线选项
+					// Ignore separator option
 					if (value === '---separator---') {
 						dropdown.setValue(currentDateField || '');
 						return;
@@ -137,18 +189,18 @@ export class JournalSettingTab extends PluginSettingTab {
 					const folderPath = this.plugin.settings.defaultFolderPath || this.plugin.settings.folderPath || '';
 					if (folderPath) {
 						if (value === 'custom') {
-							// 如果选择"自定义"，显示输入框让用户输入
+							// If "custom" selected, show input for user
 							const customInput = document.createElement('input');
 							customInput.type = 'text';
 							customInput.placeholder = strings.settings.customFieldPlaceholder;
 							const currentDateField = folderPath ? (this.plugin.settings.folderDateFields[folderPath] || '') : '';
-							// 检查当前值是否在下拉选项中
+							// Check if current value is in dropdown options
 							const optionExists = Array.from(dropdown.selectEl.options).some(opt => opt.value === currentDateField && opt.value !== '---separator---');
 							customInput.value = currentDateField && !optionExists ? currentDateField : '';
 							customInput.style.width = '200px';
 							customInput.style.marginLeft = '10px';
 
-							// 移除之前的自定义输入框（如果存在）
+							// Remove previous custom input if exists
 							const existingInput = dateFieldSetting.settingEl.querySelector('.custom-date-field-input') as HTMLInputElement;
 							if (existingInput) {
 								existingInput.remove();
@@ -157,10 +209,10 @@ export class JournalSettingTab extends PluginSettingTab {
 							customInput.classList.add('custom-date-field-input');
 							dateFieldSetting.settingEl.appendChild(customInput);
 
-							// 聚焦输入框
+							// Focus input
 							customInput.focus();
 
-							// 监听输入框变化
+							// Listen for input change
 							const handleCustomInput = async () => {
 								const customValue = customInput.value.trim();
 								if (customValue) {
@@ -170,7 +222,7 @@ export class JournalSettingTab extends PluginSettingTab {
 								}
 								await this.plugin.saveSettings();
 
-								// 如果视图已打开，自动刷新
+								// Refresh if view is open
 								if (this.plugin.view) {
 									await this.plugin.view.refresh();
 								}
@@ -185,7 +237,7 @@ export class JournalSettingTab extends PluginSettingTab {
 								}
 							});
 						} else {
-							// 移除自定义输入框（如果存在）
+							// Remove custom input if exists
 							const existingInput = dateFieldSetting.settingEl.querySelector('.custom-date-field-input') as HTMLInputElement;
 							if (existingInput) {
 								existingInput.remove();
@@ -198,7 +250,7 @@ export class JournalSettingTab extends PluginSettingTab {
 							}
 							await this.plugin.saveSettings();
 
-							// 如果视图已打开，自动刷新
+							// Refresh if view is open
 							if (this.plugin.view) {
 								await this.plugin.view.refresh();
 							}
@@ -207,16 +259,16 @@ export class JournalSettingTab extends PluginSettingTab {
 				});
 			});
 
-		// 更新下拉选择器的选项（当文件夹改变时）
+		// Update dropdown options when folder changes
 		const updateDropdownOptions = (dropdown: HTMLSelectElement, folderPath: string | null) => {
-			// 保存当前选中的值
+			// Save current selection
 			const currentValue = dropdown.value;
 
-			// 清除除默认选项外的所有选项（包括分隔线）
+			// Clear all options except defaults (including separator)
 			const defaultOptions = ['', 'date', 'Date', 'created', 'created_time', 'created_at', 'publish_date', 'publishDate', 'custom'];
 			const optionsToKeep = new Set(defaultOptions);
 
-			// 移除不在默认列表中的选项（包括分隔线）
+			// Remove options not in default list (including separator)
 			for (let i = dropdown.options.length - 1; i >= 0; i--) {
 				const option = dropdown.options[i];
 				if (!optionsToKeep.has(option.value)) {
@@ -224,23 +276,23 @@ export class JournalSettingTab extends PluginSettingTab {
 				}
 			}
 
-			// 从新文件夹中提取字段
+			// Extract fields from new folder
 			if (folderPath) {
 				const folderFields = extractFrontmatterFields(folderPath);
 				const commonFields = new Set(['', 'date', 'Date', 'created', 'created_time', 'created_at', 'publish_date', 'publishDate']);
 
-				// 添加文件夹中实际使用的字段（排除已添加的常用字段）
+				// Add fields actually used in folder (excluding already-added common fields)
 				const sortedFields = Array.from(folderFields)
 					.filter(field => !commonFields.has(field))
 					.sort();
 
 				if (sortedFields.length > 0) {
-					// 找到"custom"选项的位置
+					// Find "custom" option position
 					const customOptionIndex = Array.from(dropdown.options).findIndex(opt => opt.value === 'custom');
 
-					// 在"custom"之前插入分隔线和字段
+					// Insert separator and fields before "custom"
 					if (customOptionIndex >= 0) {
-						// 检查是否已有分隔线
+						// Check if separator already exists
 						const hasSeparator = Array.from(dropdown.options).some(opt => opt.value === '---separator---');
 						if (!hasSeparator) {
 							const separatorOption = new Option('──────────', '---separator---');
@@ -248,7 +300,7 @@ export class JournalSettingTab extends PluginSettingTab {
 							dropdown.insertBefore(separatorOption, dropdown.options[customOptionIndex]);
 						}
 
-						// 插入字段选项
+						// Insert field options
 						for (let i = sortedFields.length - 1; i >= 0; i--) {
 							const field = sortedFields[i];
 							const option = new Option(field, field);
@@ -258,11 +310,11 @@ export class JournalSettingTab extends PluginSettingTab {
 				}
 			}
 
-			// 恢复之前选中的值（如果仍然存在）
+			// Restore previous selection if still valid
 			if (currentValue && Array.from(dropdown.options).some(opt => opt.value === currentValue)) {
 				dropdown.value = currentValue;
 			} else {
-				// 如果之前的值不存在了，检查是否应该设置为"custom"
+				// If previous value invalid, check if should set "custom"
 				const currentPath = this.plugin.settings.defaultFolderPath || this.plugin.settings.folderPath || '';
 				const currentDateField = currentPath ? (this.plugin.settings.folderDateFields[currentPath] || '') : '';
 				if (currentDateField && currentDateField !== currentValue) {
@@ -273,26 +325,26 @@ export class JournalSettingTab extends PluginSettingTab {
 			}
 		};
 
-		// 根据当前选择的文件夹显示/隐藏日期字段设置
+		// Show/hide date field based on selected folder
 		const updateDateFieldVisibility = () => {
 			const currentPath = this.plugin.settings.defaultFolderPath || this.plugin.settings.folderPath || '';
 			if (currentPath) {
 				dateFieldSetting.settingEl.style.display = '';
-				// 更新下拉选择器的值和选项
+				// Update dropdown value and options
 				const dropdown = dateFieldSetting.settingEl.querySelector('select') as HTMLSelectElement;
 				if (dropdown) {
-					// 更新选项列表
+					// Update options list
 					updateDropdownOptions(dropdown, currentPath);
 
 					const currentDateField = this.plugin.settings.folderDateFields[currentPath] || '';
-					// 如果当前值在下拉选项中存在，直接设置；否则设置为"custom"
+					// If current value exists in options, set it; else set "custom"
 					if (currentDateField) {
 						const optionExists = Array.from(dropdown.options).some(opt => opt.value === currentDateField && opt.value !== '---separator---');
 						if (optionExists) {
 							dropdown.value = currentDateField;
 						} else {
 							dropdown.value = 'custom';
-							// 如果选择的是自定义，确保输入框存在并更新值
+							// If custom selected, ensure input exists and update value
 							let customInput = dateFieldSetting.settingEl.querySelector('.custom-date-field-input') as HTMLInputElement;
 							if (!customInput) {
 								customInput = document.createElement('input');
@@ -303,7 +355,7 @@ export class JournalSettingTab extends PluginSettingTab {
 								customInput.classList.add('custom-date-field-input');
 								dateFieldSetting.settingEl.appendChild(customInput);
 
-								// 监听输入框变化
+								// Listen for input change
 								const handleCustomInput = async () => {
 									const customValue = customInput.value.trim();
 									if (customValue) {
@@ -313,7 +365,7 @@ export class JournalSettingTab extends PluginSettingTab {
 									}
 									await this.plugin.saveSettings();
 
-									// 如果视图已打开，自动刷新
+									// Refresh if view is open
 									if (this.plugin.view) {
 										await this.plugin.view.refresh();
 									}
@@ -332,7 +384,7 @@ export class JournalSettingTab extends PluginSettingTab {
 						}
 					} else {
 						dropdown.value = '';
-						// 移除自定义输入框（如果存在）
+						// Remove custom input (if exists)
 						const existingInput = dateFieldSetting.settingEl.querySelector('.custom-date-field-input') as HTMLInputElement;
 						if (existingInput) {
 							existingInput.remove();
@@ -344,17 +396,9 @@ export class JournalSettingTab extends PluginSettingTab {
 			}
 		};
 
-		// 获取指定文件夹下的所有 .md 文件（不含子文件夹）
-		const getMarkdownFilesInFolder = (folderPath: string | null): TFile[] => {
-			if (!folderPath) return [];
-			const folder = this.app.vault.getAbstractFileByPath(folderPath);
-			if (!(folder instanceof TFolder)) return [];
-			return (folder.children || [])
-				.filter((c): c is TFile => c instanceof TFile && c.extension === 'md')
-				.sort((a, b) => a.path.localeCompare(b.path));
-		};
-
-		const templateFolderSetting = new Setting(containerEl)
+		// ========== Template ==========
+		const sectionTemplate = createSection(containerEl, strings.settings.sectionTemplate);
+		const templateFolderSetting = new Setting(sectionTemplate)
 			.setName(strings.settings.templateFolder)
 			.setDesc(strings.settings.templateFolderDesc)
 			.addDropdown((dropdown) => {
@@ -365,13 +409,13 @@ export class JournalSettingTab extends PluginSettingTab {
 				dropdown.setValue(this.plugin.settings.templateFolderPath || '');
 				dropdown.onChange(async (value) => {
 					this.plugin.settings.templateFolderPath = value || null;
-					this.plugin.settings.templatePath = null; // 切换文件夹时清空模板选择
+					this.plugin.settings.templatePath = null; // Clear template when folder changes
 					await this.plugin.saveSettings();
 					await updateTemplateFileDropdown();
 				});
 			});
 
-		const templateFileSetting = new Setting(containerEl)
+		const templateFileSetting = new Setting(sectionTemplate)
 			.setName(strings.settings.templateFile)
 			.setDesc(strings.settings.templateFileDesc)
 			.addDropdown((dropdown) => {
@@ -408,7 +452,9 @@ export class JournalSettingTab extends PluginSettingTab {
 
 		updateTemplateFileDropdown();
 
-		new Setting(containerEl)
+		// ========== View & Display ==========
+		const sectionDisplay = createSection(containerEl, strings.settings.sectionDisplay);
+		new Setting(sectionDisplay)
 			.setName(strings.settings.showJournalStats)
 			.setDesc(strings.settings.showJournalStatsDesc)
 			.addToggle((toggle) => {
@@ -423,7 +469,9 @@ export class JournalSettingTab extends PluginSettingTab {
 					});
 			});
 
-		new Setting(containerEl)
+		// ========== Editor ==========
+		const sectionEditor = createSection(containerEl, strings.settings.sectionEditor);
+		new Setting(sectionEditor)
 			.setName(strings.settings.editorImageLayout)
 			.setDesc(strings.settings.editorImageLayoutDesc)
 			.addToggle((toggle) => {
@@ -435,58 +483,10 @@ export class JournalSettingTab extends PluginSettingTab {
 					});
 			});
 
-		new Setting(containerEl)
-			.setName(strings.settings.defaultFolder)
-			.setDesc(strings.settings.defaultFolderDesc)
-			.addDropdown((dropdown) => {
-				dropdown.addOption('', strings.settings.scanEntireVault);
-
-				// 添加所有文件夹选项
-				const folders = getAllFolders();
-				for (const folder of folders) {
-					dropdown.addOption(folder.path, folder.path);
-				}
-
-				// 设置当前值
-				const currentPath = this.plugin.settings.defaultFolderPath || this.plugin.settings.folderPath || '';
-				dropdown.setValue(currentPath);
-
-				dropdown.onChange(async (value) => {
-					this.plugin.settings.defaultFolderPath = value || null;
-					// 同时更新旧的 folderPath 以保持向后兼容
-					this.plugin.settings.folderPath = value;
-					await this.plugin.saveSettings();
-
-					// 更新日期字段下拉选择器的选项（从新文件夹中提取字段）
-					const dateFieldDropdown = dateFieldSetting.settingEl.querySelector('select') as HTMLSelectElement;
-					if (dateFieldDropdown) {
-						updateDropdownOptions(dateFieldDropdown, value || null);
-					}
-
-					// 更新日期字段设置的显示状态和值
-					updateDateFieldVisibility();
-
-					// 如果视图已打开，自动刷新
-					if (this.plugin.view) {
-						if (value) {
-							const folder = this.app.vault.getAbstractFileByPath(value);
-							if (folder instanceof TFolder) {
-								this.plugin.view.targetFolderPath = folder.path;
-							} else {
-								this.plugin.view.targetFolderPath = null;
-							}
-						} else {
-							this.plugin.view.targetFolderPath = null;
-						}
-						await this.plugin.view.refresh();
-					}
-				});
-			});
-
-		// 初始显示状态
+		// Initial visibility state
 		updateDateFieldVisibility();
 
-		new Setting(containerEl)
+		new Setting(sectionDisplay)
 			.setName(strings.settings.imageDisplayLimit)
 			.setDesc(strings.settings.imageDisplayLimitDesc)
 			.addSlider((slider) =>
@@ -497,14 +497,14 @@ export class JournalSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.imageLimit = value;
 						await this.plugin.saveSettings();
-						// 刷新视图
+						// Refresh view
 						if (this.plugin.view) {
 							this.plugin.view.refresh();
 						}
 					})
 			);
 
-		new Setting(containerEl)
+		new Setting(sectionDisplay)
 			.setName(strings.settings.imageGap)
 			.setDesc(strings.settings.imageGapDesc)
 			.addSlider((slider) =>
@@ -515,16 +515,18 @@ export class JournalSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.imageGap = value;
 						await this.plugin.saveSettings();
-						// 更新 CSS 变量
+						// Update CSS variable
 						document.documentElement.style.setProperty('--journal-image-gap', `${value}px`);
-						// 刷新视图
+						// Refresh view
 						if (this.plugin.view) {
 							this.plugin.view.refresh();
 						}
 					})
 			);
 
-		new Setting(containerEl)
+		// ========== Interaction ==========
+		const sectionInteraction = createSection(containerEl, strings.settings.sectionInteraction);
+		new Setting(sectionInteraction)
 			.setName(strings.settings.openNoteMode)
 			.setDesc(strings.settings.openNoteModeDesc)
 			.addToggle((toggle) => {
@@ -542,6 +544,62 @@ export class JournalSettingTab extends PluginSettingTab {
 					.setIcon('info')
 					.setTooltip(strings.settings.tooltipOpenMode)
 					.onClick(() => {});
+			});
+
+		// ========== Maintenance ==========
+		const sectionMaintenance = createSection(containerEl, strings.settings.sectionMaintenance);
+
+		const formatBytes = (bytes: number): string => {
+			if (bytes < 1024) return `${bytes} B`;
+			if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+			return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+		};
+
+		const storageSetting = new Setting(sectionMaintenance)
+			.setName(strings.settings.storageUsage)
+			.setDesc(strings.settings.storageUsageCalculating);
+
+		getStorage()
+			?.getStorageSizeEstimate?.()
+			.then((size) => {
+				if (size) {
+					const entries = formatBytes(size.entriesBytes);
+					const thumbnails = formatBytes(size.thumbnailsBytes);
+					const total = formatBytes(size.totalBytes);
+					storageSetting.setDesc(
+						`${strings.settings.storageUsageEntries}: ${entries}, ${strings.settings.storageUsageThumbnails}: ${thumbnails}, ${strings.settings.storageUsageTotal}: ${total}`
+					);
+				}
+			})
+			.catch(() => {
+				storageSetting.setDesc(strings.settings.storageUsageError);
+			});
+
+		new Setting(sectionMaintenance)
+			.setName(strings.settings.clearCache)
+			.setDesc(strings.settings.clearCacheDesc)
+			.addButton((button) => {
+				button
+					.setButtonText(strings.settings.clearCacheButton)
+					.onClick(async () => {
+						const storage = getStorage();
+						if (storage) {
+							await storage.clear();
+							if (this.plugin.view) await this.plugin.view.refresh();
+							new (await import('obsidian')).Notice('Journal cache cleared');
+							// Refresh storage display
+							storage.getStorageSizeEstimate().then((size) => {
+								const entries = formatBytes(size.entriesBytes);
+								const thumbnails = formatBytes(size.thumbnailsBytes);
+								const total = formatBytes(size.totalBytes);
+								storageSetting.setDesc(
+									`${strings.settings.storageUsageEntries}: ${entries}, ${strings.settings.storageUsageThumbnails}: ${thumbnails}, ${strings.settings.storageUsageTotal}: ${total}`
+								);
+							});
+						} else {
+							new (await import('obsidian')).Notice('Cache not initialized');
+						}
+					});
 			});
 	}
 }

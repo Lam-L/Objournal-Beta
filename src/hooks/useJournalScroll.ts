@@ -1,4 +1,4 @@
-import { useRef, useMemo, useCallback } from 'react';
+import { useRef, useMemo, useCallback, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { JournalEntry } from '../utils/utils';
 import { groupByMonth } from '../utils/utils';
@@ -11,23 +11,23 @@ interface VirtualListItem {
 	index: number;
 }
 
-// 缓存已测量的高度
+// Cache measured heights
 const sizeCache = new Map<number, number>();
 
 export const useJournalScroll = (entries: JournalEntry[]) => {
 	const parentRef = useRef<HTMLDivElement>(null);
 
-	// 构建虚拟化列表项
+	// Build virtualized list items
 	const listItems = useMemo<VirtualListItem[]>(() => {
 		const items: VirtualListItem[] = [];
 		const grouped = groupByMonth(entries);
-		
+
 		const sortedGroups = Object.keys(grouped).sort((a, b) => {
 			if (a === strings.dateGroups.today) return -1;
 			if (b === strings.dateGroups.today) return 1;
 			if (a === strings.dateGroups.yesterday) return -1;
 			if (b === strings.dateGroups.yesterday) return 1;
-			
+
 			const parseMonthKey = (monthKey: string): Date => {
 				const zhMatch = monthKey.match(/(\d{4})年(\d{1,2})月/);
 				if (zhMatch) {
@@ -69,7 +69,7 @@ export const useJournalScroll = (entries: JournalEntry[]) => {
 	}, [entries]);
 
 	const estimateSize = useCallback((index: number): number => {
-		// 如果缓存中有，使用缓存
+		// If in cache, use cached value
 		if (sizeCache.has(index)) {
 			return sizeCache.get(index)!;
 		}
@@ -80,21 +80,21 @@ export const useJournalScroll = (entries: JournalEntry[]) => {
 		}
 
 		if (item.type === 'month-header') {
-			return 50; // 月份标题高度
+			return 50; // Month header height
 		}
 
-		// 根据卡片内容估算高度
-		// 基础高度：标题 + 日期 + padding = 80px
-		// 内容预览：每行约 20px，最多 3 行 = 60px
-		// 图片：如果有图片，约 200px
-		let estimatedHeight = 80; // 基础高度
-		
+		// Estimate height from card content
+		// Base: title + date + padding = 80px
+		// Preview: ~20px per line, max 3 lines = 60px
+		// Images: ~200px if present
+		let estimatedHeight = 80; // Base height
+
 		if (item.entry) {
-			// 如果有图片，增加图片高度
+			// If has images, add image height
 			if (item.entry.images.length > 0) {
 				estimatedHeight += 200;
 			}
-			// 如果有内容预览，增加内容高度
+			// If has preview, add content height
 			if (item.entry.preview) {
 				const previewLines = Math.ceil(item.entry.preview.length / 50);
 				estimatedHeight += Math.min(previewLines * 20, 60);
@@ -107,7 +107,7 @@ export const useJournalScroll = (entries: JournalEntry[]) => {
 	const virtualizer = useVirtualizer({
 		count: listItems.length,
 		getScrollElement: () => {
-			// 查找父滚动容器（journal-view-container）
+			// Find parent scroll container (journal-view-container)
 			if (parentRef.current) {
 				const scrollContainer = parentRef.current.closest('.journal-view-container') as HTMLElement;
 				return scrollContainer || parentRef.current;
@@ -115,8 +115,8 @@ export const useJournalScroll = (entries: JournalEntry[]) => {
 			return null;
 		},
 		estimateSize,
-		overscan: 8,
-		// 启用动态高度测量
+		overscan: 20, // Increased from 8: avoid white gap when fast scroll or switching back
+		// Enable dynamic height measurement
 		measureElement: (element) => {
 			if (!element) {
 				return 0;
@@ -124,6 +124,29 @@ export const useJournalScroll = (entries: JournalEntry[]) => {
 			return element.getBoundingClientRect().height;
 		},
 	});
+
+	// Remeasure when scroll container becomes visible (e.g. switching back to tab)
+	// Fixes white screen when returning to journal view
+	// isScrollContainerReady: only measure when container has dimensions (reference nn)
+	useEffect(() => {
+		const scrollEl = parentRef.current?.closest('.journal-view-container') as HTMLElement;
+		if (!scrollEl) return;
+
+		const runMeasureIfReady = () => {
+			requestAnimationFrame(() => {
+				const el = parentRef.current?.closest('.journal-view-container') as HTMLElement;
+				if (!el) return;
+				const rect = el.getBoundingClientRect();
+				if (rect.width > 0 && rect.height > 0) {
+					virtualizer.measure();
+				}
+			});
+		};
+
+		const ro = new ResizeObserver(runMeasureIfReady);
+		ro.observe(scrollEl);
+		return () => ro.disconnect();
+	}, [virtualizer]);
 
 	return {
 		parentRef,

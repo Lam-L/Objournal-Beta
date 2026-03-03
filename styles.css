@@ -1,21 +1,22 @@
-/* 移除 view-content 的默认 padding */
+/* Remove default padding from view-content */
 .view-content {
 	padding: 0 !important;
 }
 
 .journal-view-container {
-	/* 使用 CSS 变量统一管理 padding */
+	/* Use CSS variables for padding */
 	--journal-container-padding: 32px;
 	--scrollbar-width: 0px;
 	padding-left: var(--journal-container-padding);
-	/* 右侧减去滚动条宽度，使「内容到视口右缘」与左侧视觉一致 */
+	/* Subtract scrollbar width on right to align with left */
 	padding-right: max(0px, calc(var(--journal-container-padding) - var(--scrollbar-width)));
 	padding-top: var(--journal-container-padding);
 	padding-bottom: var(--journal-container-padding);
 	width: 100%;
 	height: 100%;
 	min-height: 100%;
-	/* 手记应用风格：浅粉色背景 */
+	/* Opaque background for GPU scroll layer optimization (reference nn) */
+	/* Journal app style: light pink background */
 	background: #f5f0f1 !important;
 	color: #1a1a1a !important;
 	box-sizing: border-box;
@@ -26,7 +27,7 @@
 	-webkit-overflow-scrolling: touch !important;
 }
 
-/* 暗色主题适配 */
+/* Dark theme */
 .theme-dark .journal-view-container {
 	background: #1e1e1e !important;
 	color: #e0e0e0 !important;
@@ -52,7 +53,7 @@
 	font-size: 16px;
 }
 
-/* 空状态欢迎卡片与按钮 */
+/* Empty state welcome card and button */
 .journal-welcome {
 	display: flex;
 	align-items: center;
@@ -115,13 +116,13 @@
 	outline-offset: 2px;
 }
 
-/* 内容包装器：所有内容（header、stats、list）都在同一个滚动容器中 */
+/* Content wrapper: header, stats, list in same scroll container */
 .journal-content-wrapper {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
 	position: relative !important;
-	/* 不固定定位，随内容滚动 */
+	/* Not fixed, scrolls with content */
 	top: auto !important;
 	left: auto !important;
 	right: auto !important;
@@ -130,7 +131,7 @@
 	min-height: 100%;
 }
 
-/* 列表容器：不再有固定高度和滚动 */
+/* List container: no fixed height, scroll handled by parent */
 .journal-list-container {
 	position: relative;
 	width: 100%;
@@ -138,12 +139,12 @@
 	flex: 1;
 }
 
-/* 头部容器（参考手记应用设计） */
+/* Header container (journal app design) */
 .journal-header {
 	margin-bottom: 5px;
 	padding: 0;
 	position: relative !important;
-	/* 不固定定位，随内容滚动 */
+	/* Not fixed, scrolls with content */
 	top: auto !important;
 	left: auto !important;
 	right: auto !important;
@@ -157,22 +158,22 @@
 	justify-content: space-between;
 	margin-bottom: 0;
 	gap: 16px;
-	/* 防止按钮被挤到下一行 */
+	/* Prevent buttons wrapping */
 	flex-wrap: nowrap;
 	min-width: 0;
-	/* 允许 flex 子元素收缩 */
+	/* Allow flex children to shrink */
 }
 
 .journal-title-header {
 	font-size: 32px;
 	font-weight: 700;
 	margin: 0;
-	/* 手记应用风格：深色标题 */
+	/* Journal app style: dark title */
 	color: #1a1a1a !important;
 	line-height: 1.2;
 	flex: 1;
 	min-width: 0;
-	/* 允许标题收缩，防止按钮被挤下去 */
+	/* Allow title to shrink, prevent buttons wrapping */
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -182,8 +183,8 @@
 	color: #e0e0e0 !important;
 }
 
-/* ========== 头部按钮 · 现代极简风格 ========== */
-/* 完全透明 / 无边框无阴影 / 覆盖 Obsidian 主题 */
+/* ========== Header buttons - minimal style ========== */
+/* Transparent, no border/shadow, override Obsidian theme */
 
 .journal-header-buttons {
 	display: flex;
@@ -191,7 +192,7 @@
 	align-items: center;
 }
 
-/* 强制透明，覆盖 Obsidian 主题对 button 的默认样式 */
+/* Force transparent, override Obsidian button defaults */
 .view-content .journal-header-button,
 .journal-view-container .journal-header-button,
 .journal-view-container button.journal-header-button,
@@ -232,7 +233,7 @@
 	outline-offset: 2px;
 }
 
-/* 主操作：新建笔记 */
+/* Primary action: new note */
 .journal-header-button-primary,
 .journal-view-container .journal-header-button-primary {
 	min-width: 40px;
@@ -315,20 +316,20 @@
 	flex-shrink: 0;
 }
 
-/* 统计信息（参考手记应用设计） */
+/* Stats (journal app design) */
 .journal-stats {
 	display: flex;
 	gap: 24px;
 	margin-bottom: 0;
 	padding: 0;
 	background: transparent !important;
-	/* 完全透明，无背景色 */
+	/* Fully transparent, no background */
 	border-radius: 0;
 	flex-wrap: nowrap;
 	align-items: flex-start;
 }
 
-/* 统计项：垂直布局，图标+数值在上，标签在下 */
+/* Stat item: vertical layout, icon+value on top, label below */
 .journal-stat-item {
 	display: flex;
 	flex-direction: column;
@@ -338,7 +339,7 @@
 	min-width: auto;
 }
 
-/* 图标和数值在同一行 */
+/* Icon and value on same line */
 .journal-stat-content {
 	display: flex;
 	flex-direction: row;
@@ -363,17 +364,17 @@
 
 .journal-stat-icon-flame svg {
 	color: #ef4444;
-	/* 红色 */
+	/* Red */
 }
 
 .journal-stat-icon-message svg {
 	color: #ef4444;
-	/* 红色 */
+	/* Red */
 }
 
 .journal-stat-icon-calendar svg {
 	color: #3b82f6;
-	/* 蓝色 */
+	/* Blue */
 }
 
 .journal-stat-value {
@@ -391,7 +392,7 @@
 
 .journal-stat-label {
 	font-size: 13px;
-	/* 手记应用风格：灰色标签 */
+	/* Journal app style: gray label */
 	color: #666666 !important;
 	line-height: 1.3;
 	margin: 0;
@@ -401,7 +402,7 @@
 	color: #999999 !important;
 }
 
-/* 去年今日卡片 */
+/* On this day cards */
 .journal-on-this-day-container {
 	margin-top: 24px;
 	width: 100%;
@@ -409,12 +410,13 @@
 
 .journal-on-this-day-card {
 	background: #ffffff !important;
-	border-radius: 12px;
+	border-radius: 8px;
 	padding: 16px;
 	cursor: pointer;
-	transition: all 0.2s ease;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-	border: 1px solid #e0e0e0;
+	transition: background 0.2s ease;
+	border: none !important;
+	box-shadow: none !important;
+	-webkit-box-shadow: none !important;
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
@@ -422,22 +424,10 @@
 
 .theme-dark .journal-on-this-day-card {
 	background: #2a2a2a !important;
-	border-color: #404040;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.journal-on-this-day-card:hover {
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-	transform: translateY(-1px);
-	border-color: var(--interactive-accent, #3b82f6);
-}
-
-.theme-dark .journal-on-this-day-card:hover {
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 .journal-on-this-day-card:active {
-	transform: translateY(0);
+	background: var(--background-modifier-active) !important;
 }
 
 .journal-on-this-day-title {
@@ -532,17 +522,17 @@
 
 .journal-on-this-day-empty {
 	background: #f5f5f5 !important;
-	border-radius: 12px;
+	border-radius: 8px;
 	padding: 16px;
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	border: 1px solid #e0e0e0;
+	border: none !important;
+	box-shadow: none !important;
 }
 
 .theme-dark .journal-on-this-day-empty {
 	background: #2a2a2a !important;
-	border-color: #404040;
 }
 
 .journal-on-this-day-empty-icon {
@@ -624,6 +614,13 @@
 	margin-bottom: 12px;
 }
 
+/* Break out of right padding: extend to scrollbar edge (accounts for scrollbar-width) */
+.on-this-day-section-v2 {
+	--bleed-right: max(0px, calc(var(--journal-container-padding) - var(--scrollbar-width, 0px)));
+	margin-right: calc(-1 * var(--bleed-right));
+	width: calc(100% + var(--bleed-right));
+}
+
 .on-this-day-tiles {
 	display: flex;
 	gap: 12px;
@@ -650,11 +647,14 @@
 	min-height: 120px;
 	padding: 0;
 	margin: 0;
-	border: none;
-	border-radius: 10px;
+	border: none !important;
+	box-shadow: none !important;
+	-webkit-box-shadow: none !important;
+	border-radius: 8px;
 	cursor: pointer;
 	overflow: hidden;
 	background: #f5f5f5;
+	transition: background 0.2s ease;
 	text-align: left;
 	font: inherit;
 }
@@ -670,6 +670,10 @@
 
 .theme-dark .on-this-day-tile-no-image {
 	background: #2d2d2d !important;
+}
+
+.on-this-day-tile:active {
+	background: var(--background-modifier-active) !important;
 }
 
 .on-this-day-tile:focus-visible {
@@ -738,11 +742,11 @@
 	color: #e0e0e0;
 }
 
-/* 内容区固定 3 行高度：12px × 1.35 × 3 ≈ 49px */
+/* Excerpt: 3 lines, container-based truncation via line-clamp */
 .on-this-day-tile-excerpt {
 	flex: 1;
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: flex-start;
 	min-height: 48.6px;
 	min-width: 0;
@@ -752,19 +756,20 @@
 .on-this-day-tile-excerpt-inner {
 	width: 100%;
 	min-width: 0;
-	max-width: var(--tile-content-w);
+	max-width: 100%;
 	box-sizing: border-box;
 	font-size: 12px;
 	line-height: 1.35;
 	color: #ffffff;
 	white-space: normal;
-	word-break: break-all;
-	overflow-wrap: anywhere;
+	word-break: break-word;
+	overflow-wrap: break-word;
 	text-align: left;
 	display: -webkit-box;
 	-webkit-line-clamp: 3;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .on-this-day-tile-label {
@@ -1029,7 +1034,7 @@
 .journal-title {
 	font-size: 16px;
 	font-weight: 600;
-	/* 手记应用风格：深色标题 */
+	/* Journal app style: dark title */
 	color: #1a1a1a !important;
 	margin: 8px 0 0 0;
 	padding: 0 5px;
@@ -1379,6 +1384,14 @@
 }
 
 .theme-dark .journal-image-placeholder {
+	background: #2d2d2d;
+}
+
+/* Error state: placeholder only, no broken image (reference notebook-navigator) */
+.journal-image-container--error {
+	background: #e8e8e8;
+}
+.theme-dark .journal-image-container--error {
 	background: #2d2d2d;
 }
 
@@ -1785,6 +1798,7 @@
 .markdown-preview-view .internal-embed.image-embed.journal-preview-image-fixed {
 	display: inline-block;
 }
+
 .markdown-preview-view .internal-embed.image-embed .journal-preview-image {
 	max-width: 100%;
 	height: auto;
@@ -2065,7 +2079,7 @@
 	z-index: 2;
 }
 
-.journal-calendar-day-cell-inner > .journal-calendar-day-number {
+.journal-calendar-day-cell-inner>.journal-calendar-day-number {
 	pointer-events: auto;
 }
 
@@ -2233,18 +2247,36 @@
 }
 
 /* 月历/列表切换 - 选中态（无背景） */
-.journal-header-button-view-mode-active,
-.journal-header-button-view-mode-active:hover,
-.theme-dark .journal-header-button-view-mode-active,
-.theme-dark .journal-header-button-view-mode-active:hover {
+.journal-view-mode-toggle.journal-header-button-view-mode-active,
+.journal-view-mode-toggle.journal-header-button-view-mode-active:hover,
+.theme-dark .journal-view-mode-toggle.journal-header-button-view-mode-active,
+.theme-dark .journal-view-mode-toggle.journal-header-button-view-mode-active:hover {
 	background: transparent !important;
 	background-color: transparent !important;
 }
 
-.journal-header-button-view-mode:not(.journal-header-button-view-mode-active) {
-	opacity: 0.7;
+
+/* ========== Settings page section styles ========== */
+.journal-settings-section {
+	margin-top: 0.5rem;
+	margin-bottom: 1.5rem;
 }
 
-.journal-header-button-view-mode:not(.journal-header-button-view-mode-active):hover {
-	opacity: 0.9;
+.journal-settings-section:first-child {
+	margin-top: 0;
+}
+
+.journal-settings-section:last-child {
+	margin-bottom: 0;
+}
+
+.journal-settings-section-title {
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	margin: 0 0 0.75rem 0;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid var(--background-modifier-border);
 }

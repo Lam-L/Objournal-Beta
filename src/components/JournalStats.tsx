@@ -22,7 +22,7 @@ const formatNumber = (num: number): string => {
 	return num.toString();
 };
 
-// 创建 SVG 图标（与原版保持一致）
+// Create SVG icons (keep consistent with original)
 const createSVGIcon = (iconName: 'flame' | 'message' | 'calendar', size: number = 20, color?: string): string => {
 	const iconColor = color || 'currentColor';
 	const svgMap = {
@@ -42,7 +42,7 @@ export const JournalStats: React.FC = () => {
 
 	return (
 		<div className="journal-stats">
-			{/* 统计项 1：连续记录天数（红色火焰图标） */}
+			{/* Stat 1: Consecutive days (red flame icon) */}
 			<div className="journal-stat-item">
 				<div className="journal-stat-content">
 					<div className="journal-stat-icon journal-stat-icon-flame" dangerouslySetInnerHTML={{ __html: createSVGIcon('flame', 20, '#ef4444') }} />
@@ -51,7 +51,7 @@ export const JournalStats: React.FC = () => {
 				<div className="journal-stat-label">{strings.stats.consecutiveDays}</div>
 			</div>
 
-			{/* 统计项 2：字数（红色对话气泡图标） */}
+			{/* Stat 2: Word count (red message bubble icon) */}
 			<div className="journal-stat-item">
 				<div className="journal-stat-content">
 					<div className="journal-stat-icon journal-stat-icon-message" dangerouslySetInnerHTML={{ __html: createSVGIcon('message', 20, '#ef4444') }} />
@@ -60,7 +60,7 @@ export const JournalStats: React.FC = () => {
 				<div className="journal-stat-label">{strings.stats.totalWords}</div>
 			</div>
 
-			{/* 统计项 3：写手记天数（蓝色日历图标） */}
+			{/* Stat 3: Days with entries (blue calendar icon) */}
 			<div className="journal-stat-item">
 				<div className="journal-stat-content">
 					<div className="journal-stat-icon journal-stat-icon-calendar" dangerouslySetInnerHTML={{ __html: createSVGIcon('calendar', 20, '#3b82f6') }} />

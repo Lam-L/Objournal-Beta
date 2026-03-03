@@ -7,6 +7,8 @@ export interface ImageInfo {
 	url: string;
 	altText?: string;
 	position: number;
+	/** Image file mtime for thumbnail cache key (optional for backward compat) */
+	mtime?: number;
 }
 
 export interface JournalEntry {
@@ -20,7 +22,7 @@ export interface JournalEntry {
 }
 
 /**
- * 从 Markdown 正文中提取图片信息
+ * Extract image info from Markdown content
  */
 export function extractImagesFromContent(
 	content: string,
@@ -29,7 +31,7 @@ export function extractImagesFromContent(
 ): ImageInfo[] {
 	const images: ImageInfo[] = [];
 
-	// 1. 提取 Wikilink 格式: ![[image.png]] 或 ![[image.png|100x100]]
+	// 1. Extract Wikilink format: ![[image.png]] or ![[image.png|100x100]]
 	const wikiLinkRegex = /!\[\[([^\]]+)\]\]/g;
 	let match;
 
@@ -37,17 +39,17 @@ export function extractImagesFromContent(
 		const imageRef = match[1];
 		const position = match.index;
 
-		// 处理带尺寸的格式: image.png|100x100
+		// Handle size format: image.png|100x100
 		const [imageName] = imageRef.split('|');
 
-		// 使用 Obsidian API 解析图片路径
+		// Use Obsidian API to resolve image path
 		const imageFile = app.metadataCache.getFirstLinkpathDest(
 			imageName.trim(),
 			file.path
 		);
 
 		if (imageFile && imageFile instanceof TFile) {
-			// 检查是否是图片文件
+			// Check if it's an image file
 			const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico'];
 			const isImage = imageExtensions.includes(imageFile.extension.toLowerCase());
 
@@ -59,6 +61,7 @@ export function extractImagesFromContent(
 						path: imageFile.path,
 						url: resourcePath,
 						position: position,
+						mtime: imageFile.stat.mtime,
 					});
 				} catch (error) {
 					console.warn(`Failed to get resource path for image ${imageFile.path}:`, error);
@@ -67,37 +70,37 @@ export function extractImagesFromContent(
 		}
 	}
 
-	// 2. 提取标准 Markdown 格式: ![alt text](path/to/image.png)
+	// 2. Extract standard Markdown format: ![alt text](path/to/image.png)
 	const markdownImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
 	while ((match = markdownImageRegex.exec(content)) !== null) {
 		const altText = match[1];
 		const imagePath = match[2];
 		const position = match.index;
 
-		// 跳过外部链接
+		// Skip external links
 		if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
 			continue;
 		}
 
-		// 处理相对路径和绝对路径
+		// Handle relative and absolute paths
 		let imageFile: TFile | null = null;
 
 		if (imagePath.startsWith('/')) {
-			// 绝对路径（相对于 vault 根目录）
+			// Absolute path (relative to vault root)
 			imageFile = app.vault.getAbstractFileByPath(
 				imagePath.slice(1)
 			) as TFile;
 		} else {
-			// 相对路径
+			// Relative path
 			const fileDir = file.parent?.path || '';
 			const fullPath = fileDir ? `${fileDir}/${imagePath}` : imagePath;
-			// 规范化路径
+			// Normalize path
 			const normalizedPath = fullPath.split('/').filter(p => p !== '.').join('/');
 			imageFile = app.vault.getAbstractFileByPath(normalizedPath) as TFile;
 		}
 
 		if (imageFile && imageFile instanceof TFile) {
-			// 检查是否是图片文件
+			// Check if it's an image file
 			const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico'];
 			const isImage = imageExtensions.includes(imageFile.extension.toLowerCase());
 
@@ -110,6 +113,7 @@ export function extractImagesFromContent(
 						url: resourcePath,
 						altText: altText || undefined,
 						position: position,
+						mtime: imageFile.stat.mtime,
 					});
 				} catch (error) {
 					console.warn(`Failed to get resource path for image ${imageFile.path}:`, error);
@@ -118,12 +122,12 @@ export function extractImagesFromContent(
 		}
 	}
 
-	// 按在原文中的位置排序
+	// Sort by position in original text
 	return images.sort((a, b) => a.position - b.position);
 }
 
 /**
- * 解析日期值
+ * Parse date value
  */
 export function parseDate(dateValue: any): Date | null {
 	if (!dateValue) return null;
@@ -143,21 +147,21 @@ export function parseDate(dateValue: any): Date | null {
 }
 
 /**
- * 从文件提取日期
- * 优先级1：Frontmatter（自定义字段或 date/Date/created/created_time）
- * 优先级2：文件创建时间
+ * Extract date from file
+ * Priority 1: Frontmatter (custom field or date/Date/created/created_time)
+ * Priority 2: File creation time
  */
 export function extractDate(file: TFile, content: string, app: App, customDateField?: string): Date | null {
-	// 优先级1：从 frontmatter 提取
+	// Priority 1: Extract from frontmatter
 	const metadata = app.metadataCache.getFileCache(file);
 	if (metadata?.frontmatter) {
-		// 如果指定了自定义日期字段，优先使用该字段
+		// If custom date field specified, use it first
 		if (customDateField && metadata.frontmatter[customDateField]) {
 			const parsed = parseDate(metadata.frontmatter[customDateField]);
 			if (parsed) return parsed;
 		}
 
-		// 如果没有指定自定义字段或自定义字段无值，使用默认的日期字段列表
+		// If no custom field or no value, use default date field list
 		if (!customDateField) {
 			const dateFields = ['date', 'Date', 'created', 'created_time'] as const;
 			for (const field of dateFields) {
@@ -169,32 +173,32 @@ export function extractDate(file: TFile, content: string, app: App, customDateFi
 		}
 	}
 
-	// 优先级2：文件创建时间
+	// Priority 2: File creation time
 	return new Date(file.stat.ctime);
 }
 
 /**
- * 从内容中提取标题
- * 直接使用文件名作为标题
+ * Extract title from content
+ * Uses filename as title
  */
 export function extractTitle(content: string, fileName: string, app: App, file: TFile): string {
 	return fileName;
 }
 
 /**
- * 生成内容预览
+ * Generate content preview
  */
 export function generatePreview(content: string, maxLength: number): string {
-	// 移除 frontmatter
+	// Remove frontmatter
 	const withoutFrontmatter = content.replace(/^---[\s\S]*?---\n/, '');
-	// 移除图片标记
+	// Remove image markers
 	const withoutImages = withoutFrontmatter.replace(
 		/!\[\[[^\]]+\]\]|!\[[^\]]*\]\([^)]+\)/g,
 		''
 	);
-	// 移除标题标记
+	// Remove header markers
 	const withoutHeaders = withoutImages.replace(/^#+\s+/gm, '');
-	// 提取纯文本
+	// Extract plain text
 	const text = withoutHeaders.replace(/[#*_`~\[\]()]/g, '').trim();
 
 	if (text.length <= maxLength) {
@@ -205,14 +209,14 @@ export function generatePreview(content: string, maxLength: number): string {
 }
 
 /**
- * 统计字数
+ * Count words
  */
 export function countWords(content: string): number {
-	// 移除 frontmatter
+	// Remove frontmatter
 	const withoutFrontmatter = content.replace(/^---[\s\S]*?---\n/, '');
-	// 移除 Markdown 语法
+	// Remove Markdown syntax
 	const text = withoutFrontmatter.replace(/[#*_`~\[\]()!]/g, '');
-	// 中文字符按字计算，英文按词计算
+	// Chinese chars count by character; English by word
 	const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
 	const englishWords = text.split(/\s+/).filter((w) => /[a-zA-Z]/.test(w))
 		.length;
@@ -220,14 +224,14 @@ export function countWords(content: string): number {
 }
 
 /**
- * 格式化日期显示（根据当前语言）
+ * Format date display (per current language)
  */
 export function formatDate(date: Date): string {
 	return strings.formatDate(date);
 }
 
 /**
- * 判断两个日期是否是同一天
+ * Check if two dates are the same day
  */
 function isSameDay(date1: Date, date2: Date): boolean {
 	return (
@@ -238,14 +242,14 @@ function isSameDay(date1: Date, date2: Date): boolean {
 }
 
 /**
- * 按月份分组条目，但将今天和昨天单独分组
+ * Group entries by month, with today and yesterday as separate groups
  */
 export function groupByMonth(
 	entries: JournalEntry[]
 ): Record<string, JournalEntry[]> {
 	const grouped: Record<string, JournalEntry[]> = {};
 
-	// 获取今天和昨天的日期（只比较年月日，忽略时分秒）
+	// Get today and yesterday dates (compare YMD only, ignore time)
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 
@@ -253,7 +257,7 @@ export function groupByMonth(
 	yesterday.setDate(yesterday.getDate() - 1);
 
 	for (const entry of entries) {
-		// 将条目的日期也设置为 0 时 0 分 0 秒，只比较年月日
+		// Set entry date to 0:00:00 for YMD-only comparison
 		const entryDate = new Date(entry.date);
 		entryDate.setHours(0, 0, 0, 0);
 

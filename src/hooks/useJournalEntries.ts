@@ -3,19 +3,32 @@ import { TFile, TFolder } from 'obsidian';
 import { useJournalView } from '../context/JournalViewContext';
 import { JournalEntry, extractDate, extractImagesFromContent, generatePreview, countWords, extractTitle } from '../utils/utils';
 import { PAGINATION } from '../constants';
+import { getStorage } from '../storage/storageLifecycle';
+import { journalEntryToCached, cachedToJournalEntry } from '../storage/cacheAdapter';
+import { logger } from '../utils/logger';
+
+function sortEntries(entries: JournalEntry[]): JournalEntry[] {
+	return [...entries].sort((a, b) => {
+		const dateDiff = b.date.getTime() - a.date.getTime();
+		if (dateDiff !== 0) return dateDiff;
+		const ctimeDiff = b.file.stat.ctime - a.file.stat.ctime;
+		if (ctimeDiff !== 0) return ctimeDiff;
+		return b.file.path.localeCompare(a.file.path);
+	});
+}
 
 export const useJournalEntries = () => {
 	const { app, targetFolderPath, plugin } = useJournalView();
 	const [entries, setEntries] = useState<JournalEntry[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState(true); // Start true: avoid flashing "Start scan" before load begins
 	const [error, setError] = useState<Error | null>(null);
-	const entriesMapRef = useRef<Map<string, JournalEntry>>(new Map()); // 用于快速查找
+	const entriesMapRef = useRef<Map<string, JournalEntry>>(new Map());
 
 	const loadEntryMetadata = async (file: TFile): Promise<JournalEntry | null> => {
 		try {
 			const content = await app.vault.read(file);
 			
-			// 获取当前文件夹的自定义日期字段配置
+			// Get custom date field config for current folder
 			let customDateField: string | undefined = undefined;
 			if (plugin && targetFolderPath) {
 				const pluginSettings = (plugin as any).settings;
@@ -26,12 +39,12 @@ export const useJournalEntries = () => {
 			
 			const date = extractDate(file, content, app, customDateField);
 			if (!date) {
-				// 如果没有日期，跳过这个文件
+				// If no date, skip this file
 				return null;
 			}
 			const title = extractTitle(content, file.basename, app, file);
 			const images = extractImagesFromContent(content, file, app);
-			const preview = generatePreview(content, 200); // 使用默认最大长度
+			const preview = generatePreview(content, 200); // Use default max length
 			const wordCount = countWords(content);
 
 			return {
@@ -70,7 +83,6 @@ export const useJournalEntries = () => {
 
 		try {
 			let files: TFile[] = [];
-			
 			if (targetFolderPath) {
 				const targetFolder = app.vault.getAbstractFileByPath(targetFolderPath);
 				if (targetFolder instanceof TFolder) {
@@ -82,155 +94,129 @@ export const useJournalEntries = () => {
 				files = app.vault.getMarkdownFiles();
 			}
 
-			// 构建当前文件路径集合
-			const currentFilePaths = new Set(files.map(f => f.path));
-			
-			// 找出需要删除的文件（在缓存中但不在当前文件列表中）
+			const currentFilePaths = new Set(files.map((f) => f.path));
 			const toRemove: string[] = [];
 			for (const [path] of entriesMapRef.current) {
-				if (!currentFilePaths.has(path)) {
-					toRemove.push(path);
-				}
+				if (!currentFilePaths.has(path)) toRemove.push(path);
 			}
-			
-			// 找出需要添加或更新的文件
-			const toProcess: TFile[] = [];
-			for (const file of files) {
-				const cached = entriesMapRef.current.get(file.path);
-				if (!cached || cached.file.stat.mtime !== file.stat.mtime) {
-					// 新文件或修改过的文件
-					toProcess.push(file);
-				}
-			}
-
-			// 删除已移除的文件
 			for (const path of toRemove) {
 				entriesMapRef.current.delete(path);
 			}
 
-			// 批量处理需要添加或更新的文件
-			if (toProcess.length > 0) {
+			// IndexedDB cache: batch read cache for current files
+			const storage = getStorage();
+			let cachedMap = new Map<string, import('../storage/types').CachedJournalEntry>();
+			if (storage) {
+				try {
+					const paths = files.map((f) => f.path);
+					cachedMap = await storage.getMany(paths);
+				} catch (e) {
+					logger.warn('IndexedDB read failed', e);
+				}
+			}
+
+			// Distinguish: from cache vs need to load from vault
+			const toProcess: TFile[] = [];
+			for (const file of files) {
+				const cached = cachedMap.get(file.path);
+				if (cached && cached.mtime === file.stat.mtime) {
+					const entry = cachedToJournalEntry(cached, app);
+					if (entry) entriesMapRef.current.set(file.path, entry);
+				} else {
+					toProcess.push(file);
+				}
+			}
+
+			// Show existing results first (including cache hits)
+			const buildAndSetResults = () => {
+				const results = sortEntries(Array.from(entriesMapRef.current.values()));
+				setEntries((prev) => {
+					if (prev.length !== results.length) return results;
+					const prevMap = new Map(prev.map((e) => [e.file.path, e]));
+					const hasChange = results.some(
+						(e) => prevMap.get(e.file.path)?.file.stat.mtime !== e.file.stat.mtime
+					);
+					return hasChange ? results : prev;
+				});
+			};
+			buildAndSetResults();
+
+			// Background load toProcess, write to IndexedDB
+			if (toProcess.length > 0 && storage) {
 				const batchSize = PAGINATION.BATCH_SIZE;
 				for (let i = 0; i < toProcess.length; i += batchSize) {
 					const batch = toProcess.slice(i, i + batchSize);
 					const batchResults = await Promise.all(
-						batch.map(file =>
-							loadEntryMetadata(file).catch(error => {
-								console.error(`Error processing file ${file.path}:`, error);
+						batch.map((file) =>
+							loadEntryMetadata(file).catch((e) => {
+								console.error(`Error processing file ${file.path}:`, e);
 								return null;
 							})
 						)
 					);
-					
-					// 更新缓存
+					const toPersist: import('../storage/types').CachedJournalEntry[] = [];
 					for (const entry of batchResults) {
 						if (entry) {
 							entriesMapRef.current.set(entry.file.path, entry);
+							toPersist.push(journalEntryToCached(entry));
 						}
 					}
+					if (toPersist.length > 0) {
+						storage.batchPut(toPersist).catch((e) => logger.warn('IndexedDB write failed', e));
+					}
+					buildAndSetResults();
+				}
+			} else if (toProcess.length > 0) {
+				// No IndexedDB, use original batch load
+				const batchSize = PAGINATION.BATCH_SIZE;
+				for (let i = 0; i < toProcess.length; i += batchSize) {
+					const batch = toProcess.slice(i, i + batchSize);
+					const batchResults = await Promise.all(
+						batch.map((file) =>
+							loadEntryMetadata(file).catch((e) => {
+								console.error(`Error processing file ${file.path}:`, e);
+								return null;
+							})
+						)
+					);
+					for (const entry of batchResults) {
+						if (entry) entriesMapRef.current.set(entry.file.path, entry);
+					}
+					buildAndSetResults();
 				}
 			}
-
-			// 从缓存构建排序后的数组
-			const results = Array.from(entriesMapRef.current.values());
-			
-			// 排序：按日期（最新的在前），如果日期相同则按创建时间（最新的在前）
-			results.sort((a, b) => {
-				const dateDiff = b.date.getTime() - a.date.getTime();
-				if (dateDiff !== 0) {
-					return dateDiff;
-				}
-				const ctimeDiff = b.file.stat.ctime - a.file.stat.ctime;
-				if (ctimeDiff !== 0) {
-					return ctimeDiff;
-				}
-				return b.file.path.localeCompare(a.file.path);
-			});
-
-			// 只有当结果真正变化时才更新（保持引用稳定性）
-			setEntries(prevEntries => {
-				// 如果长度不同，肯定有变化
-				if (prevEntries.length !== results.length) {
-					return results;
-				}
-				
-				// 检查是否有实际变化（通过比较路径和修改时间）
-				const prevMap = new Map(prevEntries.map(e => [e.file.path, e]));
-				let hasChange = false;
-				
-				for (const entry of results) {
-					const prev = prevMap.get(entry.file.path);
-					if (!prev || prev.file.stat.mtime !== entry.file.stat.mtime) {
-						hasChange = true;
-						break;
-					}
-				}
-				
-				return hasChange ? results : prevEntries;
-			});
 		} catch (err) {
 			setError(err instanceof Error ? err : new Error('Unknown error'));
 		} finally {
 			setIsLoading(false);
 		}
-	}, [app, targetFolderPath]);
+	}, [app, targetFolderPath, plugin]);
 
-	// 增量更新单个文件
+	// Incremental update for single file
 	const updateSingleEntry = useCallback(async (file: TFile) => {
 		const entry = await loadEntryMetadata(file);
 		if (!entry) {
-			// 如果加载失败，从缓存中移除
 			entriesMapRef.current.delete(file.path);
+			getStorage()?.delete(file.path).catch((e) => logger.warn('IndexedDB delete failed', e));
 		} else {
-			// 更新缓存
 			entriesMapRef.current.set(file.path, entry);
+			getStorage()?.put(journalEntryToCached(entry)).catch((e) => logger.warn('IndexedDB put failed', e));
 		}
-
-		// 从缓存构建排序后的数组
-		const results = Array.from(entriesMapRef.current.values());
-		results.sort((a, b) => {
-			const dateDiff = b.date.getTime() - a.date.getTime();
-			if (dateDiff !== 0) {
-				return dateDiff;
-			}
-			const ctimeDiff = b.file.stat.ctime - a.file.stat.ctime;
-			if (ctimeDiff !== 0) {
-				return ctimeDiff;
-			}
-			return b.file.path.localeCompare(a.file.path);
-		});
-
-		setEntries(results);
+		setEntries(sortEntries(Array.from(entriesMapRef.current.values())));
 	}, []);
 
-	// 处理文件重命名：删除旧路径，添加新路径
+	// Handle file rename: delete old path, add new path
 	const updateEntryAfterRename = useCallback(async (file: TFile, oldPath: string) => {
-		// 从缓存中删除旧路径
 		entriesMapRef.current.delete(oldPath);
+		getStorage()?.delete(oldPath).catch((e) => logger.warn('IndexedDB delete failed', e));
 
-		// 加载新路径的文件
 		const entry = await loadEntryMetadata(file);
 		if (entry) {
-			// 更新缓存
 			entriesMapRef.current.set(file.path, entry);
+			getStorage()?.put(journalEntryToCached(entry)).catch((e) => logger.warn('IndexedDB put failed', e));
 		}
-
-		// 从缓存构建排序后的数组
-		const results = Array.from(entriesMapRef.current.values());
-		results.sort((a, b) => {
-			const dateDiff = b.date.getTime() - a.date.getTime();
-			if (dateDiff !== 0) {
-				return dateDiff;
-			}
-			const ctimeDiff = b.file.stat.ctime - a.file.stat.ctime;
-			if (ctimeDiff !== 0) {
-				return ctimeDiff;
-			}
-			return b.file.path.localeCompare(a.file.path);
-		});
-
-		setEntries(results);
-	}, [app, targetFolderPath, plugin]); // 依赖 loadEntryMetadata 使用的变量
+		setEntries(sortEntries(Array.from(entriesMapRef.current.values())));
+	}, [app, targetFolderPath, plugin]);
 
 	useEffect(() => {
 		loadEntries();

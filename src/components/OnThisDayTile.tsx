@@ -4,16 +4,13 @@ import { generatePreview } from '../utils/utils';
 import { formatYearsAgo } from '../utils/onThisDay';
 import { useJournalView } from '../context/JournalViewContext';
 
-/** 卡片 200px，左右 padding 12×2=24，内容区 176px；12px 字体约 12px/字，3 行 → 176/12×3 ≈ 44，取 40 留余量 */
-const TILE_CONTENT_PX = 176;
-const EXCERPT_FONT_PX = 12;
-const EXCERPT_MAX_LINES = 3;
-const PREVIEW_CHARS = Math.floor((TILE_CONTENT_PX / EXCERPT_FONT_PX) * EXCERPT_MAX_LINES * 0.85);
+/** Excerpt uses CSS line-clamp for container-based truncation; pass enough text for it to fill */
+const EXCERPT_PREVIEW_LIMIT = 1000; // Generous limit; CSS truncates by container size
 const TITLE_MAX_CHARS = 12;
 
 function truncateTitle(title: string, maxLen: number): string {
 	if (!title) return '';
-	const stripped = title.replace(/\.[^.]+$/, ''); // 去掉扩展名
+	const stripped = title.replace(/\.[^.]+$/, ''); // Remove extension
 	if (stripped.length <= maxLen) return stripped;
 	return stripped.slice(0, maxLen) + '…';
 }
@@ -26,7 +23,8 @@ interface OnThisDayTileProps {
 export const OnThisDayTile: React.FC<OnThisDayTileProps> = memo(
 	({ entry, yearsAgo }) => {
 		const { app, plugin } = useJournalView();
-		const excerpt = generatePreview(entry.content, PREVIEW_CHARS);
+		// Cached entries have empty content, use preview as excerpt source
+		const excerpt = generatePreview(entry.content || entry.preview || '', EXCERPT_PREVIEW_LIMIT);
 		const rawTitle = entry.title || entry.file.basename;
 		const title = truncateTitle(rawTitle, TITLE_MAX_CHARS);
 		const hasImage = entry.images.length > 0;

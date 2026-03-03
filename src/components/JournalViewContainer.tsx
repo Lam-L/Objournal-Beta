@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { JournalDataProvider } from '../context/JournalDataContext';
 import { strings } from '../i18n';
 import { useJournalEntries } from '../hooks/useJournalEntries';
+import { useThumbnailPrewarm } from '../hooks/useThumbnailPrewarm';
 import { useFileSystemWatchers } from '../hooks/useFileSystemWatchers';
 import { useScrollbarWidth } from '../hooks/useScrollbarWidth';
 import { JournalViewModeProvider, useJournalViewMode } from '../context/JournalViewModeContext';
@@ -14,7 +15,7 @@ import { JournalEmptyState } from './JournalEmptyState';
 import { MenuProvider } from './JournalCardMenu';
 import { useJournalView } from '../context/JournalViewContext';
 
-// 内部组件：在 JournalDataProvider 内部使用文件系统监听器
+// Internal component: uses file system watchers inside JournalDataProvider
 const JournalViewWithWatchers: React.FC = () => {
 	useFileSystemWatchers();
 	const { plugin } = useJournalView();
@@ -50,15 +51,53 @@ const JournalViewContentArea: React.FC = () => {
 	);
 };
 
+const LOADING_DELAY_MS = 200; // Only show loading UI after this long (avoids flash on fast cache hits)
+
 const JournalViewContent: React.FC = () => {
 	const { entries, isLoading, error, refresh, updateSingleEntry, updateEntryAfterRename } = useJournalEntries();
+	const [showLoadingUI, setShowLoadingUI] = React.useState(false);
+
+	useThumbnailPrewarm(entries);
+
+	// Defer loading indicator: avoid flash when load completes quickly (e.g. from IndexedDB cache)
+	React.useEffect(() => {
+		if (!isLoading) {
+			setShowLoadingUI(false);
+			return;
+		}
+		const t = setTimeout(() => setShowLoadingUI(true), LOADING_DELAY_MS);
+		return () => clearTimeout(t);
+	}, [isLoading]);
+
+	// When loading but we already have entries (e.g. refresh, cache): keep showing content to avoid white flash
+	if (isLoading && entries.length > 0) {
+		return (
+			<MenuProvider>
+				<JournalDataProvider
+					entries={entries}
+					isLoading={isLoading}
+					error={error}
+					refresh={refresh}
+					updateSingleEntry={updateSingleEntry}
+					updateEntryAfterRename={updateEntryAfterRename}
+				>
+					<JournalViewWithWatchers />
+				</JournalDataProvider>
+			</MenuProvider>
+		);
+	}
 
 	if (isLoading) {
-		return (
-			<div className="journal-view-container">
-				<div>{strings.common.loading}</div>
-			</div>
-		);
+		// Show loading only after delay (avoids flash on fast cache); meanwhile render minimal placeholder
+		if (showLoadingUI) {
+			return (
+				<div className="journal-loading">
+					{strings.common.loading}
+				</div>
+			);
+		}
+		// Brief initial load: show minimal placeholder instead of blank
+		return <div className="journal-loading journal-empty" style={{ minHeight: 120 }} />;
 	}
 
 	if (error !== null && error !== undefined) {
